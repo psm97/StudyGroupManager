@@ -1,0 +1,599 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로그인 — StudyGroupManager</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:   '#2563EB',
+            primaryDk: '#1E40AF',
+            primaryLt: '#DBEAFE',
+            accent:    '#3B82F6',
+            surface:   '#F8FAFC',
+            muted:     '#94A3B8',
+            border:    '#E2E8F0',
+            dark:      '#0F172A',
+            mid:       '#334155',
+          },
+          fontFamily: {
+            sans:    ['Pretendard', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          boxShadow: {
+            card:   '0 4px 24px rgba(37,99,235,0.10), 0 1px 4px rgba(15,23,42,0.06)',
+            btn:    '0 2px 12px rgba(37,99,235,0.30)',
+            btnhov: '0 4px 20px rgba(37,99,235,0.45)',
+            inset:  'inset 0 2px 4px rgba(15,23,42,0.04)',
+          },
+          animation: {
+            'fade-up':  'fadeUp .55s cubic-bezier(.22,1,.36,1) both',
+            'fade-in':  'fadeIn .4s ease both',
+            'pulse-slow': 'pulse 3s ease-in-out infinite',
+            'spin-slow': 'spin 8s linear infinite',
+          },
+          keyframes: {
+            fadeUp:  { from: { opacity:0, transform:'translateY(20px)' }, to: { opacity:1, transform:'translateY(0)' } },
+            fadeIn:  { from: { opacity:0 }, to: { opacity:1 } },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ── 전역 ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: 'Pretendard', sans-serif; }
+
+    /* ── 배경 메쉬 그라데이션 ── */
+    .bg-mesh {
+      background-color: #EFF6FF;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 15% 10%,  rgba(37,99,235,.13) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 85%,  rgba(30,64,175,.10) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 50% 50%,  rgba(96,165,250,.07) 0%, transparent 70%);
+    }
+
+    /* ── 장식 원 ── */
+    .deco-circle {
+      position: absolute; border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── 카드 유리 효과 ── */
+    .glass-card {
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* ── Input focus ring ── */
+    .input-field {
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .input-field:focus {
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+      background: #fff;
+      outline: none;
+    }
+    .input-field:not(:placeholder-shown) {
+      background: #fff;
+    }
+
+    /* ── 입력 그룹 아이콘 ── */
+    .input-wrap { position: relative; }
+    .input-wrap .ico {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: #94A3B8; pointer-events: none;
+      transition: color .2s;
+    }
+    .input-wrap:focus-within .ico { color: #2563EB; }
+    .input-wrap input { padding-left: 42px; }
+
+    /* ── 구분선 ── */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: #94A3B8; font-size: 13px; user-select: none;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #E2E8F0;
+    }
+
+    /* ── 구글 버튼 hover ── */
+    .google-btn {
+      transition: background .2s, box-shadow .2s, transform .15s;
+    }
+    .google-btn:hover {
+      background: #f1f5f9;
+      box-shadow: 0 2px 12px rgba(15,23,42,.10);
+      transform: translateY(-1px);
+    }
+    .google-btn:active { transform: translateY(0); }
+
+    /* ── 주 로그인 버튼 ── */
+    .login-btn {
+      background: linear-gradient(135deg, #2563EB, #1E40AF);
+      transition: box-shadow .2s, transform .15s, filter .2s;
+    }
+    .login-btn:hover {
+      box-shadow: 0 6px 22px rgba(37,99,235,.40);
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+    .login-btn:active { transform: translateY(0); box-shadow: none; }
+
+    /* ── 하단 링크 버튼 ── */
+    .link-btn {
+      position: relative; font-size: 13px; font-weight: 500;
+      color: #64748B; transition: color .2s;
+    }
+    .link-btn::after {
+      content: ''; position: absolute; bottom: -2px; left: 0;
+      width: 0; height: 1.5px; background: #2563EB;
+      transition: width .25s ease;
+    }
+    .link-btn:hover { color: #2563EB; }
+    .link-btn:hover::after { width: 100%; }
+
+    /* ── 로딩 스피너 ── */
+    .spinner {
+      width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 비밀번호 토글 ── */
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%); cursor: pointer;
+      color: #94A3B8; transition: color .2s;
+    }
+    .pw-toggle:hover { color: #2563EB; }
+
+    /* ── 애니메이션 딜레이 ── */
+    .delay-100 { animation-delay: .10s; }
+    .delay-200 { animation-delay: .20s; }
+    .delay-300 { animation-delay: .30s; }
+    .delay-400 { animation-delay: .40s; }
+    .delay-500 { animation-delay: .50s; }
+    .delay-600 { animation-delay: .60s; }
+
+    /* ── Django CSRF hidden ── */
+    #csrf-form { display: none; }
+
+    /* ── SweetAlert2 커스텀 ── */
+    .swal2-popup { font-family: 'Pretendard', sans-serif !important; border-radius: 16px !important; }
+    .swal2-title { font-size: 18px !important; color: #0F172A !important; }
+    .swal2-html-container { font-size: 14px !important; color: #475569 !important; }
+    .swal2-confirm { background: linear-gradient(135deg, #2563EB, #1E40AF) !important; border-radius: 8px !important; font-weight: 600 !important; }
+    .swal2-cancel { border-radius: 8px !important; font-weight: 500 !important; }
+  </style>
+</head>
+
+<body class="bg-mesh min-h-screen flex items-center justify-center px-4 py-10 antialiased">
+
+  <!-- ── Django CSRF 토큰 (form 방식 fallback) ── -->
+  {% csrf_token %}
+
+  <!-- ── 장식 배경 원 ── -->
+  <div class="deco-circle w-96 h-96  -top-20 -left-24 animate-pulse-slow"  style="position:fixed;"></div>
+  <div class="deco-circle w-72 h-72  bottom-0  right-0   animate-pulse-slow" style="position:fixed; animation-delay:.8s;"></div>
+  <div class="deco-circle w-48 h-48  top-1/2   left-1/4  animate-pulse-slow" style="position:fixed; animation-delay:1.4s; opacity:.5;"></div>
+
+  <!-- ── 로그인 카드 ── -->
+  <div class="glass-card shadow-card rounded-2xl w-full max-w-md p-8 sm:p-10 relative z-10 animate-fade-up">
+
+    <!-- ── 로고 영역 ── -->
+    <div class="text-center mb-8 animate-fade-up">
+      <!-- 아이콘 배지 -->
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4
+                  bg-gradient-to-br from-primary to-primaryDk shadow-btn">
+        <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.966 8.966 0 0 0-6 2.292m0-14.25v14.25"/>
+        </svg>
+      </div>
+
+      <!-- 서비스명 -->
+      <h1 class="font-display font-800 text-3xl sm:text-4xl tracking-tight text-dark leading-none">
+        StudyGroup<span class="text-primary">Manager</span>
+      </h1>
+      <p class="mt-2 text-sm text-muted">스터디 그룹을 더 스마트하게 관리하세요</p>
+    </div>
+
+    <!-- ── 로그인 폼 ── -->
+    <form id="loginForm" novalidate class="space-y-4 animate-fade-up delay-100">
+
+      <!-- 이메일 -->
+      <div>
+        <label for="email" class="block text-sm font-semibold text-mid mb-1.5">이메일</label>
+        <div class="input-wrap">
+          <span class="ico">
+            <svg class="w-4.5 h-4.5" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>
+            </svg>
+          </span>
+          <input
+            id="email" name="email" type="email"
+            placeholder="example@email.com"
+            autocomplete="email"
+            class="input-field w-full rounded-xl border border-border bg-surface
+                   text-dark text-sm font-medium py-3 pr-4 shadow-inset
+                   placeholder:text-muted/60"
+          />
+        </div>
+      </div>
+
+      <!-- 비밀번호 -->
+      <div>
+        <label for="password" class="block text-sm font-semibold text-mid mb-1.5">비밀번호</label>
+        <div class="input-wrap">
+          <span class="ico">
+            <svg class="w-4.5 h-4.5" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25z"/>
+            </svg>
+          </span>
+          <input
+            id="password" name="password" type="password"
+            placeholder="비밀번호를 입력하세요"
+            autocomplete="current-password"
+            class="input-field w-full rounded-xl border border-border bg-surface
+                   text-dark text-sm font-medium py-3 pr-12 shadow-inset
+                   placeholder:text-muted/60"
+          />
+          <!-- 비밀번호 표시 토글 -->
+          <button type="button" class="pw-toggle" id="pwToggle" aria-label="비밀번호 표시/숨김">
+            <svg id="eyeOff" class="w-4.5 h-4.5" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/>
+            </svg>
+            <svg id="eyeOn" class="w-4.5 h-4.5 hidden" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 로그인 버튼 -->
+      <button
+        type="submit" id="loginBtn"
+        class="login-btn w-full text-white font-bold text-sm rounded-xl py-3.5 mt-2
+               flex items-center justify-center gap-2 focus:outline-none
+               focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      >
+        <span id="btnText">로그인</span>
+        <div id="btnSpinner" class="spinner hidden"></div>
+      </button>
+    </form>
+
+    <!-- ── 구분선 ── -->
+    <div class="divider my-5 animate-fade-up delay-200">또는</div>
+
+    <!-- ── 구글 로그인 ── -->
+    <button
+      id="googleLoginBtn"
+      class="google-btn w-full flex items-center justify-center gap-3
+             border border-border rounded-xl py-3 text-sm font-semibold text-mid
+             bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
+             animate-fade-up delay-300"
+      type="button"
+    >
+      <!-- 구글 SVG 로고 -->
+      <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        <path fill="none" d="M0 0h48v48H0z"/>
+      </svg>
+      Google 계정으로 로그인
+    </button>
+
+    <!-- ── 하단 링크: 회원가입 / 아이디 찾기 / 비밀번호 찾기 ── -->
+    <div class="mt-8 pt-6 border-t border-border animate-fade-up delay-400">
+      <div class="flex items-center justify-center gap-6 flex-wrap">
+
+        <a href="#" class="link-btn">
+          회원가입
+        </a>
+
+        <span class="w-px h-3 bg-border flex-shrink-0"></span>
+
+        <button type="button" id="findIdBtn" class="link-btn">
+          아이디 찾기
+        </button>
+
+        <span class="w-px h-3 bg-border flex-shrink-0"></span>
+
+        <button type="button" id="findPwBtn" class="link-btn">
+          비밀번호 찾기
+        </button>
+
+      </div>
+    </div>
+
+  </div><!-- /card -->
+
+  <!-- ── 푸터 ── -->
+  <p class="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs text-muted/70
+            whitespace-nowrap animate-fade-in delay-600 z-10">
+    © {{ current_year }} StudyGroupManager. All rights reserved.
+  </p>
+
+
+  <!-- ════════════════════════════════════════════════
+       JavaScript
+  ════════════════════════════════════════════════ -->
+  <script>
+    // ── Django CSRF 토큰 가져오기 ──
+    function getCsrfToken() {
+      return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    // Axios 기본 헤더에 CSRF 설정
+    axios.defaults.headers.common['X-CSRFToken'] = getCsrfToken();
+    axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+    // ── SweetAlert2 공통 옵션 ──
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
+    });
+
+    // ────────────────────────────────────────────
+    // 1. 비밀번호 표시/숨김 토글
+    // ────────────────────────────────────────────
+    const pwToggle  = document.getElementById('pwToggle');
+    const pwInput   = document.getElementById('password');
+    const eyeOff    = document.getElementById('eyeOff');
+    const eyeOn     = document.getElementById('eyeOn');
+
+    pwToggle.addEventListener('click', () => {
+      const isHidden = pwInput.type === 'password';
+      pwInput.type = isHidden ? 'text' : 'password';
+      eyeOff.classList.toggle('hidden', isHidden);
+      eyeOn.classList.toggle('hidden', !isHidden);
+    });
+
+    // ────────────────────────────────────────────
+    // 2. 로그인 폼 제출 (Axios)
+    // ────────────────────────────────────────────
+    const loginForm    = document.getElementById('loginForm');
+    const loginBtn     = document.getElementById('loginBtn');
+    const btnText      = document.getElementById('btnText');
+    const btnSpinner   = document.getElementById('btnSpinner');
+
+    function setLoading(on) {
+      loginBtn.disabled = on;
+      btnText.classList.toggle('hidden', on);
+      btnSpinner.classList.toggle('hidden', !on);
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      // 클라이언트 유효성 검사
+      if (!email) {
+        Toast.fire({ icon: 'warning', title: '이메일을 입력해주세요.' });
+        document.getElementById('email').focus();
+        return;
+      }
+      const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailReg.test(email)) {
+        Toast.fire({ icon: 'warning', title: '올바른 이메일 형식을 입력해주세요.' });
+        document.getElementById('email').focus();
+        return;
+      }
+      if (!password) {
+        Toast.fire({ icon: 'warning', title: '비밀번호를 입력해주세요.' });
+        document.getElementById('password').focus();
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await axios.post('#', {
+          email:    email,
+          password: password,
+        });
+
+        if (response.data.success) {
+          Toast.fire({ icon: 'success', title: '로그인 성공! 대시보드로 이동합니다.' });
+          setTimeout(() => {
+            window.location.href = response.data.redirect_url || '#';
+          }, 800);
+        } else {
+          Swal.fire({
+            icon:             'error',
+            title:            '로그인 실패',
+            text:             response.data.message || '이메일 또는 비밀번호를 확인해주세요.',
+            confirmButtonText:'확인',
+            confirmButtonColor:'#2563EB',
+          });
+        }
+
+      } catch (err) {
+        const msg = err.response?.data?.message || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        Swal.fire({
+          icon:              'error',
+          title:             '오류',
+          text:              msg,
+          confirmButtonText: '확인',
+          confirmButtonColor:'#2563EB',
+        });
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // ────────────────────────────────────────────
+    // 3. 구글 로그인
+    // ────────────────────────────────────────────
+    document.getElementById('googleLoginBtn').addEventListener('click', () => {
+      // django-allauth 구글 소셜 로그인 URL
+      window.location.href = '#';
+
+      // ※ allauth URL이 다를 경우 아래로 교체
+      // window.location.href = '/accounts/google/login/';
+    });
+
+    // ────────────────────────────────────────────
+    // 4. 아이디 찾기 팝업 (SweetAlert2)
+    // ────────────────────────────────────────────
+    document.getElementById('findIdBtn').addEventListener('click', () => {
+      Swal.fire({
+        title: '아이디 찾기',
+        html: `
+          <p class="text-sm text-slate-500 mb-4">가입 시 등록한 이름과 전화번호를 입력하세요.</p>
+          <input id="swal-name"  type="text"  placeholder="이름"
+            class="swal2-input" style="font-family:Pretendard,sans-serif;" />
+          <input id="swal-phone" type="tel"   placeholder="전화번호 (01012345678)"
+            class="swal2-input" style="font-family:Pretendard,sans-serif;" />
+        `,
+        confirmButtonText: '아이디 찾기',
+        cancelButtonText:  '취소',
+        showCancelButton:  true,
+        confirmButtonColor:'#2563EB',
+        cancelButtonColor: '#94A3B8',
+        focusConfirm:      false,
+        preConfirm: async () => {
+          const name  = document.getElementById('swal-name').value.trim();
+          const phone = document.getElementById('swal-phone').value.trim();
+
+          if (!name || !phone) {
+            Swal.showValidationMessage('이름과 전화번호를 모두 입력해주세요.');
+            return false;
+          }
+
+          Swal.showLoading();
+          try {
+            const res = await axios.post('#', { name, phone });
+            return res.data;
+          } catch (err) {
+            Swal.showValidationMessage(err.response?.data?.message || '정보를 찾을 수 없습니다.');
+            return false;
+          }
+        }
+      }).then((result) => {
+        if (result.isConfirmed && result.value) {
+          Swal.fire({
+            icon:  'success',
+            title: '아이디 찾기 결과',
+            html:  `<p class="text-sm text-slate-600">가입하신 이메일은<br><strong class="text-blue-600 text-base">${result.value.email}</strong> 입니다.</p>`,
+            confirmButtonText:  '확인',
+            confirmButtonColor: '#2563EB',
+          });
+        }
+      });
+    });
+
+    // ────────────────────────────────────────────
+    // 5. 비밀번호 찾기 팝업 (SweetAlert2)
+    // ────────────────────────────────────────────
+    document.getElementById('findPwBtn').addEventListener('click', () => {
+      Swal.fire({
+        title: '비밀번호 찾기',
+        html: `
+          <p class="text-sm text-slate-500 mb-4">가입한 이메일로 비밀번호 재설정 링크를 보내드립니다.</p>
+          <input id="swal-email" type="email" placeholder="가입한 이메일을 입력하세요"
+            class="swal2-input" style="font-family:Pretendard,sans-serif;" />
+        `,
+        confirmButtonText: '재설정 링크 보내기',
+        cancelButtonText:  '취소',
+        showCancelButton:  true,
+        confirmButtonColor:'#2563EB',
+        cancelButtonColor: '#94A3B8',
+        focusConfirm:      false,
+        preConfirm: async () => {
+          const email = document.getElementById('swal-email').value.trim();
+          const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+          if (!email || !emailReg.test(email)) {
+            Swal.showValidationMessage('올바른 이메일 주소를 입력해주세요.');
+            return false;
+          }
+
+          Swal.showLoading();
+          try {
+            const res = await axios.post('#', { email });
+            return res.data;
+          } catch (err) {
+            Swal.showValidationMessage(err.response?.data?.message || '요청 처리 중 오류가 발생했습니다.');
+            return false;
+          }
+        }
+      }).then((result) => {
+        if (result.isConfirmed && result.value) {
+          Swal.fire({
+            icon:  'success',
+            title: '이메일 발송 완료',
+            html:  `<p class="text-sm text-slate-600">비밀번호 재설정 링크를 이메일로 보냈습니다.<br>메일함을 확인해주세요.</p>`,
+            confirmButtonText:  '확인',
+            confirmButtonColor: '#2563EB',
+          });
+        }
+      });
+    });
+
+    // ────────────────────────────────────────────
+    // 6. Django 메시지 프레임워크 → Toast 연동
+    //    (views.py에서 messages.error() 등을 사용한 경우)
+    // ────────────────────────────────────────────
+    {% if messages %}
+      {% for message in messages %}
+        Toast.fire({
+          icon: '{{ message.tags }}' === 'error' ? 'error'
+              : '{{ message.tags }}' === 'success' ? 'success'
+              : 'info',
+          title: '{{ message|escapejs }}',
+        });
+      {% endfor %}
+    {% endif %}
+
+    // ────────────────────────────────────────────
+    // 7. Enter 키 제출 지원 (폼 내부 input)
+    // ────────────────────────────────────────────
+    document.querySelectorAll('#loginForm input').forEach(input => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit'));
+      });
+    });
+  </script>
+
+</body>
+</html>

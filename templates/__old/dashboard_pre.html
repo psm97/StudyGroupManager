@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>대시보드 — StudyGroupManager</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:   '#2563EB',
+            primaryDk: '#1E40AF',
+            primaryLt: '#DBEAFE',
+            accent:    '#3B82F6',
+            success:   '#059669',
+            warning:   '#D97706',
+            danger:    '#DC2626',
+            surface:   '#F8FAFC',
+            muted:     '#94A3B8',
+            border:    '#E2E8F0',
+            dark:      '#0F172A',
+            mid:       '#334155',
+          },
+          fontFamily: {
+            sans:    ['Pretendard', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          animation: {
+            'fade-up':   'fadeUp .5s cubic-bezier(.22,1,.36,1) both',
+            'fade-in':   'fadeIn .4s ease both',
+            'slide-in':  'slideIn .4s cubic-bezier(.22,1,.36,1) both',
+          },
+          keyframes: {
+            fadeUp:  { from:{opacity:0,transform:'translateY(16px)'}, to:{opacity:1,transform:'translateY(0)'} },
+            fadeIn:  { from:{opacity:0}, to:{opacity:1} },
+            slideIn: { from:{opacity:0,transform:'translateX(-16px)'}, to:{opacity:1,transform:'translateX(0)'} },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: 'Pretendard', sans-serif; background: #F0F5FF; }
+
+    /* 사이드바 */
+    .sidebar { transition: transform .3s cubic-bezier(.22,1,.36,1); }
+    .sidebar-overlay { transition: opacity .3s ease; }
+
+    /* 카드 hover */
+    .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(37,99,235,.12); }
+
+    /* 그룹 카드 출석률 바 */
+    .progress-bar { transition: width 1s cubic-bezier(.22,1,.36,1); }
+
+    /* 네비 링크 */
+    .nav-link { transition: all .15s ease; }
+    .nav-link:hover, .nav-link.active {
+      background: rgba(37,99,235,.1);
+      color: #2563EB;
+    }
+    .nav-link.active { border-right: 3px solid #2563EB; }
+
+    /* 타임라인 */
+    .timeline-item::before {
+      content: '';
+      position: absolute; left: -25px; top: 6px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #2563EB;
+      border: 2px solid #DBEAFE;
+    }
+
+    /* 배지 */
+    .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+
+    /* 스크롤바 */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+
+    /* 딜레이 */
+    .delay-100 { animation-delay:.1s; }
+    .delay-200 { animation-delay:.2s; }
+    .delay-300 { animation-delay:.3s; }
+    .delay-400 { animation-delay:.4s; }
+    .delay-500 { animation-delay:.5s; }
+
+    /* SweetAlert2 */
+    .swal2-popup { font-family:'Pretendard',sans-serif !important; border-radius:16px !important; }
+    .swal2-title { font-size:18px !important; color:#0F172A !important; }
+    .swal2-confirm { background:linear-gradient(135deg,#2563EB,#1E40AF) !important; border-radius:8px !important; font-weight:600 !important; }
+
+    /* 모바일 사이드바 열렸을 때 body 스크롤 방지 */
+    body.sidebar-open { overflow: hidden; }
+
+    @media (min-width: 1024px) {
+      .sidebar { transform: translateX(0) !important; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen antialiased">
+
+{% csrf_token %}
+
+<!-- ════════════════════════════════════
+     레이아웃 래퍼
+════════════════════════════════════ -->
+<div class="flex min-h-screen">
+
+  <!-- ── 모바일 오버레이 ── -->
+  <div id="sidebarOverlay"
+       class="sidebar-overlay fixed inset-0 bg-dark/40 z-20 opacity-0 pointer-events-none lg:hidden"
+       onclick="closeSidebar()"></div>
+
+  <!-- ════════════════════════════════════
+       사이드바
+  ════════════════════════════════════ -->
+  <aside id="sidebar"
+         class="sidebar fixed top-0 left-0 h-full w-64 bg-white border-r border-border
+                flex flex-col z-30 -translate-x-full lg:translate-x-0 lg:static lg:z-auto">
+
+    <!-- 로고 -->
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-border">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primaryDk
+                  flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.966 8.966 0 0 0-6 2.292m0-14.25v14.25"/>
+        </svg>
+      </div>
+      <div>
+        <div class="font-display font-800 text-sm text-dark leading-none">StudyGroup</div>
+        <div class="font-display font-800 text-sm text-primary leading-none">Manager</div>
+      </div>
+    </div>
+
+    <!-- 유저 정보 -->
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-border bg-surface">
+      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primaryDk
+                  flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+        {{ request.user.username|first|upper|default:"U" }}
+      </div>
+      <div class="min-w-0">
+        <div class="text-sm font-semibold text-dark truncate">
+          {{ request.user.username|default:"사용자" }}
+        </div>
+        <div class="text-xs text-muted truncate">
+          {{ request.user.email|default:"" }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+
+      <p class="text-xs font-semibold text-muted uppercase tracking-wider px-3 mb-2">메인</p>
+
+      <a href="#"
+         class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-primary">
+        <svg class="w-4.5 h-4.5 flex-shrink-0" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/>
+        </svg>
+        대시보드
+      </a>
+
+      <p class="text-xs font-semibold text-muted uppercase tracking-wider px-3 mt-4 mb-2">스터디</p>
+
+      <a href="{#"
+         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-mid">
+        <svg class="w-4.5 h-4.5 flex-shrink-0" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
+        </svg>
+        내 그룹
+        <span id="groupCount" class="ml-auto badge bg-primaryLt text-primary">0</span>
+      </a>
+
+      <a href="#"
+         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-mid">
+        <svg class="w-4.5 h-4.5 flex-shrink-0" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        </svg>
+        출석 관리
+      </a>
+
+      <a href="#"
+         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-mid">
+        <svg class="w-4.5 h-4.5 flex-shrink-0" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
+        </svg>
+        벌금 관리
+        <span id="penaltyBadge" class="ml-auto badge bg-red-100 text-danger hidden">!</span>
+      </a>
+
+      <p class="text-xs font-semibold text-muted uppercase tracking-wider px-3 mt-4 mb-2">계정</p>
+
+      <a href="#"
+         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-mid">
+        <svg class="w-4.5 h-4.5 flex-shrink-0" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+        </svg>
+        프로필
+      </a>
+
+      <button onclick="confirmLogout()"
+              class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-mid">
+        <svg class="w-4.5 h-4.5 flex-shrink-0" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"/>
+        </svg>
+        로그아웃
+      </button>
+    </nav>
+
+    <!-- 사이드바 하단 -->
+    <div class="px-5 py-4 border-t border-border">
+      <p class="text-xs text-muted text-center">© <span class="current-year"></span> StudyGroupManager</p>
+    </div>
+  </aside>
+
+  <!-- ════════════════════════════════════
+       메인 컨텐츠
+  ════════════════════════════════════ -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- ── 상단 헤더 ── -->
+    <header class="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-border px-4 sm:px-6 py-3">
+      <div class="flex items-center justify-between gap-4">
+
+        <!-- 모바일 햄버거 + 타이틀 -->
+        <div class="flex items-center gap-3">
+          <button onclick="openSidebar()"
+                  class="lg:hidden p-2 rounded-lg hover:bg-surface transition-colors">
+            <svg class="w-5 h-5 text-mid" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+            </svg>
+          </button>
+          <div>
+            <h1 class="font-display font-800 text-lg text-dark">대시보드</h1>
+            <p class="text-xs text-muted hidden sm:block" id="todayDate"></p>
+          </div>
+        </div>
+
+        <!-- 헤더 우측 액션 -->
+        <div class="flex items-center gap-2">
+
+          <!-- 그룹 참여 버튼 -->
+          <button onclick="openJoinGroupModal()"
+                  class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border
+                         text-sm font-medium text-mid hover:bg-surface transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/>
+            </svg>
+            <span class="hidden sm:inline">그룹 참여</span>
+          </button>
+
+          <!-- 그룹 생성 버튼 -->
+          <button onclick="openCreateGroupModal()"
+                  class="flex items-center gap-1.5 px-3 py-2 rounded-lg
+                         bg-gradient-to-r from-primary to-primaryDk
+                         text-sm font-semibold text-white shadow-sm
+                         hover:shadow-md hover:-translate-y-0.5 transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            <span class="hidden sm:inline">그룹 만들기</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── 메인 스크롤 영역 ── -->
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+
+      <!-- ── 요약 통계 카드 4개 ── -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <div class="card-hover bg-white rounded-2xl p-4 sm:p-5 border border-border animate-fade-up">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-primaryLt flex items-center justify-center">
+              <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-dark" id="stat-groups">—</div>
+          <div class="text-xs text-muted mt-1">참여 중인 그룹</div>
+        </div>
+
+        <div class="card-hover bg-white rounded-2xl p-4 sm:p-5 border border-border animate-fade-up delay-100">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-dark" id="stat-attendance">—</div>
+          <div class="text-xs text-muted mt-1">이번달 평균 출석률</div>
+        </div>
+
+        <div class="card-hover bg-white rounded-2xl p-4 sm:p-5 border border-border animate-fade-up delay-200">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-dark" id="stat-penalty">—</div>
+          <div class="text-xs text-muted mt-1">미납 벌금</div>
+        </div>
+
+        <div class="card-hover bg-white rounded-2xl p-4 sm:p-5 border border-border animate-fade-up delay-300">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-dark" id="stat-sessions">—</div>
+          <div class="text-xs text-muted mt-1">이번달 세션 수</div>
+        </div>
+      </section>
+
+      <!-- ── 중단: 그룹 카드 + 타임라인 ── -->
+      <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <!-- 내 그룹 목록 (2/3) -->
+        <div class="xl:col-span-2 bg-white rounded-2xl border border-border animate-fade-up delay-100">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h2 class="font-bold text-dark">내 그룹 목록</h2>
+            <a href="#" class="text-xs text-primary font-medium hover:underline">전체 보기</a>
+          </div>
+          <div id="groupList" class="divide-y divide-border">
+            <!-- JS로 동적 렌더링 -->
+            <div class="flex items-center justify-center py-12 text-muted text-sm">
+              <svg class="w-5 h-5 animate-spin mr-2" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              불러오는 중...
+            </div>
+          </div>
+        </div>
+
+        <!-- 최근 출석 세션 타임라인 (1/3) -->
+        <div class="bg-white rounded-2xl border border-border animate-fade-up delay-200">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h2 class="font-bold text-dark">최근 세션</h2>
+            <span class="badge bg-primaryLt text-primary" id="sessionCount">0</span>
+          </div>
+          <div id="timelineList" class="px-5 py-4 space-y-4 max-h-80 overflow-y-auto">
+            <div class="text-center text-muted text-sm py-8">세션 기록이 없습니다.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 하단: 출석 통계 차트 + 벌금 현황 ── -->
+      <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+        <!-- 출석 통계 바 차트 -->
+        <div class="bg-white rounded-2xl border border-border animate-fade-up delay-200">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h2 class="font-bold text-dark">멤버별 출석률</h2>
+            <select id="chartGroupSelect"
+                    class="text-xs border border-border rounded-lg px-2 py-1 text-mid focus:outline-none focus:border-primary"
+                    onchange="loadAttendanceChart(this.value)">
+              <option value="">그룹 선택</option>
+            </select>
+          </div>
+          <div class="p-5">
+            <canvas id="attendanceChart" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- 벌금 현황 -->
+        <div class="bg-white rounded-2xl border border-border animate-fade-up delay-300">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h2 class="font-bold text-dark">벌금 현황</h2>
+            <a href="#" class="text-xs text-primary font-medium hover:underline">상세 보기</a>
+          </div>
+          <div id="penaltyList" class="divide-y divide-border max-h-72 overflow-y-auto">
+            <div class="text-center text-muted text-sm py-8">벌금 내역이 없습니다.</div>
+          </div>
+          <!-- 합계 -->
+          <div class="flex items-center justify-between px-5 py-3 bg-surface rounded-b-2xl border-t border-border">
+            <span class="text-sm font-semibold text-mid">총 미납 벌금</span>
+            <span class="font-bold text-danger" id="totalPenalty">0원</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 다가오는 일정 ── -->
+      <section class="bg-white rounded-2xl border border-border animate-fade-up delay-400">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 class="font-bold text-dark">다가오는 스터디 일정</h2>
+          <span class="text-xs text-muted" id="upcomingMonth"></span>
+        </div>
+        <div id="upcomingList" class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="col-span-full text-center text-muted text-sm py-6">예정된 일정이 없습니다.</div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     JavaScript
+════════════════════════════════════ -->
+<script>
+// ── CSRF & Axios 기본 설정 ──
+axios.defaults.headers.common['X-CSRFToken'] =
+  document.querySelector('[name=csrfmiddlewaretoken]').value;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+// ── SweetAlert2 Toast ──
+const Toast = Swal.mixin({
+  toast: true, position:'top-end',
+  showConfirmButton: false, timer: 3000, timerProgressBar: true,
+});
+
+// ── 날짜 표시 ──
+const now = new Date();
+document.getElementById('todayDate').textContent =
+  now.toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+document.getElementById('upcomingMonth').textContent =
+  now.toLocaleDateString('ko-KR', { year:'numeric', month:'long' });
+document.querySelectorAll('.current-year').forEach(el => el.textContent = now.getFullYear());
+
+// ────────────────────────────────────
+// 사이드바 토글 (모바일)
+// ────────────────────────────────────
+function openSidebar() {
+  document.getElementById('sidebar').classList.remove('-translate-x-full');
+  document.getElementById('sidebarOverlay').classList.remove('opacity-0','pointer-events-none');
+  document.body.classList.add('sidebar-open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.add('-translate-x-full');
+  document.getElementById('sidebarOverlay').classList.add('opacity-0','pointer-events-none');
+  document.body.classList.remove('sidebar-open');
+}
+
+// ────────────────────────────────────
+// 대시보드 데이터 로드
+// ────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const res = await axios.get('/dashboard/api/summary/');
+    const d = res.data;
+
+    // 요약 통계
+    document.getElementById('stat-groups').textContent     = d.group_count      ?? 0;
+    document.getElementById('stat-attendance').textContent = (d.avg_attendance  ?? 0) + '%';
+    document.getElementById('stat-penalty').textContent    = (d.unpaid_penalty  ?? 0).toLocaleString() + '원';
+    document.getElementById('stat-sessions').textContent   = d.session_count    ?? 0;
+
+    // 미납 벌금 배지
+    if (d.unpaid_penalty > 0) {
+      document.getElementById('penaltyBadge').classList.remove('hidden');
+    }
+
+    // 그룹 목록
+    renderGroups(d.groups ?? []);
+
+    // 타임라인
+    renderTimeline(d.recent_sessions ?? []);
+
+    // 벌금 현황
+    renderPenalty(d.penalties ?? []);
+
+    // 다가오는 일정
+    renderUpcoming(d.upcoming ?? []);
+
+    // 차트 그룹 셀렉트
+    const sel = document.getElementById('chartGroupSelect');
+    (d.groups ?? []).forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.id; opt.textContent = g.name;
+      sel.appendChild(opt);
+    });
+    if (d.groups?.length) loadAttendanceChart(d.groups[0].id);
+
+    // 사이드바 그룹 카운트
+    document.getElementById('groupCount').textContent = d.group_count ?? 0;
+
+  } catch (err) {
+    console.error('대시보드 로드 실패:', err);
+    Toast.fire({ icon:'error', title:'데이터를 불러오지 못했습니다.' });
+  }
+}
+
+// ────────────────────────────────────
+// 그룹 목록 렌더링
+// ────────────────────────────────────
+function renderGroups(groups) {
+  const el = document.getElementById('groupList');
+  if (!groups.length) {
+    el.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-12 text-muted">
+        <svg class="w-10 h-10 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
+        </svg>
+        <p class="text-sm">참여 중인 그룹이 없습니다.</p>
+        <button onclick="openCreateGroupModal()"
+                class="mt-3 text-xs text-primary font-medium hover:underline">
+          첫 그룹 만들기 →
+        </button>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = groups.map(g => {
+    const rate = g.attendance_rate ?? 0;
+    const rateColor = rate >= 80 ? 'bg-success' : rate >= 50 ? 'bg-warning' : 'bg-danger';
+    const roleLabel = g.role === 'leader'
+      ? `<span class="badge bg-primaryLt text-primary">리더</span>`
+      : `<span class="badge bg-gray-100 text-muted">멤버</span>`;
+    return `
+      <a href="/groups/${g.id}/"
+         class="flex items-center gap-4 px-5 py-4 hover:bg-surface transition-colors group">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+             style="background:linear-gradient(135deg,#2563EB,#1E40AF)">
+          ${g.name.charAt(0)}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold text-dark text-sm truncate">${g.name}</span>
+            ${roleLabel}
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+              <div class="progress-bar h-full ${rateColor} rounded-full" style="width:${rate}%"></div>
+            </div>
+            <span class="text-xs text-muted flex-shrink-0">${rate}%</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-xs font-semibold ${g.unpaid > 0 ? 'text-danger' : 'text-muted'}">
+            ${g.unpaid > 0 ? g.unpaid.toLocaleString()+'원' : '미납없음'}
+          </div>
+          <div class="text-xs text-muted">${g.member_count}명</div>
+        </div>
+      </a>`;
+  }).join('');
+}
+
+// ────────────────────────────────────
+// 타임라인 렌더링
+// ────────────────────────────────────
+function renderTimeline(sessions) {
+  const el = document.getElementById('timelineList');
+  document.getElementById('sessionCount').textContent = sessions.length;
+  if (!sessions.length) {
+    el.innerHTML = `<div class="text-center text-muted text-sm py-8">세션 기록이 없습니다.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="border-l-2 border-primaryLt pl-5 space-y-4">` +
+    sessions.map(s => {
+      const statusMap = { present:'출석', late:'지각', absent:'결석' };
+      const colorMap  = { present:'text-success', late:'text-warning', absent:'text-danger' };
+      return `
+        <div class="timeline-item relative">
+          <div class="text-sm font-semibold text-dark">${s.topic}</div>
+          <div class="text-xs text-muted mt-0.5">${s.group_name} · ${s.date}</div>
+          ${s.my_status ? `<span class="text-xs font-medium ${colorMap[s.my_status]}">${statusMap[s.my_status]}</span>` : ''}
+        </div>`;
+    }).join('') + `</div>`;
+}
+
+// ────────────────────────────────────
+// 벌금 현황 렌더링
+// ────────────────────────────────────
+function renderPenalty(penalties) {
+  const el = document.getElementById('penaltyList');
+  if (!penalties.length) {
+    el.innerHTML = `<div class="text-center text-muted text-sm py-8">벌금 내역이 없습니다. 🎉</div>`;
+    document.getElementById('totalPenalty').textContent = '0원';
+    return;
+  }
+  const total = penalties.filter(p => !p.is_paid).reduce((s, p) => s + p.amount, 0);
+  document.getElementById('totalPenalty').textContent = total.toLocaleString() + '원';
+
+  el.innerHTML = penalties.map(p => `
+    <div class="flex items-center justify-between px-5 py-3">
+      <div>
+        <div class="text-sm font-medium text-dark">${p.reason}</div>
+        <div class="text-xs text-muted">${p.group_name} · ${p.created_at}</div>
+      </div>
+      <div class="text-right">
+        <div class="text-sm font-bold ${p.is_paid ? 'text-muted line-through' : 'text-danger'}">
+          ${p.amount.toLocaleString()}원
+        </div>
+        <span class="badge ${p.is_paid ? 'bg-gray-100 text-muted' : 'bg-red-100 text-danger'}">
+          ${p.is_paid ? '납부완료' : '미납'}
+        </span>
+      </div>
+    </div>`).join('');
+}
+
+// ────────────────────────────────────
+// 다가오는 일정 렌더링
+// ────────────────────────────────────
+function renderUpcoming(upcoming) {
+  const el = document.getElementById('upcomingList');
+  if (!upcoming.length) {
+    el.innerHTML = `<div class="col-span-full text-center text-muted text-sm py-6">예정된 일정이 없습니다.</div>`;
+    return;
+  }
+  el.innerHTML = upcoming.map(u => `
+    <div class="card-hover flex items-start gap-3 p-4 rounded-xl border border-border bg-surface">
+      <div class="text-center flex-shrink-0 w-10">
+        <div class="text-xs text-muted">${u.day_name}</div>
+        <div class="text-xl font-bold text-primary">${u.day}</div>
+      </div>
+      <div class="min-w-0">
+        <div class="text-sm font-semibold text-dark truncate">${u.topic}</div>
+        <div class="text-xs text-muted truncate">${u.group_name}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ────────────────────────────────────
+// 출석 통계 차트
+// ────────────────────────────────────
+let attendanceChartInstance = null;
+
+async function loadAttendanceChart(groupId) {
+  if (!groupId) return;
+  try {
+    const res = await axios.get(`/attendance/api/stats/${groupId}/`);
+    const d = res.data;
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    if (attendanceChartInstance) attendanceChartInstance.destroy();
+    attendanceChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: d.labels ?? [],
+        datasets: [{
+          label: '출석률 (%)',
+          data: d.rates ?? [],
+          backgroundColor: (d.rates ?? []).map(r =>
+            r >= 80 ? 'rgba(5,150,105,.7)' : r >= 50 ? 'rgba(217,119,6,.7)' : 'rgba(220,38,38,.7)'
+          ),
+          borderRadius: 8,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true, max: 100,
+            ticks: { callback: v => v + '%', font: { family:'Pretendard' } },
+            grid: { color:'rgba(0,0,0,.05)' }
+          },
+          x: { ticks: { font: { family:'Pretendard' } }, grid: { display: false } }
+        }
+      }
+    });
+  } catch (err) {
+    console.error('차트 로드 실패:', err);
+  }
+}
+
+// ────────────────────────────────────
+// 그룹 만들기 모달
+// ────────────────────────────────────
+function openCreateGroupModal() {
+  Swal.fire({
+    title: '새 그룹 만들기',
+    html: `
+      <div style="text-align:left; margin-top:8px;">
+        <label style="font-size:13px;font-weight:600;color:#334155;display:block;margin-bottom:4px;">그룹 이름 *</label>
+        <input id="sg-name" type="text" placeholder="예: 토익 900 스터디"
+          class="swal2-input" style="margin:0 0 12px;font-family:Pretendard,sans-serif;"/>
+        <label style="font-size:13px;font-weight:600;color:#334155;display:block;margin-bottom:4px;">분야 *</label>
+        <select id="sg-category" class="swal2-input" style="margin:0 0 12px;font-family:Pretendard,sans-serif;">
+          <option value="">선택하세요</option>
+          <option value="어학">어학</option>
+          <option value="개발">개발</option>
+          <option value="취업">취업</option>
+          <option value="자격증">자격증</option>
+          <option value="기타">기타</option>
+        </select>
+        <label style="font-size:13px;font-weight:600;color:#334155;display:block;margin-bottom:4px;">최대 정원</label>
+        <input id="sg-max" type="number" placeholder="10" min="2" max="50"
+          class="swal2-input" style="margin:0 0 12px;font-family:Pretendard,sans-serif;"/>
+        <label style="font-size:13px;font-weight:600;color:#334155;display:block;margin-bottom:4px;">그룹 소개</label>
+        <textarea id="sg-desc" placeholder="그룹에 대해 소개해주세요."
+          class="swal2-textarea" style="margin:0;font-family:Pretendard,sans-serif;height:80px;"></textarea>
+        <label style="font-size:13px;font-weight:600;color:#334155;display:block;margin:8px 0 4px;">공개 여부</label>
+        <select id="sg-public" class="swal2-input" style="margin:0;font-family:Pretendard,sans-serif;">
+          <option value="true">공개</option>
+          <option value="false">비공개</option>
+        </select>
+      </div>`,
+    confirmButtonText: '그룹 만들기',
+    cancelButtonText:  '취소',
+    showCancelButton:  true,
+    confirmButtonColor:'#2563EB',
+    cancelButtonColor: '#94A3B8',
+    focusConfirm:      false,
+    preConfirm: async () => {
+      const name     = document.getElementById('sg-name').value.trim();
+      const category = document.getElementById('sg-category').value;
+      const max      = document.getElementById('sg-max').value || 10;
+      const desc     = document.getElementById('sg-desc').value.trim();
+      const isPublic = document.getElementById('sg-public').value === 'true';
+      if (!name || !category) {
+        Swal.showValidationMessage('그룹 이름과 분야는 필수입니다.');
+        return false;
+      }
+      Swal.showLoading();
+      try {
+        const res = await axios.post('/groups/create/', { name, category, max_members: max, description: desc, is_public: isPublic });
+        return res.data;
+      } catch (err) {
+        Swal.showValidationMessage(err.response?.data?.message || '그룹 생성에 실패했습니다.');
+        return false;
+      }
+    }
+  }).then(result => {
+    if (result.isConfirmed && result.value) {
+      Toast.fire({ icon:'success', title:'그룹이 생성되었습니다!' });
+      loadDashboard();
+    }
+  });
+}
+
+// ────────────────────────────────────
+// 그룹 참여 모달
+// ────────────────────────────────────
+function openJoinGroupModal() {
+  Swal.fire({
+    title: '그룹 참여',
+    html: `
+      <p style="font-size:13px;color:#64748B;margin-bottom:12px;">초대 코드를 입력하여 그룹에 참여하세요.</p>
+      <input id="invite-code" type="text" placeholder="초대 코드 8자리"
+        maxlength="8"
+        class="swal2-input" style="font-family:Pretendard,sans-serif;text-transform:uppercase;letter-spacing:.15em;font-size:18px;font-weight:700;text-align:center;"/>`,
+    confirmButtonText: '참여하기',
+    cancelButtonText:  '취소',
+    showCancelButton:  true,
+    confirmButtonColor:'#2563EB',
+    cancelButtonColor: '#94A3B8',
+    focusConfirm:      false,
+    preConfirm: async () => {
+      const code = document.getElementById('invite-code').value.trim().toUpperCase();
+      if (code.length !== 8) {
+        Swal.showValidationMessage('초대 코드는 8자리입니다.');
+        return false;
+      }
+      Swal.showLoading();
+      try {
+        const res = await axios.post('/groups/join/', { invite_code: code });
+        return res.data;
+      } catch (err) {
+        Swal.showValidationMessage(err.response?.data?.message || '유효하지 않은 초대 코드입니다.');
+        return false;
+      }
+    }
+  }).then(result => {
+    if (result.isConfirmed && result.value) {
+      Toast.fire({ icon:'success', title:`${result.value.group_name} 그룹에 참여했습니다!` });
+      loadDashboard();
+    }
+  });
+}
+
+// ────────────────────────────────────
+// 로그아웃
+// ────────────────────────────────────
+function confirmLogout() {
+  Swal.fire({
+    icon:              'question',
+    title:             '로그아웃',
+    text:              '정말 로그아웃 하시겠어요?',
+    confirmButtonText: '로그아웃',
+    cancelButtonText:  '취소',
+    showCancelButton:  true,
+    confirmButtonColor:'#DC2626',
+    cancelButtonColor: '#94A3B8',
+  }).then(result => {
+    if (result.isConfirmed) {
+      window.location.href = '#';
+    }
+  });
+}
+
+// ────────────────────────────────────
+// Django messages → Toast
+// ────────────────────────────────────
+{% if messages %}
+  {% for message in messages %}
+    Toast.fire({
+      icon: '{{ message.tags }}' === 'error' ? 'error'
+          : '{{ message.tags }}' === 'success' ? 'success' : 'info',
+      title: '{{ message|escapejs }}',
+    });
+  {% endfor %}
+{% endif %}
+
+// ── 초기 로드 ──
+loadDashboard();
+</script>
+
+</body>
+</html>
