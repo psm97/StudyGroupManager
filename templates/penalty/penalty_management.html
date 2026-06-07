@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>벌금 관리 — {{ group.name }} | StudyGroupManager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans KR', 'sans-serif'],
+            display: ['DM Serif Display', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50:  '#f0f7ff', 100: '#e0effe', 200: '#bae0fd',
+              300: '#7cc6fb', 400: '#36a9f7', 500: '#0c8ee8',
+              600: '#0070c5', 700: '#0059a0', 800: '#034c84', 900: '#08406e',
+            },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; background: #f1f5f9; }
+
+    .page-header {
+      background: linear-gradient(135deg, #7c1d1d 0%, #dc2626 55%, #f87171 100%);
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+
+    .member-penalty-card {
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      cursor: pointer;
+    }
+    .member-penalty-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+    }
+    .member-penalty-card.active-card {
+      box-shadow: 0 0 0 2px #0c8ee8, 0 6px 20px rgba(12,142,232,0.15);
+    }
+
+    .badge-paid   { background: #dcfce7; color: #15803d; }
+    .badge-unpaid { background: #fee2e2; color: #dc2626; }
+
+    .toggle-input { display: none; }
+    .toggle-label { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+    .toggle-track {
+      width: 40px; height: 22px; background: #e2e8f0;
+      border-radius: 99px; position: relative; transition: background 0.2s ease;
+    }
+    .toggle-thumb {
+      width: 18px; height: 18px; background: #fff;
+      border-radius: 50%; position: absolute; top: 2px; left: 2px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2); transition: left 0.2s ease;
+    }
+    .toggle-input:checked + .toggle-label .toggle-track { background: #ef4444; }
+    .toggle-input:checked + .toggle-label .toggle-thumb { left: 20px; }
+
+    .rate-bar { height: 5px; border-radius: 99px; background: #f1f5f9; overflow: hidden; }
+    .rate-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.38s ease forwards; }
+
+    .penalty-row { transition: background 0.12s ease; }
+    .penalty-row:hover { background: #fafafa; }
+    .penalty-row.row-hidden { display: none; }
+
+    .sticky-head th { position: sticky; top: 0; z-index: 10; background: #f8fafc; }
+
+    .rule-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 99px;
+      font-size: 13px; font-weight: 600;
+      border: 1.5px solid; transition: all 0.15s ease; cursor: pointer;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position:  400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 400px 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute; bottom: 110%; left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b; color: #fff;
+      font-size: 11px; padding: 3px 8px;
+      border-radius: 6px; white-space: nowrap;
+      z-index: 50; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+<!-- ── HEADER ── -->
+<header class="page-header text-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-7 sm:py-9">
+    <nav class="text-xs sm:text-sm mb-4 opacity-80 flex items-center gap-1.5 flex-wrap">
+      <a href="{% url 'dashboard' %}" class="hover:underline">홈</a>
+      <span>/</span>
+      <a href="{% url 'group_list' %}" class="hover:underline">그룹 목록</a>
+      <span>/</span>
+      <a href="#" class="hover:underline">{{ group.name }}</a>
+      <span>/</span>
+      <span>벌금 관리</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <span class="inline-block text-xs font-semibold bg-white/20 rounded-full px-3 py-1 mb-2">{{ group.category }}</span>
+        <h1 class="font-display text-2xl sm:text-3xl font-bold">벌금 관리</h1>
+        <p class="text-white/70 text-sm mt-1">{{ group.name }}</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
+          <p class="text-lg font-bold text-red-200" id="hdr-unpaid">{{ total_unpaid|default:0 }}원</p>
+          <p class="text-xs opacity-70 mt-0.5">총 미납</p>
+        </div>
+        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
+          <p class="text-lg font-bold text-green-200" id="hdr-paid">{{ total_paid|default:0 }}원</p>
+          <p class="text-xs opacity-70 mt-0.5">납부 완료</p>
+        </div>
+        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
+          <p class="text-lg font-bold" id="hdr-total">{{ total_penalty|default:0 }}원</p>
+          <p class="text-xs opacity-70 mt-0.5">총 발생</p>
+        </div>
+
+        {% if is_leader %}
+        <button onclick="openRuleEdit()"
+          class="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
+          data-tip="벌금 규칙 수정">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          결석 <strong>{{ penalty_rule.absent_fee|default:"미설정" }}원</strong>
+          &nbsp;·&nbsp;
+          지각 <strong>{{ penalty_rule.late_fee|default:"미설정" }}원</strong>
+        </button>
+        {% else %}
+        <div class="flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-sm px-4 py-2.5 rounded-xl">
+          결석 <strong>{{ penalty_rule.absent_fee|default:"미설정" }}원</strong>
+          &nbsp;·&nbsp;
+          지각 <strong>{{ penalty_rule.late_fee|default:"미설정" }}원</strong>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+
+  <!-- 요약 카드 3개 -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 fade-up" style="animation-delay:0ms">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-full -translate-y-8 translate-x-8 opacity-60"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">총 미납 금액</p>
+          <div class="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-2xl sm:text-3xl font-bold text-red-600" id="card-unpaid">{{ total_unpaid|default:0|floatformat:0 }}원</p>
+        <p class="text-xs text-slate-400 mt-1" id="card-unpaid-count">{{ unpaid_count|default:0 }}건 미납</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-full -translate-y-8 translate-x-8 opacity-60"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">납부 완료</p>
+          <div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-2xl sm:text-3xl font-bold text-green-600" id="card-paid">{{ total_paid|default:0|floatformat:0 }}원</p>
+        <p class="text-xs text-slate-400 mt-1" id="card-paid-count">{{ paid_count|default:0 }}건 납부</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full -translate-y-8 translate-x-8 opacity-60"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">총 벌금 발생</p>
+          <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center">
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-2xl sm:text-3xl font-bold text-slate-700" id="card-total">{{ total_penalty|default:0|floatformat:0 }}원</p>
+        <p class="text-xs text-slate-400 mt-1">납부율 <strong class="{% if paid_rate >= 80 %}text-green-600{% elif paid_rate >= 50 %}text-amber-600{% else %}text-red-500{% endif %}">{{ paid_rate|default:0|floatformat:0 }}%</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 멤버별 요약 카드 -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:80ms">
+    <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="font-bold text-slate-800 flex items-center gap-2">
+        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        멤버별 벌금 현황
+      </h2>
+      <span class="text-xs text-slate-400">카드 클릭 시 해당 멤버 내역 필터</span>
+    </div>
+    <div class="p-4 sm:p-5">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" id="member-cards">
+        {% for ms in member_summaries %}
+        <div class="member-penalty-card bg-slate-50 rounded-xl p-3.5 border border-slate-100"
+             onclick="filterByMember('{{ ms.user.id }}', this)"
+             data-uid="{{ ms.user.id }}">
+          <div class="flex items-center gap-2 mb-3">
+            {% if ms.user.profile_image %}
+              <img src="{{ ms.user.profile_image.url }}" class="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0">
+            {% else %}
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-sm">
+                {{ ms.user.nickname|first|upper }}
+              </div>
+            {% endif %}
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-slate-700 truncate">{{ ms.user.nickname }}</p>
+              {% if ms.user == group.leader %}<p class="text-xs text-amber-500">👑 리더</p>{% endif %}
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-400">미납</span>
+              <span class="font-bold text-red-600">{{ ms.unpaid_amount|floatformat:0 }}원</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-400">납부</span>
+              <span class="font-semibold text-green-600">{{ ms.paid_amount|floatformat:0 }}원</span>
+            </div>
+            <div class="rate-bar mt-2">
+              <div class="rate-fill {% if ms.paid_rate >= 80 %}bg-green-400{% elif ms.paid_rate >= 50 %}bg-amber-400{% else %}bg-red-400{% endif %}"
+                   style="width:{{ ms.paid_rate|default:0 }}%"></div>
+            </div>
+            <p class="text-xs text-slate-400 text-right">납부율 {{ ms.paid_rate|default:0|floatformat:0 }}%</p>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-8 text-slate-400 text-sm">멤버 데이터가 없습니다.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 월별 추이 차트 -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6 fade-up" style="animation-delay:160ms">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+      <div>
+        <h2 class="font-bold text-slate-800 flex items-center gap-2">
+          <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+          </svg>
+          월별 벌금 추이
+        </h2>
+        <p class="text-xs text-slate-400 mt-0.5">발생 / 납부 / 미납 금액 월별 추이</p>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-slate-500">
+        <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-slate-400 inline-block rounded"></span>발생</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-green-400 inline-block rounded"></span>납부</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-red-400 inline-block rounded"></span>미납</span>
+      </div>
+    </div>
+    <div class="relative" style="height:240px;">
+      <canvas id="penalty-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- 벌금 내역 테이블 -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:240ms">
+    <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <h2 class="font-bold text-slate-800 flex items-center gap-2">
+        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        벌금 내역
+        <span class="text-xs font-normal text-slate-400 ml-1" id="record-count">(총 {{ penalty_records|length }}건)</span>
+      </h2>
+
+      <div class="flex items-center gap-3 flex-wrap">
+        <div id="filter-indicator" class="hidden items-center gap-1.5 text-xs bg-brand-50 text-brand-600 border border-brand-200 px-2.5 py-1 rounded-full font-medium">
+          <span id="filter-name"></span>
+          <button onclick="clearMemberFilter()" class="text-brand-400 hover:text-brand-600 ml-0.5">✕</button>
+        </div>
+
+        <input type="checkbox" id="unpaid-toggle" class="toggle-input" onchange="toggleUnpaid(this)">
+        <label for="unpaid-toggle" class="toggle-label">
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          <span class="text-xs font-medium text-slate-600">미납만 보기</span>
+        </label>
+
+        <select id="sort-select" onchange="sortTable(this.value)"
+          class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-brand-400 bg-white text-slate-600">
+          <option value="date-desc">최신순</option>
+          <option value="date-asc">오래된 순</option>
+          <option value="amount-desc">금액 높은 순</option>
+          <option value="amount-asc">금액 낮은 순</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm" id="penalty-table">
+        <thead class="sticky-head">
+          <tr class="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
+            <th class="text-left px-4 sm:px-5 py-3">멤버</th>
+            <th class="text-left px-4 py-3">사유</th>
+            <th class="text-left px-4 py-3 hidden sm:table-cell">날짜</th>
+            <th class="text-right px-4 py-3">금액</th>
+            <th class="text-center px-4 py-3">상태</th>
+            {% if is_leader %}<th class="text-center px-4 py-3">처리</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody id="penalty-tbody" class="divide-y divide-slate-50">
+          {% for record in penalty_records %}
+          <tr class="penalty-row"
+              data-uid="{{ record.member.id }}"
+              data-paid="{{ record.is_paid|yesno:'true,false' }}"
+              data-date="{{ record.created_at|date:'Y-m-d' }}"
+              data-amount="{{ record.amount }}"
+              id="record-{{ record.id }}">
+            <td class="px-4 sm:px-5 py-3.5">
+              <div class="flex items-center gap-2.5">
+                {% if record.member.profile_image %}
+                  <img src="{{ record.member.profile_image.url }}" class="w-7 h-7 rounded-full object-cover border border-slate-100 flex-shrink-0">
+                {% else %}
+                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {{ record.member.nickname|first|upper }}
+                  </div>
+                {% endif %}
+                <span class="font-medium text-slate-800">{{ record.member.nickname }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-slate-600 text-sm">
+              <span class="inline-flex items-center gap-1">
+                {% if '결석' in record.reason %}<span class="text-red-400">✗</span>
+                {% elif '지각' in record.reason %}<span class="text-amber-400">△</span>
+                {% endif %}
+                {{ record.reason }}
+              </span>
+            </td>
+            <td class="px-4 py-3.5 text-slate-400 font-mono text-xs hidden sm:table-cell">{{ record.created_at|date:"Y.m.d" }}</td>
+            <td class="px-4 py-3.5 text-right font-bold text-slate-800">{{ record.amount|floatformat:0 }}원</td>
+            <td class="px-4 py-3.5 text-center">
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full {% if record.is_paid %}badge-paid{% else %}badge-unpaid{% endif %}"
+                    id="badge-{{ record.id }}">
+                {% if record.is_paid %}납부{% else %}미납{% endif %}
+              </span>
+            </td>
+            {% if is_leader %}
+            <td class="px-4 py-3.5 text-center" id="action-{{ record.id }}">
+              {% if not record.is_paid %}
+              <button onclick="markPaid({{ record.id }}, '{{ record.member.nickname }}', {{ record.amount }})"
+                class="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm">
+                납부 처리
+              </button>
+              {% else %}
+              <span class="text-xs text-slate-300">완료</span>
+              {% endif %}
+            </td>
+            {% endif %}
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{% if is_leader %}6{% else %}5{% endif %}" class="text-center py-14 text-slate-400 text-sm">
+              <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              벌금 내역이 없습니다.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_leader %}
+    <div class="px-5 sm:px-6 py-3 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <p class="text-xs text-slate-500">미납 건수: <strong class="text-red-600" id="unpaid-count-label">{{ unpaid_count|default:0 }}건</strong></p>
+      <button onclick="markAllPaid()"
+        class="text-xs bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm">
+        미납 전체 납부 처리
+      </button>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+const GROUP_ID  = {{ group.id }};
+const IS_LEADER = {{ is_leader|yesno:"true,false" }};
+const CSRF      = document.getElementById('csrf-token').value;
+axios.defaults.headers.common['X-CSRFToken'] = CSRF;
+
+// ── Chart ──
+const penaltyChart = new Chart(
+  document.getElementById('penalty-chart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: [{% for m in monthly_stats %}"{{ m.label }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+      datasets: [
+        {
+          label:'발생',
+          data: [{% for m in monthly_stats %}{{ m.total_amount }}{% if not forloop.last %},{% endif %}{% endfor %}],
+          borderColor:'#94a3b8', backgroundColor:'transparent',
+          borderWidth:2, pointRadius:2, fill:false, tension:0.4, borderDash:[3,3],
+        },
+        {
+          label:'납부',
+          data: [{% for m in monthly_stats %}{{ m.paid_amount }}{% if not forloop.last %},{% endif %}{% endfor %}],
+          borderColor:'#22c55e',
+          backgroundColor: ctx => {
+            const g = ctx.chart.ctx.createLinearGradient(0,0,0,200);
+            g.addColorStop(0,'rgba(34,197,94,0.12)'); g.addColorStop(1,'rgba(34,197,94,0)');
+            return g;
+          },
+          borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#22c55e', fill:true, tension:0.4,
+        },
+        {
+          label:'미납',
+          data: [{% for m in monthly_stats %}{{ m.unpaid_amount }}{% if not forloop.last %},{% endif %}{% endfor %}],
+          borderColor:'#ef4444', backgroundColor:'transparent',
+          borderWidth:2, pointRadius:2, pointBackgroundColor:'#ef4444', fill:false, tension:0.4, borderDash:[5,3],
+        },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          backgroundColor:'#1e293b', titleColor:'#94a3b8', bodyColor:'#f1f5f9',
+          padding:12, cornerRadius:10,
+          callbacks:{ label: c => ` ${c.dataset.label}: ${Number(c.parsed.y).toLocaleString()}원` }
+        }
+      },
+      scales:{
+        x:{ grid:{ color:'#f1f5f9' }, ticks:{ color:'#94a3b8', font:{ size:11 } } },
+        y:{ grid:{ color:'#f1f5f9' }, ticks:{ color:'#94a3b8', font:{ size:11 }, callback: v => v.toLocaleString()+'원' } }
+      }
+    }
+  }
+);
+
+async function markPaid(id, nickname, amount) {
+  const r = await Swal.fire({
+    icon:'question', title:'납부 처리',
+    html:`<div class="text-left space-y-3">
+            <div class="bg-green-50 rounded-xl p-4 text-center">
+              <p class="text-sm text-slate-600"><strong>${nickname}</strong> 님의 벌금</p>
+              <p class="text-2xl font-bold text-green-600 mt-1">${Number(amount).toLocaleString()}원</p>
+            </div>
+            <p class="text-sm text-slate-600 text-center">납부 완료로 처리하시겠습니까?</p>
+          </div>`,
+    showCancelButton:true, confirmButtonText:'납부 처리', cancelButtonText:'취소',
+    confirmButtonColor:'#22c55e', width:'380px',
+  });
+  if (!r.isConfirmed) return;
+  try {
+    await axios.post(`/groups/${GROUP_ID}/penalty/${id}/pay/`);
+    const badge  = document.getElementById(`badge-${id}`);
+    const action = document.getElementById(`action-${id}`);
+    const row    = document.getElementById(`record-${id}`);
+    if (badge)  { badge.textContent='납부'; badge.className='text-xs font-semibold px-2.5 py-1 rounded-full badge-paid'; }
+    if (action) action.innerHTML='<span class="text-xs text-slate-300">완료</span>';
+    if (row)    { row.dataset.paid='true'; if(document.getElementById('unpaid-toggle').checked) row.classList.add('row-hidden'); }
+    updateCountLabel(); refreshSummaryCards();
+    Swal.fire({ icon:'success', title:'납부 처리 완료', timer:1400, showConfirmButton:false, toast:true, position:'top-end' });
+  } catch(e) {
+    Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+  }
+}
+
+async function markAllPaid() {
+  const rows = [...document.querySelectorAll('.penalty-row')].filter(r => r.dataset.paid==='false' && !r.classList.contains('row-hidden'));
+  if (!rows.length) { Swal.fire({ icon:'info', title:'미납 내역 없음', confirmButtonColor:'#0c8ee8' }); return; }
+  const r = await Swal.fire({
+    icon:'warning', title:'미납 전체 납부 처리',
+    html:`현재 표시된 미납 건수 <strong>${rows.length}건</strong>을 모두 납부 처리하시겠습니까?`,
+    showCancelButton:true, confirmButtonText:`${rows.length}건 납부 처리`,
+    cancelButtonText:'취소', confirmButtonColor:'#ef4444',
+  });
+  if (!r.isConfirmed) return;
+  try {
+    await axios.post(`/groups/${GROUP_ID}/penalty/pay-all/`, { record_ids: rows.map(r => r.id.replace('record-','')) });
+    Swal.fire({ icon:'success', title:'완료', timer:1400, showConfirmButton:false });
+    setTimeout(() => location.reload(), 1400);
+  } catch(e) {
+    Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+  }
+}
+
+function openRuleEdit() {
+  Swal.fire({
+    title:'벌금 규칙 설정',
+    html:`<div class="text-left space-y-4">
+            <div class="bg-red-50 rounded-xl p-4">
+              <label class="block text-sm font-semibold text-red-700 mb-2">✗ 결석 벌금 (원)</label>
+              <input id="swal-absent-fee" type="number" min="0" step="100" value="{{ penalty_rule.absent_fee|default:0 }}" placeholder="예) 5000" class="swal2-input !mx-0 !w-full text-sm">
+            </div>
+            <div class="bg-amber-50 rounded-xl p-4">
+              <label class="block text-sm font-semibold text-amber-700 mb-2">△ 지각 벌금 (원)</label>
+              <input id="swal-late-fee" type="number" min="0" step="100" value="{{ penalty_rule.late_fee|default:0 }}" placeholder="예) 2000" class="swal2-input !mx-0 !w-full text-sm">
+            </div>
+            <p class="text-xs text-slate-400">변경 이후 생성되는 출석 기록부터 적용됩니다.</p>
+          </div>`,
+    showCancelButton:true, confirmButtonText:'저장', cancelButtonText:'취소',
+    confirmButtonColor:'#0c8ee8', width:'420px',
+    preConfirm: () => {
+      const a = parseInt(document.getElementById('swal-absent-fee').value)||0;
+      const l = parseInt(document.getElementById('swal-late-fee').value)||0;
+      if(a<0||l<0){ Swal.showValidationMessage('0원 이상이어야 합니다.'); return false; }
+      return { absent_fee:a, late_fee:l };
+    }
+  }).then(async r => {
+    if (!r.isConfirmed) return;
+    try {
+      await axios.post(`/groups/${GROUP_ID}/penalty/rule/`, r.value);
+      Swal.fire({ icon:'success', title:'규칙 저장 완료', timer:2000, showConfirmButton:false });
+      setTimeout(() => location.reload(), 2000);
+    } catch(e) {
+      Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'저장 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+    }
+  });
+}
+
+function toggleUnpaid(cb) {
+  document.querySelectorAll('.penalty-row').forEach(row => {
+    row.classList.toggle('row-hidden', cb.checked && row.dataset.paid==='true');
+  });
+  if (activeMemberUid) filterByMember(activeMemberUid, null, true);
+  updateCountLabel();
+}
+
+let activeMemberUid = null;
+function filterByMember(uid, cardEl, keepToggle=false) {
+  const isUnpaidOnly = document.getElementById('unpaid-toggle').checked;
+  if (activeMemberUid===uid && cardEl) { clearMemberFilter(); return; }
+  activeMemberUid = uid;
+  document.querySelectorAll('.member-penalty-card').forEach(c => c.classList.remove('active-card'));
+  if (cardEl) cardEl.classList.add('active-card');
+  document.querySelectorAll('.penalty-row').forEach(row => {
+    const mOk = row.dataset.uid===String(uid);
+    const pOk = !isUnpaidOnly || row.dataset.paid==='false';
+    row.classList.toggle('row-hidden', !(mOk&&pOk));
+  });
+  const name = cardEl?.querySelector('p')?.textContent?.trim()||'';
+  document.getElementById('filter-indicator').classList.remove('hidden');
+  document.getElementById('filter-indicator').classList.add('flex');
+  document.getElementById('filter-name').textContent = name+' 필터 중';
+  updateCountLabel();
+}
+
+function clearMemberFilter() {
+  activeMemberUid = null;
+  document.querySelectorAll('.member-penalty-card').forEach(c => c.classList.remove('active-card'));
+  document.getElementById('filter-indicator').classList.add('hidden');
+  document.getElementById('filter-indicator').classList.remove('flex');
+  const isUnpaidOnly = document.getElementById('unpaid-toggle').checked;
+  document.querySelectorAll('.penalty-row').forEach(row => {
+    row.classList.toggle('row-hidden', isUnpaidOnly && row.dataset.paid==='true');
+  });
+  updateCountLabel();
+}
+
+function sortTable(key) {
+  const tbody = document.getElementById('penalty-tbody');
+  const rows  = [...tbody.querySelectorAll('.penalty-row')];
+  rows.sort((a,b) => {
+    if(key==='date-desc')   return b.dataset.date.localeCompare(a.dataset.date);
+    if(key==='date-asc')    return a.dataset.date.localeCompare(b.dataset.date);
+    if(key==='amount-desc') return parseInt(b.dataset.amount)-parseInt(a.dataset.amount);
+    if(key==='amount-asc')  return parseInt(a.dataset.amount)-parseInt(b.dataset.amount);
+    return 0;
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+function updateCountLabel() {
+  const vis = document.querySelectorAll('.penalty-row:not(.row-hidden)').length;
+  const tot = document.querySelectorAll('.penalty-row').length;
+  document.getElementById('record-count').textContent = vis===tot ? `(총 ${tot}건)` : `(${vis}/${tot}건)`;
+  const u = document.querySelectorAll('.penalty-row[data-paid="false"]').length;
+  const lb = document.getElementById('unpaid-count-label');
+  if (lb) lb.textContent = u+'건';
+}
+
+function refreshSummaryCards() {
+  const rows = [...document.querySelectorAll('.penalty-row')];
+  let ua=0,pa=0,uc=0,pc=0;
+  rows.forEach(r => {
+    const amt = parseInt(r.dataset.amount)||0;
+    if(r.dataset.paid==='true'){pa+=amt;pc++;}else{ua+=amt;uc++;}
+  });
+  const tot = ua+pa;
+  const rate = tot>0 ? Math.round(pa/tot*100) : 0;
+  document.getElementById('card-unpaid').textContent = ua.toLocaleString()+'원';
+  document.getElementById('card-paid').textContent   = pa.toLocaleString()+'원';
+  document.getElementById('card-total').textContent  = tot.toLocaleString()+'원';
+  document.getElementById('card-unpaid-count').textContent = uc+'건 미납';
+  document.getElementById('card-paid-count').textContent   = pc+'건 납부';
+  document.getElementById('hdr-unpaid').textContent  = ua.toLocaleString()+'원';
+  document.getElementById('hdr-paid').textContent    = pa.toLocaleString()+'원';
+  document.getElementById('hdr-total').textContent   = tot.toLocaleString()+'원';
+}
+</script>
+</body>
+</html>

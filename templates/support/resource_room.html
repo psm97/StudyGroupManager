@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자료실 — {{ group.name }} | StudyGroupManager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans KR', 'sans-serif'],
+            display: ['DM Serif Display', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50:'#f0f7ff',100:'#e0effe',200:'#bae0fd',
+              300:'#7cc6fb',400:'#36a9f7',500:'#0c8ee8',
+              600:'#0070c5',700:'#0059a0',800:'#034c84',900:'#08406e',
+            },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; background: #f1f5f9; }
+    .page-header { background: linear-gradient(135deg, #0059a0 0%, #0c8ee8 60%, #36a9f7 100%); }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+
+    /* ── Category filter tabs ── */
+    .cat-tab { transition: all .15s ease; white-space: nowrap; }
+    .cat-tab.active {
+      background: #0c8ee8; color: #fff;
+      box-shadow: 0 2px 8px rgba(12,142,232,.3);
+    }
+
+    /* ── Resource row ── */
+    .res-row { transition: background .12s ease; }
+    .res-row:hover { background: #fafafa; }
+    .res-row.row-hidden { display: none; }
+
+    /* ── File icon colors ── */
+    .icon-pdf  { background: #fff1f1; color: #e53e3e; }
+    .icon-img  { background: #f5f0ff; color: #7c3aed; }
+    .icon-doc  { background: #eff6ff; color: #2563eb; }
+    .icon-ppt  { background: #fff8f0; color: #dd6b20; }
+    .icon-xls  { background: #f0fff4; color: #16a34a; }
+    .icon-zip  { background: #fefce8; color: #ca8a04; }
+    .icon-etc  { background: #f8fafc; color: #64748b; }
+
+    /* ── Upload drop zone ── */
+    .drop-zone {
+      border: 2px dashed #bae0fd;
+      border-radius: 16px;
+      transition: all .2s ease;
+      background: #f0f7ff;
+    }
+    .drop-zone.drag-over {
+      border-color: #0c8ee8;
+      background: #e0effe;
+    }
+    .drop-zone:hover { border-color: #0c8ee8; }
+
+    /* ── Progress bar ── */
+    .upload-bar {
+      height: 4px; border-radius: 99px;
+      background: #e2e8f0; overflow: hidden;
+    }
+    .upload-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, #0c8ee8, #36a9f7);
+      transition: width .3s ease;
+    }
+
+    /* ── Sort active ── */
+    .sort-btn.asc::after  { content: ' ↑'; font-size: 10px; }
+    .sort-btn.desc::after { content: ' ↓'; font-size: 10px; }
+
+    /* ── Fade up ── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp .38s ease forwards; }
+
+    /* ── Sticky thead ── */
+    .sticky-head th { position: sticky; top: 0; z-index: 10; background: #f8fafc; }
+
+    /* ── Action btn hover ── */
+    .action-btn { opacity: 0; transition: opacity .15s ease; }
+    .res-row:hover .action-btn { opacity: 1; }
+
+    /* ── View toggle ── */
+    .view-btn.active { background: #0c8ee8; color: #fff; box-shadow: 0 1px 4px rgba(12,142,232,.3); }
+
+    /* ── Grid card ── */
+    .grid-card {
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 16px; padding: 20px;
+      transition: transform .18s ease, box-shadow .18s ease;
+      cursor: default;
+    }
+    .grid-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.09); }
+
+    /* ── Tooltip ── */
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+      content: attr(data-tip); position: absolute; bottom: 110%; left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b; color: #fff;
+      font-size: 11px; padding: 3px 8px; border-radius: 6px;
+      white-space: nowrap; z-index: 50; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+<!-- ─────────────────────────────────────
+     HEADER
+───────────────────────────────────────── -->
+<header class="page-header text-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-7 sm:py-9">
+    <nav class="text-xs sm:text-sm mb-4 opacity-80 flex items-center gap-1.5 flex-wrap">
+      <a href="{% url 'dashboard' %}" class="hover:underline">홈</a><span>/</span>
+      <a href="{% url 'groups:list' %}" class="hover:underline">그룹 목록</a><span>/</span>
+      <a href="{% url 'groups:detail' group.id %}" class="hover:underline">{{ group.name }}</a><span>/</span>
+      <span>자료실</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <span class="inline-block text-xs font-semibold bg-white/20 rounded-full px-3 py-1 mb-2">{{ group.category }}</span>
+        <h1 class="font-display text-2xl sm:text-3xl font-bold">자료실</h1>
+        <p class="text-white/70 text-sm mt-1">{{ group.name }}</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[68px]">
+          <p class="text-lg font-bold" id="hdr-total">{{ total_count|default:0 }}</p>
+          <p class="text-xs opacity-70 mt-0.5">전체 파일</p>
+        </div>
+        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[68px]">
+          <p class="text-lg font-bold text-green-200">{{ total_downloads|default:0 }}</p>
+          <p class="text-xs opacity-70 mt-0.5">총 다운로드</p>
+        </div>
+        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[68px]">
+          <p class="text-lg font-bold text-blue-200">{{ total_size_mb|default:"0" }}MB</p>
+          <p class="text-xs opacity-70 mt-0.5">총 용량</p>
+        </div>
+        <button onclick="openUpload()"
+          class="flex items-center gap-2 bg-white text-brand-700 text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-brand-50 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          파일 업로드
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ─────────────────────────────────────
+     MAIN CONTENT
+───────────────────────────────────────── -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+
+  <!-- ── Toolbar ── -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 fade-up" style="animation-delay:0ms">
+
+    <!-- Category filter tabs -->
+    <div class="flex bg-slate-100 rounded-xl p-1 gap-1 overflow-x-auto flex-shrink-0">
+      <button onclick="setCategory('all', this)" class="cat-tab active text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+        전체 <span class="opacity-60 ml-1" id="cnt-all">{{ total_count|default:0 }}</span>
+      </button>
+      <button onclick="setCategory('강의자료', this)" class="cat-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+        📚 강의자료
+      </button>
+      <button onclick="setCategory('기출문제', this)" class="cat-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+        📝 기출문제
+      </button>
+      <button onclick="setCategory('요약노트', this)" class="cat-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+        🗒️ 요약노트
+      </button>
+      <button onclick="setCategory('기타', this)" class="cat-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+        📎 기타
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Search -->
+      <div class="relative">
+        <input type="text" id="search-input" placeholder="파일명 검색..."
+          oninput="searchResources(this.value)"
+          class="text-sm border border-slate-200 rounded-xl pl-9 pr-8 py-2 focus:outline-none focus:border-brand-400 transition-colors w-40 sm:w-48">
+        <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <button id="search-clear" onclick="clearSearch()"
+          class="hidden absolute right-3 top-1.5 text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+      </div>
+
+      <!-- View toggle: list / grid -->
+      <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
+        <button onclick="setView('list', this)" id="btn-list"
+          class="view-btn active w-8 h-7 flex items-center justify-center rounded-lg transition-all" data-tip="목록 보기">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+        </button>
+        <button onclick="setView('grid', this)" id="btn-grid"
+          class="view-btn w-8 h-7 flex items-center justify-center rounded-lg text-slate-500 transition-all" data-tip="카드 보기">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LIST VIEW ── -->
+  <div id="view-list" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:60ms">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm" id="resource-table">
+        <thead class="sticky-head">
+          <tr class="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
+            <th class="text-left px-5 py-3 min-w-[200px]">
+              <button class="sort-btn font-semibold hover:text-brand-600 transition-colors" onclick="sortTable('name', this)">파일명</button>
+            </th>
+            <th class="text-left px-4 py-3">카테고리</th>
+            <th class="text-left px-4 py-3 hidden sm:table-cell">
+              <button class="sort-btn font-semibold hover:text-brand-600 transition-colors" onclick="sortTable('uploader', this)">업로더</button>
+            </th>
+            <th class="text-left px-4 py-3 hidden md:table-cell">
+              <button class="sort-btn font-semibold hover:text-brand-600 transition-colors" onclick="sortTable('date', this)">날짜</button>
+            </th>
+            <th class="text-left px-4 py-3 hidden sm:table-cell">크기</th>
+            <th class="text-center px-4 py-3">
+              <button class="sort-btn font-semibold hover:text-brand-600 transition-colors" onclick="sortTable('downloads', this)">다운로드</button>
+            </th>
+            <th class="text-center px-4 py-3">관리</th>
+          </tr>
+        </thead>
+        <tbody id="resource-tbody" class="divide-y divide-slate-50">
+          {% for resource in resources %}
+          <tr class="res-row"
+              id="res-{{ resource.id }}"
+              data-category="{{ resource.category }}"
+              data-name="{{ resource.file_name|lower }}"
+              data-uploader="{{ resource.uploader.nickname|lower }}"
+              data-date="{{ resource.created_at|date:'Y-m-d' }}"
+              data-downloads="{{ resource.download_count }}"
+              data-size="{{ resource.file_size }}">
+
+            <!-- File name + icon -->
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg
+                  {% if resource.file_ext == 'pdf' %}icon-pdf
+                  {% elif resource.file_ext in 'jpg,jpeg,png,gif,webp' %}icon-img
+                  {% elif resource.file_ext in 'doc,docx' %}icon-doc
+                  {% elif resource.file_ext in 'ppt,pptx' %}icon-ppt
+                  {% elif resource.file_ext in 'xls,xlsx' %}icon-xls
+                  {% elif resource.file_ext in 'zip,rar,7z' %}icon-zip
+                  {% else %}icon-etc{% endif %}">
+                  {% if resource.file_ext == 'pdf' %}📄
+                  {% elif resource.file_ext in 'jpg,jpeg,png,gif,webp' %}🖼️
+                  {% elif resource.file_ext in 'doc,docx' %}📝
+                  {% elif resource.file_ext in 'ppt,pptx' %}📊
+                  {% elif resource.file_ext in 'xls,xlsx' %}📈
+                  {% elif resource.file_ext in 'zip,rar,7z' %}🗜️
+                  {% else %}📎{% endif %}
+                </div>
+                <div class="min-w-0">
+                  <p class="font-semibold text-slate-800 truncate max-w-[160px] sm:max-w-[220px]" title="{{ resource.file_name }}">
+                    {{ resource.file_name }}
+                  </p>
+                  <p class="text-xs text-slate-400 uppercase font-mono">.{{ resource.file_ext }}</p>
+                </div>
+              </div>
+            </td>
+
+            <!-- Category -->
+            <td class="px-4 py-3.5">
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full
+                {% if resource.category == '강의자료' %}bg-blue-50 text-blue-700
+                {% elif resource.category == '기출문제' %}bg-purple-50 text-purple-700
+                {% elif resource.category == '요약노트' %}bg-green-50 text-green-700
+                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                {{ resource.category }}
+              </span>
+            </td>
+
+            <!-- Uploader -->
+            <td class="px-4 py-3.5 hidden sm:table-cell">
+              <div class="flex items-center gap-2">
+                {% if resource.uploader.profile_image %}
+                  <img src="{{ resource.uploader.profile_image.url }}"
+                    class="w-6 h-6 rounded-full object-cover border border-slate-100 flex-shrink-0">
+                {% else %}
+                  <div class="w-6 h-6 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {{ resource.uploader.nickname|first|upper }}
+                  </div>
+                {% endif %}
+                <span class="text-sm text-slate-600">{{ resource.uploader.nickname }}</span>
+              </div>
+            </td>
+
+            <!-- Date -->
+            <td class="px-4 py-3.5 text-slate-400 font-mono text-xs hidden md:table-cell">
+              {{ resource.created_at|date:"Y.m.d" }}
+            </td>
+
+            <!-- Size -->
+            <td class="px-4 py-3.5 text-slate-400 text-xs hidden sm:table-cell">
+              {{ resource.file_size_display }}
+            </td>
+
+            <!-- Downloads -->
+            <td class="px-4 py-3.5 text-center">
+              <a href="{{ resource.file.url }}" download
+                onclick="recordDownload({{ resource.id }}, this)"
+                class="inline-flex items-center gap-1.5 text-sm font-bold text-brand-600 hover:text-brand-700 transition-colors group">
+                <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                <span id="dl-{{ resource.id }}">{{ resource.download_count }}</span>
+              </a>
+            </td>
+
+            <!-- Actions -->
+            <td class="px-4 py-3.5 text-center">
+              {% if is_leader or resource.uploader == request.user %}
+              <button class="action-btn w-8 h-8 flex items-center justify-center mx-auto rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                onclick="deleteResource({{ resource.id }}, '{{ resource.file_name|escapejs }}')"
+                data-tip="삭제">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+              {% else %}
+              <span class="text-slate-200 text-xs">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr id="empty-list-row">
+            <td colspan="7" class="text-center py-16 text-slate-400 text-sm">
+              <svg class="w-14 h-14 mx-auto mb-4 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+              </svg>
+              <p class="font-semibold text-slate-500 mb-1">업로드된 파일이 없습니다</p>
+              <p class="text-xs text-slate-400 mb-4">파일을 업로드하면 멤버 모두와 공유됩니다.</p>
+              <button onclick="openUpload()"
+                class="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                첫 파일 업로드
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- No result row -->
+    <div id="no-result" class="hidden text-center py-10 text-slate-400 text-sm border-t border-slate-50">
+      <svg class="w-10 h-10 mx-auto mb-2 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      검색 결과가 없습니다.
+    </div>
+
+    <!-- Table footer -->
+    <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+      <p class="text-xs text-slate-400">
+        <span id="visible-count">{{ resources|length }}</span>개 표시 중
+      </p>
+      <p class="text-xs text-slate-400">최대 업로드 크기: 10MB</p>
+    </div>
+  </div>
+
+  <!-- ── GRID VIEW (hidden by default) ── -->
+  <div id="view-grid" class="hidden fade-up">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" id="grid-container">
+      {% for resource in resources %}
+      <div class="grid-card"
+           id="grid-{{ resource.id }}"
+           data-category="{{ resource.category }}"
+           data-name="{{ resource.file_name|lower }}">
+
+        <!-- File icon -->
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-3
+          {% if resource.file_ext == 'pdf' %}icon-pdf
+          {% elif resource.file_ext in 'jpg,jpeg,png,gif,webp' %}icon-img
+          {% elif resource.file_ext in 'doc,docx' %}icon-doc
+          {% elif resource.file_ext in 'ppt,pptx' %}icon-ppt
+          {% elif resource.file_ext in 'xls,xlsx' %}icon-xls
+          {% elif resource.file_ext in 'zip,rar,7z' %}icon-zip
+          {% else %}icon-etc{% endif %}">
+          {% if resource.file_ext == 'pdf' %}📄
+          {% elif resource.file_ext in 'jpg,jpeg,png,gif,webp' %}🖼️
+          {% elif resource.file_ext in 'doc,docx' %}📝
+          {% elif resource.file_ext in 'ppt,pptx' %}📊
+          {% elif resource.file_ext in 'xls,xlsx' %}📈
+          {% elif resource.file_ext in 'zip,rar,7z' %}🗜️
+          {% else %}📎{% endif %}
+        </div>
+
+        <!-- File name -->
+        <p class="font-semibold text-slate-800 text-sm truncate mb-1" title="{{ resource.file_name }}">
+          {{ resource.file_name }}
+        </p>
+
+        <!-- Meta -->
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs
+            {% if resource.category == '강의자료' %}text-blue-600
+            {% elif resource.category == '기출문제' %}text-purple-600
+            {% elif resource.category == '요약노트' %}text-green-600
+            {% else %}text-slate-500{% endif %}">
+            {{ resource.category }}
+          </span>
+          <span class="text-xs text-slate-400">{{ resource.file_size_display }}</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2">
+          <a href="{{ resource.file.url }}" download
+            onclick="recordDownload({{ resource.id }}, null)"
+            class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg py-1.5 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            {{ resource.download_count }}
+          </a>
+          {% if is_leader or resource.uploader == request.user %}
+          <button onclick="deleteResource({{ resource.id }}, '{{ resource.file_name|escapejs }}')"
+            class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Grid no result -->
+    <div id="grid-no-result" class="hidden bg-white rounded-2xl border border-slate-100 text-center py-12 text-slate-400 text-sm">
+      검색 결과가 없습니다.
+    </div>
+  </div>
+
+  <!-- Mobile FAB -->
+  <button onclick="openUpload()"
+    class="fixed bottom-6 right-6 sm:hidden w-14 h-14 bg-brand-500 hover:bg-brand-600 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all hover:scale-105">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+    </svg>
+  </button>
+
+</div><!-- /main -->
+
+<!-- ─────────────────────────────────────
+     JAVASCRIPT
+───────────────────────────────────────── -->
+<script>
+const GROUP_ID  = {{ group.id }};
+const IS_LEADER = {{ is_leader|yesno:"true,false" }};
+const CSRF      = document.getElementById('csrf-token').value;
+axios.defaults.headers.common['X-CSRFToken'] = CSRF;
+
+let currentView     = 'list';
+let currentCategory = 'all';
+let currentSort     = { col: 'date', dir: 'desc' };
+
+// ── 파일 업로드 ───────────────────────────
+function openUpload() {
+  Swal.fire({
+    title: '파일 업로드',
+    html: `
+      <div class="text-left space-y-3">
+        <!-- Drop zone -->
+        <div class="drop-zone p-8 text-center" id="drop-zone"
+          ondragover="event.preventDefault(); this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleDrop(event)">
+          <svg class="w-10 h-10 mx-auto mb-3 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p class="text-sm font-semibold text-slate-600 mb-1">파일을 드래그하거나 클릭하여 선택</p>
+          <p class="text-xs text-slate-400 mb-3">PDF, 이미지, 문서 파일 · 최대 10MB</p>
+          <input type="file" id="file-input" class="hidden"
+            accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip"
+            onchange="onFileSelected(this)">
+          <button type="button" onclick="document.getElementById('file-input').click()"
+            class="text-xs font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 border border-brand-200 px-4 py-2 rounded-lg transition-colors">
+            파일 선택
+          </button>
+        </div>
+
+        <!-- Selected file info -->
+        <div id="file-info" class="hidden bg-slate-50 rounded-xl px-4 py-3 flex items-center gap-3">
+          <span id="file-icon" class="text-2xl">📄</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-slate-700 truncate" id="file-name-display"></p>
+            <p class="text-xs text-slate-400" id="file-size-display"></p>
+          </div>
+          <button onclick="clearFile()" class="text-slate-400 hover:text-red-500 transition-colors text-lg leading-none flex-shrink-0">×</button>
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1.5">카테고리 <span class="text-red-400">*</span></label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cat-radio flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2.5 cursor-pointer hover:border-brand-300 transition-colors">
+              <input type="radio" name="category" value="강의자료" class="accent-brand-500"> <span class="text-sm">📚 강의자료</span>
+            </label>
+            <label class="cat-radio flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2.5 cursor-pointer hover:border-brand-300 transition-colors">
+              <input type="radio" name="category" value="기출문제" class="accent-brand-500"> <span class="text-sm">📝 기출문제</span>
+            </label>
+            <label class="cat-radio flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2.5 cursor-pointer hover:border-brand-300 transition-colors">
+              <input type="radio" name="category" value="요약노트" class="accent-brand-500"> <span class="text-sm">🗒️ 요약노트</span>
+            </label>
+            <label class="cat-radio flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2.5 cursor-pointer hover:border-brand-300 transition-colors">
+              <input type="radio" name="category" value="기타" class="accent-brand-500" checked> <span class="text-sm">📎 기타</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Upload progress (hidden until uploading) -->
+        <div id="upload-progress-wrap" class="hidden">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+            <span>업로드 중...</span><span id="upload-pct">0%</span>
+          </div>
+          <div class="upload-bar"><div class="upload-fill" id="upload-fill" style="width:0%"></div></div>
+        </div>
+      </div>`,
+    showCancelButton: true,
+    confirmButtonText: '업로드',
+    cancelButtonText: '취소',
+    confirmButtonColor: '#0c8ee8',
+    width: '480px',
+    preConfirm: () => {
+      const file     = document.getElementById('file-input').files[0];
+      const category = document.querySelector('input[name="category"]:checked')?.value;
+      if (!file)     { Swal.showValidationMessage('파일을 선택해 주세요.'); return false; }
+      if (file.size > 10 * 1024 * 1024) { Swal.showValidationMessage('파일 크기는 10MB 이하여야 합니다.'); return false; }
+      if (!category) { Swal.showValidationMessage('카테고리를 선택해 주세요.'); return false; }
+      return { file, category };
+    }
+  }).then(async result => {
+    if (!result.isConfirmed) return;
+    const { file, category } = result.value;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('category', category);
+
+    // Show uploading state
+    Swal.fire({
+      title: '업로드 중...',
+      html: `<div class="upload-bar mt-2"><div class="upload-fill" id="sw-upload-fill" style="width:0%"></div></div>
+             <p class="text-xs text-slate-400 mt-2" id="sw-upload-pct">0%</p>`,
+      allowOutsideClick: false,
+      showConfirmButton: false,
+    });
+
+    try {
+      await axios.post(`/groups/${GROUP_ID}/resources/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: e => {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          const fill = document.getElementById('sw-upload-fill');
+          const pctEl = document.getElementById('sw-upload-pct');
+          if (fill)  fill.style.width = pct + '%';
+          if (pctEl) pctEl.textContent = pct + '%';
+        }
+      });
+      Swal.fire({ icon:'success', title:'업로드 완료', timer:1400, showConfirmButton:false });
+      setTimeout(() => location.reload(), 1400);
+    } catch(e) {
+      Swal.fire({ icon:'error', title:'업로드 실패', text:e.response?.data?.message||'업로드 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+    }
+  });
+}
+
+function onFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  showFileInfo(file);
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  document.getElementById('file-input').files = dt.files;
+  showFileInfo(file);
+}
+
+function showFileInfo(file) {
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const icons = { pdf:'📄', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️', webp:'🖼️',
+                  doc:'📝', docx:'📝', ppt:'📊', pptx:'📊', xls:'📈', xlsx:'📈',
+                  zip:'🗜️', rar:'🗜️' };
+  document.getElementById('file-icon').textContent   = icons[ext] || '📎';
+  document.getElementById('file-name-display').textContent = file.name;
+  document.getElementById('file-size-display').textContent = formatSize(file.size);
+  document.getElementById('file-info').classList.remove('hidden');
+}
+
+function clearFile() {
+  document.getElementById('file-input').value = '';
+  document.getElementById('file-info').classList.add('hidden');
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024)        return bytes + ' B';
+  if (bytes < 1024*1024)   return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+// ── 파일 삭제 ─────────────────────────────
+async function deleteResource(id, name) {
+  const result = await Swal.fire({
+    icon: 'warning',
+    title: '파일 삭제',
+    html: `<p class="text-sm text-slate-600">아래 파일을 삭제하시겠습니까?</p>
+           <p class="text-sm font-bold text-slate-800 mt-2 bg-slate-50 rounded-xl px-4 py-2">${escHtml(name)}</p>
+           <p class="text-xs text-red-400 mt-2">삭제 후 복구할 수 없습니다.</p>`,
+    showCancelButton: true,
+    confirmButtonText: '삭제',
+    cancelButtonText: '취소',
+    confirmButtonColor: '#ef4444',
+    width: '400px',
+  });
+  if (!result.isConfirmed) return;
+
+  try {
+    await axios.delete(`/groups/${GROUP_ID}/resources/${id}/`);
+    // Remove from both views
+    ['res','grid'].forEach(prefix => {
+      const el = document.getElementById(`${prefix}-${id}`);
+      if (el) {
+        el.style.transition = 'opacity .3s, transform .3s';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(16px)';
+        setTimeout(() => { el.remove(); updateVisibleCount(); }, 300);
+      }
+    });
+    Swal.fire({ icon:'success', title:'삭제 완료', timer:1200, showConfirmButton:false, toast:true, position:'top-end' });
+  } catch(e) {
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'삭제 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+  }
+}
+
+// ── 다운로드 이력 기록 ────────────────────
+async function recordDownload(id, linkEl) {
+  try {
+    await axios.post(`/groups/${GROUP_ID}/resources/${id}/download/`);
+    // Update count in DOM
+    const countEl = document.getElementById(`dl-${id}`);
+    if (countEl) countEl.textContent = parseInt(countEl.textContent||'0') + 1;
+  } catch(_) {}
+}
+
+// ── 카테고리 필터 ─────────────────────────
+function setCategory(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+// ── 검색 ──────────────────────────────────
+function searchResources(query) {
+  document.getElementById('search-clear').classList.toggle('hidden', !query);
+  applyFilters();
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-clear').classList.add('hidden');
+  applyFilters();
+}
+
+// ── 필터 적용 (카테고리 + 검색) ───────────
+function applyFilters() {
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  let visible = 0;
+
+  // List view
+  document.querySelectorAll('.res-row').forEach(row => {
+    const mCat  = currentCategory === 'all' || row.dataset.category === currentCategory;
+    const mName = !query || row.dataset.name?.includes(query);
+    const show  = mCat && mName;
+    row.classList.toggle('row-hidden', !show);
+    if (show) visible++;
+  });
+  document.getElementById('no-result').classList.toggle('hidden', visible > 0);
+
+  // Grid view
+  let gridVisible = 0;
+  document.querySelectorAll('.grid-card').forEach(card => {
+    const mCat  = currentCategory === 'all' || card.dataset.category === currentCategory;
+    const mName = !query || card.dataset.name?.includes(query);
+    const show  = mCat && mName;
+    card.style.display = show ? '' : 'none';
+    if (show) gridVisible++;
+  });
+  document.getElementById('grid-no-result').classList.toggle('hidden', gridVisible > 0);
+
+  updateVisibleCount(visible);
+}
+
+// ── 정렬 ──────────────────────────────────
+function sortTable(col, btn) {
+  // Toggle direction
+  if (currentSort.col === col) {
+    currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSort.col = col;
+    currentSort.dir = 'desc';
+  }
+
+  // Update button styles
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('asc','desc'));
+  btn.classList.add(currentSort.dir);
+
+  const tbody = document.getElementById('resource-tbody');
+  const rows  = [...tbody.querySelectorAll('.res-row')];
+
+  rows.sort((a, b) => {
+    let av, bv;
+    if (col === 'name')      { av = a.dataset.name;      bv = b.dataset.name;      }
+    if (col === 'uploader')  { av = a.dataset.uploader;  bv = b.dataset.uploader;  }
+    if (col === 'date')      { av = a.dataset.date;      bv = b.dataset.date;      }
+    if (col === 'downloads') {
+      av = parseInt(a.dataset.downloads)||0;
+      bv = parseInt(b.dataset.downloads)||0;
+      return currentSort.dir === 'asc' ? av - bv : bv - av;
+    }
+    if (currentSort.dir === 'asc') return av < bv ? -1 : av > bv ? 1 : 0;
+    return av > bv ? -1 : av < bv ? 1 : 0;
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// ── 뷰 전환 (list / grid) ─────────────────
+function setView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-list').classList.toggle('hidden', view !== 'list');
+  document.getElementById('view-grid').classList.toggle('hidden', view !== 'grid');
+}
+
+// ── 표시 건수 갱신 ────────────────────────
+function updateVisibleCount(n) {
+  const visible = n !== undefined ? n :
+    [...document.querySelectorAll('.res-row')].filter(r => !r.classList.contains('row-hidden')).length;
+  const el = document.getElementById('visible-count');
+  if (el) el.textContent = visible;
+}
+
+// ── HTML escape ───────────────────────────
+function escHtml(str) {
+  return String(str||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+</script>
+</body>
+</html>
