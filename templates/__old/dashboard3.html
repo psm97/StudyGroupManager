@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="csrf-token" content="{{ csrf_token }}">
 <title>StudyGroup Manager - 대시보드</title>
 
 <!-- Tailwind CSS CDN -->
@@ -21,176 +20,9 @@
 <style>
   * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; }
 
-  /* ══════════════════════════════════════════
-     다크 모드 — html[data-theme="dark"] 기반
-  ══════════════════════════════════════════ */
-
-  /* 라이트 기본값 */
-  :root {
-    --bg-body:        #dbeafe;   /* blue-100 */
-    --bg-container:   #ffffff;
-    --bg-sidebar:     #ffffff;
-    --bg-header:      #ffffff;
-    --bg-content:     #f8fafc;   /* slate-50 */
-    --bg-card:        #ffffff;
-    --bg-card-hover:  #f0f5fe;
-    --bg-input:       #f8fafc;
-    --bg-skeleton:    #e2e8f0;
-    --bg-nav-hover:   #dce6fd;
-    --bg-badge-member:#f1f5f9;
-
-    --text-primary:   #1e293b;
-    --text-secondary: #475569;
-    --text-muted:     #94a3b8;
-    --text-heading:   #0f172a;
-    --text-nav:       #475569;
-    --text-nav-hover: #1055e8;
-
-    --border-default: #f1f5f9;
-    --border-card:    #f1f5f9;
-    --border-input:   #e2e8f0;
-    --border-sidebar: #f1f5f9;
-
-    --timeline-line:  #f1f5f9;
-    --scrollbar-track:#f1f5f9;
-    --cal-other:      #cbd5e1;
-    --swal-bg:        #ffffff;
-    --swal-text:      #1e293b;
-
-    --shadow-card:    rgba(16,85,232,0.08);
-  }
-
-  /* 다크 테마 */
-  html[data-theme="dark"] {
-    --bg-body:        #0c1120;
-    --bg-container:   #111827;
-    --bg-sidebar:     #111827;
-    --bg-header:      #111827;
-    --bg-content:     #0f172a;
-    --bg-card:        #1e293b;
-    --bg-card-hover:  #253347;
-    --bg-input:       #1e293b;
-    --bg-skeleton:    #334155;
-    --bg-nav-hover:   #1a2d52;
-    --bg-badge-member:#334155;
-
-    --text-primary:   #e2e8f0;
-    --text-secondary: #cbd5e1;
-    --text-muted:     #64748b;
-    --text-heading:   #f1f5f9;
-    --text-nav:       #94a3b8;
-    --text-nav-hover: #93c5fd;
-
-    --border-default: #1e293b;
-    --border-card:    #334155;
-    --border-input:   #334155;
-    --border-sidebar: #1e293b;
-
-    --timeline-line:  #334155;
-    --scrollbar-track:#1e293b;
-    --cal-other:      #475569;
-    --swal-bg:        #1e293b;
-    --swal-text:      #e2e8f0;
-
-    --shadow-card:    rgba(0,0,0,0.4);
-  }
-
-  /* CSS 변수 적용 */
-  body                        { background: var(--bg-body) !important; }
-  #mainContainer              { background: var(--bg-container) !important; }
-  #sidebar                    { background: var(--bg-sidebar) !important; border-color: var(--border-sidebar) !important; }
-  header                      { background: var(--bg-header) !important; border-color: var(--border-default) !important; }
-  .flex-1.overflow-y-auto     { background: var(--bg-content) !important; }
-
-  /* 사이드바 텍스트 */
-  #sidebar p.font-bold,
-  #sidebar p.text-sm.leading-tight { color: var(--text-heading) !important; }
-  #sidebar p.text-xs.text-slate-400 { color: var(--text-muted) !important; }
-
-  /* 네비 링크 */
-  .nav-link:not(.active)      { color: var(--text-nav) !important; }
-  .nav-link:not(.active):hover{ background: var(--bg-nav-hover) !important; color: var(--text-nav-hover) !important; }
-
-  /* 카드 */
-  .bg-white, .bg-card,
-  [class*="bg-white"]         { background: var(--bg-card) !important; }
-  .border-slate-100,
-  [class*="border-slate-100"] { border-color: var(--border-card) !important; }
-  .border-slate-200,
-  [class*="border-slate-200"] { border-color: var(--border-input) !important; }
-
-  /* 텍스트 */
-  .text-slate-800,
-  [class*="text-slate-800"]   { color: var(--text-heading) !important; }
-  .text-slate-700,
-  [class*="text-slate-700"]   { color: var(--text-primary) !important; }
-  .text-slate-600,
-  [class*="text-slate-600"]   { color: var(--text-secondary) !important; }
-  .text-slate-500,
-  [class*="text-slate-500"]   { color: var(--text-muted) !important; }
-  .text-slate-400,
-  [class*="text-slate-400"]   { color: var(--text-muted) !important; }
-
-  /* 배경 */
-  .bg-slate-50,
-  [class*="bg-slate-50"]      { background: var(--bg-input) !important; }
-  .bg-slate-100,
-  [class*="bg-slate-100"]     { background: var(--bg-skeleton) !important; }
-
-  /* 입력창 */
-  #searchInput                { background: var(--bg-input) !important; color: var(--text-primary) !important;
-                                border-color: var(--border-input) !important; }
-  #searchInput::placeholder   { color: var(--text-muted) !important; }
-
-  /* AI 위젯 */
-  html[data-theme="dark"] .mx-4.mb-5.p-4.rounded-2xl {
-    background: #1a2d52 !important; border-color: #1e3a6e !important;
-  }
-
-  /* 스켈레톤 */
-  html[data-theme="dark"] .animate-pulse .bg-slate-200 { background: var(--bg-skeleton) !important; }
-
-  /* 배지 멤버 */
-  html[data-theme="dark"] .badge-role-member { background: var(--bg-badge-member) !important; }
-
-  /* 타임라인 선 */
-  html[data-theme="dark"] .timeline-line { background: var(--timeline-line) !important; }
-
-  /* 캘린더 기타 날짜 */
-  html[data-theme="dark"] .cal-day.other { color: var(--cal-other) !important; }
-  html[data-theme="dark"] .cal-day:hover:not(.today):not(.other) { background: #1a2d52 !important; }
-
-  /* 스크롤바 */
-  html[data-theme="dark"] ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
-
-  /* 헤더 다크모드 텍스트 */
-  html[data-theme="dark"] header p.text-sm.font-semibold { color: var(--text-heading) !important; }
-  html[data-theme="dark"] header p.text-xs              { color: var(--text-muted) !important; }
-
-  /* stat-card hover */
-  html[data-theme="dark"] .stat-card:hover { box-shadow: 0 8px 24px var(--shadow-card); }
-  html[data-theme="dark"] .group-card:hover { border-color: #1d4ed8 !important; box-shadow: 0 4px 16px var(--shadow-card); }
-
-  /* SweetAlert2 다크 */
-  html[data-theme="dark"] .swal2-popup {
-    background: var(--swal-bg) !important; color: var(--swal-text) !important;
-  }
-  html[data-theme="dark"] .swal2-title { color: var(--text-heading) !important; }
-  html[data-theme="dark"] .swal2-html-container { color: var(--text-secondary) !important; }
-  html[data-theme="dark"] .swal-input-label { color: #94a3b8 !important; }
-  html[data-theme="dark"] .swal-custom-input {
-    background: #0f172a !important; border-color: #334155 !important; color: #e2e8f0 !important;
-  }
-
-  /* 구분선 */
-  html[data-theme="dark"] .divide-y > * + * { border-color: #334155 !important; }
-
-  /* 토글 다크모드용 배경 */
-  html[data-theme="dark"] .toggle-slider { background: #334155; }
-
-  /* 스크롤바 */
+  /* ── 스크롤바 ── */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: var(--scrollbar-track, #f1f5f9); }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
   ::-webkit-scrollbar-thumb { background: #c7d7fb; border-radius: 4px; }
 
   /* ── 사이드바 애니메이션 ── */
@@ -275,7 +107,145 @@
 <!-- ════════════════════ OUTER CONTAINER ════════════════════ -->
 <div class="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style="min-height:100vh;" id="mainContainer">
 
-  {% include 'left_sidemenu.html' %}
+  <!-- ══════════════════ LEFT SIDEBAR ══════════════════ -->
+  <aside id="sidebar" class="w-[260px] flex-shrink-0 bg-white border-r border-slate-100 flex flex-col" style="min-height:100vh;">
+
+    <!-- 로고 -->
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow" style="background:#1055e8;">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13
+                 C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13
+                 C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253
+                 v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-bold text-slate-800 text-sm leading-tight">StudyGroup</p>
+          <p class="text-xs font-semibold" style="color:#1055e8;">Manager</p>
+        </div>
+      </div>
+      <!-- 모바일 닫기 -->
+      <button class="lg:hidden text-slate-400 hover:text-slate-600 p-1" onclick="closeSidebar()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 네비게이션 -->
+    <nav class="px-4 py-5 flex-1 overflow-y-auto">
+      <p class="text-xs text-slate-400 font-bold uppercase tracking-widest px-2 mb-3">메뉴</p>
+      <ul class="space-y-1">
+        <li>
+          <a href="#" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-white">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10
+                   a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0
+                   011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>홈
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'group_list' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 font-medium text-sm">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857
+                   M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857
+                   m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>내 스터디
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 font-medium text-sm">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>그룹 찾기
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 font-medium text-sm">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5
+                   a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>캘린더
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'notice' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 font-medium text-sm">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15
+                   M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832
+                   c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7
+                   a3.988 3.988 0 01-1.564-.317z"/>
+            </svg>공지사항
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'profile' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 font-medium text-sm">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0
+                   002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0
+                   001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0
+                   00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0
+                   00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0
+                   00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0
+                   00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0
+                   001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>설정
+          </a>
+        </li>
+      </ul>
+
+      <!-- 빠른 액션 -->
+      <p class="text-xs text-slate-400 font-bold uppercase tracking-widest px-2 mt-6 mb-3">바로가기</p>
+      <div class="space-y-1">
+        <button onclick="openCreateGroupModal()"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 font-medium text-sm transition-all">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>그룹 만들기
+        </button>
+        <button onclick="openJoinGroupModal()"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 font-medium text-sm transition-all">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>그룹 참여
+        </button>
+      </div>
+    </nav>
+
+    <!-- AI 월간 리포트 위젯 -->
+    <div class="mx-4 mb-5 p-4 rounded-2xl border" style="background:#eef2fd; border-color:#c7d7fb;">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#1055e8;">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3
+                 m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547
+                 A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754
+                 -.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+        <p class="font-bold text-sm" style="color:#0a3399;">AI 월간 리포트</p>
+      </div>
+      <p class="text-xs mb-3 leading-relaxed" style="color:#1055e8;">출석·벌금 데이터를 AI가 분석하여 리포트를 자동 생성합니다.</p>
+      <a href="{% url 'ai_monthly_report' %}"
+        class="block w-full text-center text-white text-xs font-bold py-2 rounded-lg transition-colors"
+        style="background:#1055e8;"
+        onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1055e8'">
+        시작하기 →
+      </a>
+    </div>
+  </aside>
 
   <!-- ══════════════════ MAIN CONTENT ══════════════════ -->
   <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -374,11 +344,30 @@
                 + 그룹 만들기
               </button>
               <button onclick="openJoinGroupModal()"
-                class="border border-white border-opacity-50 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-white hover:bg-opacity-10 transition-colors"style="color:#1055e8;">
+                class="border border-white border-opacity-50 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-white hover:bg-opacity-10 transition-colors">
                 초대코드로 참여
               </button>
             </div>
           </div>
+          <div class="hidden lg:flex items-center gap-3 flex-shrink-0">
+            <div class="w-16 h-16 bg-white bg-opacity-15 rounded-2xl flex items-center justify-center border-2 border-white border-opacity-20">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253
+                     v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13
+                     C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253
+                     v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+            </div>
+            <div class="w-12 h-12 bg-white bg-opacity-10 rounded-xl flex items-center justify-center border border-white border-opacity-20">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0
+                     002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2
+                     a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2
+                     2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -552,7 +541,7 @@
 <!-- ════════════════════ JAVASCRIPT ════════════════════ -->
 <script>
 // ── CSRF 설정 ──────────────────────────────────────────────
-const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
 axios.defaults.headers.common['X-CSRFToken'] = CSRF;
 
 // ── 전역 상태 ──────────────────────────────────────────────
@@ -806,7 +795,7 @@ function renderTimelineFallback() {
 // ════════════════════════════════════════════════════════════
 function initCharts() {
   const barCtx = document.getElementById('attendanceBarChart').getContext('2d');
-  window.barChart = new Chart(barCtx, {
+  barChart = new Chart(barCtx, {
     type: 'bar',
     data: {
       labels: ['월', '화', '수', '목', '금', '토', '일'],
@@ -829,7 +818,7 @@ function initCharts() {
   });
 
   const donutCtx = document.getElementById('completionDonut').getContext('2d');
-  window.donutChart = new Chart(donutCtx, {
+  donutChart = new Chart(donutCtx, {
     type: 'doughnut',
     data: {
       datasets: [{ data: [40, 60], backgroundColor: ['#1055e8', '#dce6fd'], borderWidth: 0, borderRadius: 4 }]
@@ -846,15 +835,15 @@ async function loadAttendanceChart(groupId) {
   if (!groupId) return;
   try {
     const { data } = await axios.get(`/attendance/api/stats/${groupId}/?period=${chartPeriod}`);
-    window.barChart.data.labels = data.labels;
-    window.barChart.data.datasets[0].data = data.values;
-    window.barChart.data.datasets[0].backgroundColor = data.values.map(
+    barChart.data.labels = data.labels;
+    barChart.data.datasets[0].data = data.values;
+    barChart.data.datasets[0].backgroundColor = data.values.map(
       (_, i) => i === data.values.indexOf(Math.max(...data.values)) ? '#1055e8' : '#c7d7fb'
     );
-    window.barChart.update();
+    barChart.update();
     const pct = data.completion_rate || 0;
-    window.donutChart.data.datasets[0].data = [pct, 100 - pct];
-    window.donutChart.update();
+    donutChart.data.datasets[0].data = [pct, 100 - pct];
+    donutChart.update();
     document.getElementById('completionPct').textContent = pct + '%';
   } catch { /* 기존 더미 유지 */ }
 }
@@ -1205,70 +1194,10 @@ function handleSearch(q) {
 }
 
 // ════════════════════════════════════════════════════════════
-// 다크 모드
-// ════════════════════════════════════════════════════════════
-(function initDarkMode() {
-  const toggle       = document.getElementById('darkToggle');
-  const toggleMobile = document.getElementById('darkToggleMobile');
-  const html         = document.documentElement;
-
-  const saved = localStorage.getItem('sgm-dark-mode');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const isDark = saved !== null ? saved === 'true' : prefersDark;
-
-  function applyTheme(dark) {
-    if (dark) {
-      html.setAttribute('data-theme', 'dark');
-    } else {
-      html.removeAttribute('data-theme');
-    }
-    if (toggle)       toggle.checked       = dark;
-    if (toggleMobile) toggleMobile.checked = dark;
-    updateChartTheme(dark);
-  }
-
-  function onToggleChange() {
-    const dark = this.checked;
-    localStorage.setItem('sgm-dark-mode', dark);
-    applyTheme(dark);
-  }
-
-  if (toggle)       toggle.addEventListener('change', onToggleChange);
-  if (toggleMobile) toggleMobile.addEventListener('change', onToggleChange);
-
-  applyTheme(isDark);
-})();
-
-function updateChartTheme(dark) {
-  const gridColor  = dark ? '#334155' : '#f1f5f9';
-  const tickColor  = dark ? '#64748b' : '#94a3b8';
-  const labelColor = dark ? '#94a3b8' : '#64748b';
-
-  [window.barChart, window.donutChart].forEach(ch => {
-    if (!ch) return;
-    if (ch.config.type === 'bar' || ch.config.type === 'line') {
-      ch.options.scales.x.grid.color   = gridColor;
-      ch.options.scales.x.ticks.color  = tickColor;
-      ch.options.scales.y.grid.color   = gridColor;
-      ch.options.scales.y.ticks.color  = tickColor;
-    }
-    if (ch.config.type === 'radar') {
-      ch.options.scales.r.grid.color         = gridColor;
-      ch.options.scales.r.ticks.color        = tickColor;
-      ch.options.scales.r.pointLabels.color  = labelColor;
-    }
-    ch.update('none');
-  });
-}
-
-// ════════════════════════════════════════════════════════════
 // 초기 로딩
 // ════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   initCharts();
-  // 차트 생성 직후 현재 테마 적용
-  const isDark = document.documentElement.hasAttribute('data-theme');
-  if (isDark) updateChartTheme(true);
   loadSummary();
   loadGroups();
   loadTimeline();
