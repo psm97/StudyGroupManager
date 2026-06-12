@@ -3,26 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 성과예측·플래너 — {{ group.name }} | StudyGroupManager</title>
+  <title>AI 플래너 — {{ group.name }} | StudyGroupManager</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <script>
+    (function(){
+      const saved = localStorage.getItem('sgm-dark-mode');
+      if (saved === 'true') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Noto Sans KR', 'sans-serif'],
-            display: ['DM Serif Display', 'sans-serif'],
-          },
+          fontFamily: { sans: ['Pretendard', 'sans-serif'] },
           colors: {
             brand: {
-              50:'#f0f7ff',100:'#e0effe',200:'#bae0fd',300:'#7cc6fb',
-              400:'#36a9f7',500:'#0c8ee8',600:'#0070c5',700:'#0059a0',
+              50:'#eef3ff',100:'#dce6fd',200:'#bacefc',300:'#88a8f8',
+              400:'#5580f4',500:'#1055e8',600:'#0d44c4',700:'#0a36a0',
             },
           },
         }
@@ -31,22 +32,55 @@
   </script>
 
   <style>
-    body { font-family:'Noto Sans KR',sans-serif; background:#f1f5f9; }
-
-    .page-header {
-      background: linear-gradient(135deg, #064e3b 0%, #059669 55%, #34d399 100%);
+    :root {
+      --bg-body: #eff6ff;
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --border-card: #e2e8f0;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --scrollbar-thumb: #c7d7fb;
     }
-
-    .ai-badge {
-      display:inline-flex; align-items:center; gap:5px;
-      background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
-      border-radius:99px; padding:4px 12px;
-      font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    html[data-theme="dark"] {
+      --bg-body: #0f172a;
+      --bg-main: #1e293b;
+      --bg-card: #1e293b;
+      --border-card: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --scrollbar-thumb: #334155;
     }
+    * { box-sizing: border-box; }
+    body { font-family:'Pretendard',sans-serif; background: var(--bg-body); color: var(--text-primary); }
 
     ::-webkit-scrollbar { width:5px; height:5px; }
-    ::-webkit-scrollbar-track { background:#f1f5f9; }
-    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:99px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius:99px; }
+
+    /* ── Sidebar overlay ── */
+    #sidebarOverlay {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:40;
+    }
+    #sidebarOverlay.show { display:block; }
+
+    /* ── Nav link active ── */
+    .nav-link.active { background:#1055e8; color:#fff; }
+
+    /* ── Toggle ── */
+    .toggle-wrap { position:relative; display:inline-block; width:36px; height:20px; }
+    .toggle-wrap input { opacity:0; width:0; height:0; }
+    .toggle-slider {
+      position:absolute; cursor:pointer; inset:0; background:#cbd5e1;
+      border-radius:99px; transition:.3s;
+    }
+    .toggle-slider:before {
+      content:""; position:absolute; width:14px; height:14px; left:3px; bottom:3px;
+      background:#fff; border-radius:50%; transition:.3s;
+    }
+    .toggle-wrap input:checked + .toggle-slider { background:#1055e8; }
+    .toggle-wrap input:checked + .toggle-slider:before { transform:translateX(16px); }
 
     /* ── Progress arc ── */
     .arc-svg { transform:rotate(-90deg); }
@@ -59,7 +93,7 @@
 
     /* ── Week card ── */
     .week-card {
-      border-radius:14px; border:1px solid #e2e8f0; background:#fff;
+      border-radius:14px; border:1px solid var(--border-card); background: var(--bg-card);
       transition:transform .18s ease, box-shadow .18s ease;
     }
     .week-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.08); }
@@ -71,13 +105,14 @@
 
     /* ── Chat bubble ── */
     .bubble-user {
-      background:#059669; color:#fff; border-radius:18px 18px 4px 18px;
+      background:#1055e8; color:#fff; border-radius:18px 18px 4px 18px;
       padding:10px 16px; max-width:80%; align-self:flex-end; font-size:14px;
     }
     .bubble-ai {
-      background:#fff; border:1px solid #e2e8f0; border-radius:18px 18px 18px 4px;
+      background: var(--bg-card); border:1px solid var(--border-card);
+      border-radius:18px 18px 18px 4px;
       padding:12px 16px; max-width:85%; align-self:flex-start; font-size:14px;
-      box-shadow:0 2px 8px rgba(0,0,0,.06);
+      box-shadow:0 2px 8px rgba(0,0,0,.06); color: var(--text-primary);
     }
     .bubble-ai.typing span {
       display:inline-block; width:6px; height:6px; background:#94a3b8;
@@ -90,16 +125,25 @@
 
     /* ── Chat input ── */
     .chat-input {
-      border:1.5px solid #e2e8f0; border-radius:14px; padding:10px 14px;
+      border:1.5px solid var(--border-card); border-radius:14px; padding:10px 14px;
       font-size:14px; outline:none; width:100%; resize:none; max-height:120px;
       transition:border-color .2s;
+      background: var(--bg-card); color: var(--text-primary);
     }
-    .chat-input:focus { border-color:#059669; }
+    .chat-input:focus { border-color:#1055e8; }
 
-    /* ── Achievement chart section ── */
+    /* ── Model card ── */
     .model-card {
-      background:linear-gradient(135deg, #064e3b, #065f46);
+      background:linear-gradient(135deg, #0d44c4, #1055e8);
       border-radius:18px; color:#fff;
+    }
+
+    /* ── AI badge ── */
+    .ai-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
+      border-radius:99px; padding:4px 12px;
+      font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
     }
 
     /* ── Fade up ── */
@@ -110,22 +154,22 @@
     .fade-up { animation:fadeUp .38s ease forwards; }
 
     /* ── Sticky thead ── */
-    .sticky-head th { position:sticky; top:0; z-index:10; background:#f8fafc; }
+    .sticky-head th { position:sticky; top:0; z-index:10; background: var(--bg-main); }
 
     /* ── Tab ── */
-    .tab-btn { transition:all .15s ease; }
+    .tab-btn { transition:all .15s ease; color: var(--text-secondary); }
     .tab-btn.active {
-      color:#059669; border-bottom:2.5px solid #059669; font-weight:700;
+      color:#1055e8; border-bottom:2.5px solid #1055e8; font-weight:700;
     }
 
     /* ── Suggest chip ── */
     .suggest-chip {
       display:inline-flex; align-items:center; gap:4px;
-      background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d;
+      background:#eef3ff; border:1px solid #bacefc; color:#1055e8;
       border-radius:99px; padding:5px 12px; font-size:12px; font-weight:600;
       cursor:pointer; transition:all .15s;
     }
-    .suggest-chip:hover { background:#dcfce7; border-color:#86efac; }
+    .suggest-chip:hover { background:#dce6fd; border-color:#88a8f8; }
 
     /* ── Applied badge ── */
     .applied-row { background:#f0fdf4 !important; }
@@ -139,380 +183,377 @@
 
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
-<!-- ─────────────────────────────────────
-     HEADER
-───────────────────────────────────────── -->
-<header class="page-header text-white">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-7 sm:py-9">
-    <nav class="text-xs sm:text-sm mb-4 opacity-70 flex items-center gap-1.5 flex-wrap">
-      <a href="{% url 'dashboard' %}" class="hover:underline">홈</a><span>/</span>
-      <a href="#" class="hover:underline">{{ group.name }}</a><span>/</span>
-      <span>AI 성과예측·플래너</span>
-    </nav>
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2 mb-2">
-          <span class="ai-badge text-white">🤖 AI Planner</span>
-          <span class="text-xs text-white/50">GPT-4o · scikit-learn</span>
-        </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-bold">성과예측 · AI 플래너</h1>
-        <p class="text-white/60 text-sm mt-1">{{ group.name }} · 목표: {{ group.goal|default:"미설정" }}</p>
-      </div>
+<div class="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style="min-height:100vh;" id="mainContainer">
 
-      <div class="flex flex-wrap gap-2 items-center">
-        <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
-          <p class="text-lg font-bold text-emerald-200">{{ achievement_prob|default:"—" }}%</p>
-          <p class="text-xs opacity-60 mt-0.5">달성 확률</p>
-        </div>
-        <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
-          <p class="text-lg font-bold text-yellow-200">{{ expected_date|default:"—" }}</p>
-          <p class="text-xs opacity-60 mt-0.5">예상 완료일</p>
-        </div>
-        <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
-          <p class="text-lg font-bold text-blue-200">{{ progress_rate|default:0 }}%</p>
-          <p class="text-xs opacity-60 mt-0.5">진행률</p>
-        </div>
-        {% if is_leader %}
-        <button onclick="runPrediction()"
-          class="flex items-center gap-2 bg-white text-emerald-700 text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-emerald-50 transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-          </svg>
-          예측 갱신
-        </button>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</header>
+  {% include 'inc_left.html' %}
 
-<!-- ─────────────────────────────────────
-     MAIN
-───────────────────────────────────────── -->
-<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+  <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    {% include 'inc_header.html' %}
 
-  <!-- ①② 목표 달성 예측 + 예상 완료일 ── -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 fade-up" style="animation-delay:0ms">
+    <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
-    <!-- Prediction arc card -->
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col items-center justify-center">
-      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">목표 달성 확률</p>
-
-      <!-- Arc SVG -->
-      <div class="relative mb-4">
-        <svg class="arc-svg w-36 h-36">
-          <circle class="arc-track" cx="72" cy="72" r="58"/>
-          <circle class="arc-fill" stroke="#059669" cx="72" cy="72" r="58"
-            stroke-dasharray="0 364"
-            id="arc-fill"
-            style="stroke-dasharray: calc({{ achievement_prob|default:0 }} * 3.64) 364;"/>
-        </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center">
-          <span class="text-3xl font-bold text-emerald-600" id="prob-num">{{ achievement_prob|default:0 }}%</span>
-          <span class="text-xs text-slate-400 mt-0.5">달성 가능성</span>
-        </div>
-      </div>
-
-      <!-- Prob level label -->
-      <span class="text-sm font-bold px-4 py-1.5 rounded-full
-        {% if achievement_prob >= 70 %}bg-emerald-50 text-emerald-700
-        {% elif achievement_prob >= 40 %}bg-amber-50 text-amber-700
-        {% else %}bg-red-50 text-red-600{% endif %}">
-        {% if achievement_prob >= 70 %}🟢 달성 가능
-        {% elif achievement_prob >= 40 %}🟡 개선 필요
-        {% else %}🔴 위험{% endif %}
-      </span>
-
-      <div class="w-full mt-4 space-y-2">
-        <div class="flex justify-between text-xs text-slate-500">
-          <span>예상 완료일</span>
-          <span class="font-bold text-slate-700">{{ expected_date|default:"—" }}</span>
-        </div>
-        <div class="flex justify-between text-xs text-slate-500">
-          <span>목표 기간 대비</span>
-          <span class="font-bold {% if days_remaining > 0 %}text-emerald-600{% else %}text-red-500{% endif %}">
-            {% if days_remaining > 0 %}D-{{ days_remaining }}{% else %}기간 초과{% endif %}
-          </span>
-        </div>
-        <div class="flex justify-between text-xs text-slate-500">
-          <span>현재 진행률</span>
-          <span class="font-bold text-brand-600">{{ progress_rate|default:0 }}%</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ③ 개선 제안 메시지 + ⑧ 성과 추이 차트 (2/3) -->
-    <div class="lg:col-span-2 space-y-4">
-
-      <!-- 개선 제안 메시지 -->
-      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-        <h2 class="font-bold text-slate-800 flex items-center gap-2 mb-3">
-          <span class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-sm">💡</span>
-          AI 개선 제안
-          <span class="text-xs font-normal text-slate-400 ml-1">GPT-4o 생성</span>
-        </h2>
-        <div class="space-y-2" id="suggestion-list">
-          {% for suggestion in ai_suggestions %}
-          <div class="flex items-start gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-            <span class="text-emerald-500 mt-0.5 flex-shrink-0">
-              {% if forloop.counter == 1 %}🎯{% elif forloop.counter == 2 %}📅{% elif forloop.counter == 3 %}👥{% else %}📈{% endif %}
-            </span>
-            <p class="text-sm text-slate-700 leading-relaxed">{{ suggestion }}</p>
-          </div>
-          {% empty %}
-          <div class="text-center py-6 text-slate-400 text-sm">
-            <p>아직 개선 제안이 없습니다.</p>
-            <p class="text-xs mt-1">예측 갱신을 실행하면 AI가 제안을 생성합니다.</p>
-          </div>
-          {% endfor %}
-        </div>
-        {% if is_leader %}
-        <button onclick="generateSuggestions()"
-          class="mt-3 w-full text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl py-2 transition-colors flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          제안 새로 생성
-        </button>
-        {% endif %}
-      </div>
-
-      <!-- ⑧ 성과 추이 차트 -->
-      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-slate-800 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-sm">📊</span>
-            주차별 성과 추이
-          </h2>
-          <div class="flex items-center gap-3 text-xs text-slate-500">
-            <span class="flex items-center gap-1.5">
-              <span class="w-3 h-0.5 bg-emerald-500 inline-block rounded"></span>실제 달성률
-            </span>
-            <span class="flex items-center gap-1.5">
-              <span class="w-3 h-0.5 bg-slate-300 inline-block rounded" style="border-top:2px dashed #94a3b8;height:0"></span>목표
-            </span>
-          </div>
-        </div>
-        <div class="relative" style="height:180px;">
-          <canvas id="achievement-chart"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ④ AI 플래너 챗봇 ── -->
-  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:80ms">
-    <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-      <h2 class="font-bold text-slate-800 flex items-center gap-2">
-        <span class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-sm">🤖</span>
-        AI 스터디 플래너 챗봇
-        <span class="text-xs font-normal text-slate-400">목표를 입력하면 최적 일정을 생성합니다</span>
-      </h2>
-      <button onclick="clearChat()"
-        class="text-xs text-slate-400 hover:text-slate-600 transition-colors">초기화</button>
-    </div>
-
-    <!-- Chat messages -->
-    <div class="flex flex-col gap-3 p-5 overflow-y-auto" style="max-height:320px; min-height:200px;" id="chat-messages">
-      <!-- AI welcome message -->
-      <div class="bubble-ai">
-        안녕하세요! 👋 AI 스터디 플래너입니다.<br>
-        <strong>학습 목표, 준비 기간, 주간 가용 시간</strong>을 알려주시면 최적의 스터디 일정을 만들어 드립니다.
-        <div class="flex flex-wrap gap-1.5 mt-2">
-          <button class="suggest-chip" onclick="sendSuggest('토익 900점, 3개월, 주 10시간')">토익 900점 준비</button>
-          <button class="suggest-chip" onclick="sendSuggest('정보처리기사 합격, 2개월, 주 15시간')">정처기 합격</button>
-          <button class="suggest-chip" onclick="sendSuggest('파이썬 기초 완성, 1개월, 주 8시간')">파이썬 기초</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Chat input -->
-    <div class="px-5 pb-5 pt-2 border-t border-slate-100">
-      <div class="flex gap-2">
-        <textarea id="chat-input" class="chat-input" rows="1"
-          placeholder="목표, 기간, 주간 시간을 입력하세요 (예: 토익 900점, 3개월, 주 10시간)"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
-          oninput="autoResize(this)"></textarea>
-        <button onclick="sendChat()" id="send-btn"
-          class="flex-shrink-0 w-10 h-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl flex items-center justify-center transition-colors shadow-sm self-end">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-          </svg>
-        </button>
-      </div>
-      <p class="text-xs text-slate-400 mt-1.5">Shift+Enter로 줄바꿈, Enter로 전송</p>
-    </div>
-  </div>
-
-  <!-- ⑤ 생성된 일정 미리보기 + ⑦ 학습 자료 추천 ── -->
-  <div id="schedule-section" class="{% if not generated_schedule %}hidden{% endif %} fade-up" style="animation-delay:120ms">
-
-    <!-- Tab menu -->
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-      <div class="border-b border-slate-100 flex">
-        <button onclick="switchTab('schedule', this)" class="tab-btn active flex-shrink-0 px-5 sm:px-6 py-4 text-sm text-slate-500 hover:text-emerald-600 transition-colors border-b-2 border-transparent">
-          📅 생성된 일정
-        </button>
-        <button onclick="switchTab('resources', this)" class="tab-btn flex-shrink-0 px-5 sm:px-6 py-4 text-sm text-slate-500 hover:text-emerald-600 transition-colors border-b-2 border-transparent">
-          📚 학습 자료 추천
-        </button>
-      </div>
-
-      <!-- ⑤ Schedule tab -->
-      <div id="tab-schedule" class="p-5 sm:p-6">
-        <div class="flex items-center justify-between mb-4">
+      <!-- ── Blue gradient banner ── -->
+      <div class="rounded-2xl p-5 sm:p-6 text-white fade-up" style="background:linear-gradient(135deg,#0d44c4 0%,#1055e8 50%,#3a74ef 100%);animation-delay:0ms">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h2 class="font-bold text-slate-800">생성된 스터디 일정</h2>
-            <p class="text-xs text-slate-400 mt-0.5" id="schedule-meta">AI가 생성한 주간 일정입니다.</p>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="ai-badge">⏱️ AI Planner</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold">AI 플래너</h1>
+            <p class="text-white/60 text-sm mt-1">{{ group.name }} · 목표: {{ group.goal|default:"미설정" }}</p>
           </div>
-          {% if is_leader %}
-          <button onclick="applySchedule()"
-            class="flex items-center gap-2 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl transition-colors shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            그룹에 적용
-          </button>
-          {% endif %}
-        </div>
 
-        <div id="week-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {% for week in generated_schedule %}
-          <div class="week-card p-4">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                {{ week.week_label }}
-              </span>
-              <span class="text-xs font-semibold px-2 py-0.5 rounded-full
-                {% if week.difficulty == '상' %}diff-hard
-                {% elif week.difficulty == '중' %}diff-medium
-                {% else %}diff-easy{% endif %}">
-                난이도 {{ week.difficulty }}
-              </span>
+          <div class="flex flex-wrap gap-2 items-center">
+            <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
+              <p class="text-lg font-bold text-blue-200">{{ achievement_prob|default:"—" }}%</p>
+              <p class="text-xs opacity-60 mt-0.5">달성 확률</p>
             </div>
-            <p class="font-bold text-slate-800 text-sm mb-1.5">{{ week.topic }}</p>
-            <p class="text-xs text-slate-500 mb-3 leading-relaxed">{{ week.description }}</p>
-            <div class="flex items-center gap-3 text-xs text-slate-400">
-              <span>⏱ {{ week.hours }}시간</span>
-              <span>📎 {{ week.materials_count }}개 자료</span>
+            <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
+              <p class="text-lg font-bold text-yellow-200">{{ expected_date|default:"—" }}</p>
+              <p class="text-xs opacity-60 mt-0.5">예상 완료일</p>
             </div>
-            <div class="mt-3 mbar">
-              <div class="mbar-fill bg-emerald-400" style="width:{{ week.completion_rate|default:0 }}%"></div>
+            <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
+              <p class="text-lg font-bold text-white">{{ progress_rate|default:0 }}%</p>
+              <p class="text-xs opacity-60 mt-0.5">진행률</p>
             </div>
-            <p class="text-right text-xs text-slate-400 mt-1">달성 {{ week.completion_rate|default:0 }}%</p>
-          </div>
-          {% endfor %}
-        </div>
-
-        <!-- Placeholder when no schedule yet -->
-        <div id="schedule-placeholder" class="{% if generated_schedule %}hidden{% endif %} text-center py-12 text-slate-400">
-          <p class="text-3xl mb-3">📅</p>
-          <p class="text-sm font-semibold text-slate-500 mb-1">아직 생성된 일정이 없습니다</p>
-          <p class="text-xs">위 챗봇에서 목표를 입력하면 AI가 일정을 생성합니다.</p>
-        </div>
-      </div>
-
-      <!-- ⑦ Resources tab -->
-      <div id="tab-resources" class="hidden p-5 sm:p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-slate-800">AI 학습 자료 추천</h2>
-          <p class="text-xs text-slate-400">세션 주제 기반 키워드 추천</p>
-        </div>
-
-        <div id="resource-recommend-list" class="space-y-3">
-          {% for item in resource_recommendations %}
-          <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-emerald-200 transition-colors">
-            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0">
-              {% if item.type == '영상' %}🎬
-              {% elif item.type == '문서' %}📄
-              {% elif item.type == '사이트' %}🌐
-              {% elif item.type == '도서' %}📚
-              {% else %}🔗{% endif %}
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1 flex-wrap">
-                <p class="font-semibold text-slate-800 text-sm">{{ item.title }}</p>
-                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">{{ item.type }}</span>
-                <span class="text-xs px-2 py-0.5 rounded-full
-                  {% if item.difficulty == '상' %}diff-hard{% elif item.difficulty == '중' %}diff-medium{% else %}diff-easy{% endif %}">
-                  {{ item.difficulty }}
-                </span>
-              </div>
-              <p class="text-xs text-slate-500 mb-2">{{ item.description }}</p>
-              <div class="flex flex-wrap gap-1.5">
-                {% for keyword in item.keywords %}
-                <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded-full">#{{ keyword }}</span>
-                {% endfor %}
-              </div>
-            </div>
-            {% if item.url %}
-            <a href="{{ item.url }}" target="_blank"
-              class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
+            {% if is_leader %}
+            <button onclick="runPrediction()"
+              class="flex items-center gap-2 bg-white text-[#1055e8] text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-blue-50 transition-all">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
-            </a>
+              예측 갱신
+            </button>
             {% endif %}
           </div>
-          {% empty %}
-          <div class="text-center py-10 text-slate-400 text-sm">
-            <p class="text-2xl mb-2">📚</p>
-            <p>일정이 생성되면 AI가 자료를 추천합니다.</p>
-          </div>
-          {% endfor %}
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ⑥ 일정 그룹 적용 이력 ── -->
-  {% if applied_schedules %}
-  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:160ms">
-    <div class="px-5 sm:px-6 py-4 border-b border-slate-100">
-      <h2 class="font-bold text-slate-800 flex items-center gap-2">
-        <span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-sm">📋</span>
-        일정 적용 이력
-      </h2>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="sticky-head">
-          <tr class="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
-            <th class="text-left px-5 py-3">적용일</th>
-            <th class="text-left px-4 py-3">목표</th>
-            <th class="text-center px-4 py-3">세션 수</th>
-            <th class="text-center px-4 py-3">진행률</th>
-            <th class="text-center px-4 py-3">상태</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-50">
-          {% for hist in applied_schedules %}
-          <tr class="hover:bg-slate-50 transition-colors {% if hist.is_active %}applied-row{% endif %}">
-            <td class="px-5 py-3 text-slate-400 font-mono text-xs">{{ hist.applied_at|date:"Y.m.d" }}</td>
-            <td class="px-4 py-3 font-medium text-slate-700">{{ hist.goal }}</td>
-            <td class="px-4 py-3 text-center text-slate-600">{{ hist.session_count }}개</td>
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-2">
-                <div class="flex-1 mbar"><div class="mbar-fill bg-emerald-400" style="width:{{ hist.progress }}%"></div></div>
-                <span class="text-xs font-bold text-emerald-600 w-8 text-right">{{ hist.progress }}%</span>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span class="text-xs font-semibold px-2.5 py-1 rounded-full
-                {% if hist.is_active %}bg-emerald-50 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
-                {% if hist.is_active %}진행 중{% else %}완료{% endif %}
+      <!-- ①② 목표 달성 예측 + 예상 완료일 ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 fade-up" style="animation-delay:40ms">
+
+        <!-- Prediction arc card -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col items-center justify-center">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">목표 달성 확률</p>
+
+          <!-- Arc SVG -->
+          <div class="relative mb-4">
+            <svg class="arc-svg w-36 h-36">
+              <circle class="arc-track" cx="72" cy="72" r="58"/>
+              <circle class="arc-fill" stroke="#1055e8" cx="72" cy="72" r="58"
+                stroke-dasharray="0 364"
+                id="arc-fill"
+                style="stroke-dasharray: calc({{ achievement_prob|default:0 }} * 3.64) 364;"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-3xl font-bold text-[#1055e8]" id="prob-num">{{ achievement_prob|default:0 }}%</span>
+              <span class="text-xs text-slate-400 mt-0.5">달성 가능성</span>
+            </div>
+          </div>
+
+          <!-- Prob level label -->
+          <span class="text-sm font-bold px-4 py-1.5 rounded-full
+            {% if achievement_prob >= 70 %}bg-emerald-50 text-emerald-700
+            {% elif achievement_prob >= 40 %}bg-amber-50 text-amber-700
+            {% else %}bg-red-50 text-red-600{% endif %}">
+            {% if achievement_prob >= 70 %}🟢 달성 가능
+            {% elif achievement_prob >= 40 %}🟡 개선 필요
+            {% else %}🔴 위험{% endif %}
+          </span>
+
+          <div class="w-full mt-4 space-y-2">
+            <div class="flex justify-between text-xs text-slate-500">
+              <span>예상 완료일</span>
+              <span class="font-bold text-slate-700">{{ expected_date|default:"—" }}</span>
+            </div>
+            <div class="flex justify-between text-xs text-slate-500">
+              <span>목표 기간 대비</span>
+              <span class="font-bold {% if days_remaining > 0 %}text-emerald-600{% else %}text-red-500{% endif %}">
+                {% if days_remaining > 0 %}D-{{ days_remaining }}{% else %}기간 초과{% endif %}
               </span>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
+            </div>
+            <div class="flex justify-between text-xs text-slate-500">
+              <span>현재 진행률</span>
+              <span class="font-bold text-[#1055e8]">{{ progress_rate|default:0 }}%</span>
+            </div>
+          </div>
+        </div>
 
-</div><!-- /main -->
+        <!-- ③ 개선 제안 메시지 + ⑧ 성과 추이 차트 (2/3) -->
+        <div class="lg:col-span-2 space-y-4">
+
+          <!-- 개선 제안 메시지 -->
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <h2 class="font-bold text-slate-800 flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-sm">💡</span>
+              AI 개선 제안
+              <span class="text-xs font-normal text-slate-400 ml-1">GPT-4o 생성</span>
+            </h2>
+            <div class="space-y-2" id="suggestion-list">
+              {% for suggestion in ai_suggestions %}
+              <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                <span class="text-[#1055e8] mt-0.5 flex-shrink-0">
+                  {% if forloop.counter == 1 %}🎯{% elif forloop.counter == 2 %}📅{% elif forloop.counter == 3 %}👥{% else %}📈{% endif %}
+                </span>
+                <p class="text-sm text-slate-700 leading-relaxed">{{ suggestion }}</p>
+              </div>
+              {% empty %}
+              <div class="text-center py-6 text-slate-400 text-sm">
+                <p>아직 개선 제안이 없습니다.</p>
+                <p class="text-xs mt-1">예측 갱신을 실행하면 AI가 제안을 생성합니다.</p>
+              </div>
+              {% endfor %}
+            </div>
+            {% if is_leader %}
+            <button onclick="generateSuggestions()"
+              class="mt-3 w-full text-xs font-semibold text-[#1055e8] hover:text-[#0d44c4] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl py-2 transition-colors flex items-center justify-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              제안 새로 생성
+            </button>
+            {% endif %}
+          </div>
+
+          <!-- ⑧ 성과 추이 차트 -->
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-bold text-slate-800 flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-sm">📊</span>
+                주차별 성과 추이
+              </h2>
+              <div class="flex items-center gap-3 text-xs text-slate-500">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-3 h-0.5 bg-[#1055e8] inline-block rounded"></span>실제 달성률
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-3 h-0.5 bg-slate-300 inline-block rounded" style="border-top:2px dashed #94a3b8;height:0"></span>목표
+                </span>
+              </div>
+            </div>
+            <div class="relative" style="height:180px;">
+              <canvas id="achievement-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ④ AI 플래너 챗봇 ── -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:80ms">
+        <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 class="font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-sm">🤖</span>
+            AI 스터디 플래너 챗봇
+            <span class="text-xs font-normal text-slate-400">목표를 입력하면 최적 일정을 생성합니다</span>
+          </h2>
+          <button onclick="clearChat()"
+            class="text-xs text-slate-400 hover:text-slate-600 transition-colors">초기화</button>
+        </div>
+
+        <!-- Chat messages -->
+        <div class="flex flex-col gap-3 p-5 overflow-y-auto" style="max-height:320px; min-height:200px;" id="chat-messages">
+          <!-- AI welcome message -->
+          <div class="bubble-ai">
+            안녕하세요! 👋 AI 스터디 플래너입니다.<br>
+            <strong>학습 목표, 준비 기간, 주간 가용 시간</strong>을 알려주시면 최적의 스터디 일정을 만들어 드립니다.
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              <button class="suggest-chip" onclick="sendSuggest('토익 900점, 3개월, 주 10시간')">토익 900점 준비</button>
+              <button class="suggest-chip" onclick="sendSuggest('정보처리기사 합격, 2개월, 주 15시간')">정처기 합격</button>
+              <button class="suggest-chip" onclick="sendSuggest('파이썬 기초 완성, 1개월, 주 8시간')">파이썬 기초</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat input -->
+        <div class="px-5 pb-5 pt-2 border-t border-slate-100">
+          <div class="flex gap-2">
+            <textarea id="chat-input" class="chat-input" rows="1"
+              placeholder="목표, 기간, 주간 시간을 입력하세요 (예: 토익 900점, 3개월, 주 10시간)"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+              oninput="autoResize(this)"></textarea>
+            <button onclick="sendChat()" id="send-btn"
+              class="flex-shrink-0 w-10 h-10 bg-[#1055e8] hover:bg-[#0d44c4] text-white rounded-xl flex items-center justify-center transition-colors shadow-sm self-end">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+            </button>
+          </div>
+          <p class="text-xs text-slate-400 mt-1.5">Shift+Enter로 줄바꿈, Enter로 전송</p>
+        </div>
+      </div>
+
+      <!-- ⑤ 생성된 일정 미리보기 + ⑦ 학습 자료 추천 ── -->
+      <div id="schedule-section" class="{% if not generated_schedule %}hidden{% endif %} fade-up" style="animation-delay:120ms">
+
+        <!-- Tab menu -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div class="border-b border-slate-100 flex">
+            <button onclick="switchTab('schedule', this)" class="tab-btn active flex-shrink-0 px-5 sm:px-6 py-4 text-sm hover:text-[#1055e8] transition-colors border-b-2 border-transparent">
+              📅 생성된 일정
+            </button>
+            <button onclick="switchTab('resources', this)" class="tab-btn flex-shrink-0 px-5 sm:px-6 py-4 text-sm hover:text-[#1055e8] transition-colors border-b-2 border-transparent">
+              📚 학습 자료 추천
+            </button>
+          </div>
+
+          <!-- ⑤ Schedule tab -->
+          <div id="tab-schedule" class="p-5 sm:p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="font-bold text-slate-800">생성된 스터디 일정</h2>
+                <p class="text-xs text-slate-400 mt-0.5" id="schedule-meta">AI가 생성한 주간 일정입니다.</p>
+              </div>
+              {% if is_leader %}
+              <button onclick="applySchedule()"
+                class="flex items-center gap-2 text-sm font-bold text-white bg-[#1055e8] hover:bg-[#0d44c4] px-4 py-2 rounded-xl transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                그룹에 적용
+              </button>
+              {% endif %}
+            </div>
+
+            <div id="week-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {% for week in generated_schedule %}
+              <div class="week-card p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold text-[#1055e8] bg-blue-50 px-2.5 py-1 rounded-full">
+                    {{ week.week_label }}
+                  </span>
+                  <span class="text-xs font-semibold px-2 py-0.5 rounded-full
+                    {% if week.difficulty == '상' %}diff-hard
+                    {% elif week.difficulty == '중' %}diff-medium
+                    {% else %}diff-easy{% endif %}">
+                    난이도 {{ week.difficulty }}
+                  </span>
+                </div>
+                <p class="font-bold text-slate-800 text-sm mb-1.5">{{ week.topic }}</p>
+                <p class="text-xs text-slate-500 mb-3 leading-relaxed">{{ week.description }}</p>
+                <div class="flex items-center gap-3 text-xs text-slate-400">
+                  <span>⏱ {{ week.hours }}시간</span>
+                  <span>📎 {{ week.materials_count }}개 자료</span>
+                </div>
+                <div class="mt-3 mbar">
+                  <div class="mbar-fill bg-[#1055e8]" style="width:{{ week.completion_rate|default:0 }}%"></div>
+                </div>
+                <p class="text-right text-xs text-slate-400 mt-1">달성 {{ week.completion_rate|default:0 }}%</p>
+              </div>
+              {% endfor %}
+            </div>
+
+            <!-- Placeholder when no schedule yet -->
+            <div id="schedule-placeholder" class="{% if generated_schedule %}hidden{% endif %} text-center py-12 text-slate-400">
+              <p class="text-3xl mb-3">📅</p>
+              <p class="text-sm font-semibold text-slate-500 mb-1">아직 생성된 일정이 없습니다</p>
+              <p class="text-xs">위 챗봇에서 목표를 입력하면 AI가 일정을 생성합니다.</p>
+            </div>
+          </div>
+
+          <!-- ⑦ Resources tab -->
+          <div id="tab-resources" class="hidden p-5 sm:p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-bold text-slate-800">AI 학습 자료 추천</h2>
+              <p class="text-xs text-slate-400">세션 주제 기반 키워드 추천</p>
+            </div>
+
+            <div id="resource-recommend-list" class="space-y-3">
+              {% for item in resource_recommendations %}
+              <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg flex-shrink-0">
+                  {% if item.type == '영상' %}🎬
+                  {% elif item.type == '문서' %}📄
+                  {% elif item.type == '사이트' %}🌐
+                  {% elif item.type == '도서' %}📚
+                  {% else %}🔗{% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <p class="font-semibold text-slate-800 text-sm">{{ item.title }}</p>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">{{ item.type }}</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full
+                      {% if item.difficulty == '상' %}diff-hard{% elif item.difficulty == '중' %}diff-medium{% else %}diff-easy{% endif %}">
+                      {{ item.difficulty }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mb-2">{{ item.description }}</p>
+                  <div class="flex flex-wrap gap-1.5">
+                    {% for keyword in item.keywords %}
+                    <span class="text-xs bg-blue-50 text-[#1055e8] border border-blue-100 px-2 py-0.5 rounded-full">#{{ keyword }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% if item.url %}
+                <a href="{{ item.url }}" target="_blank"
+                  class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#1055e8] hover:bg-blue-50 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                </a>
+                {% endif %}
+              </div>
+              {% empty %}
+              <div class="text-center py-10 text-slate-400 text-sm">
+                <p class="text-2xl mb-2">📚</p>
+                <p>일정이 생성되면 AI가 자료를 추천합니다.</p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑥ 일정 그룹 적용 이력 ── -->
+      {% if applied_schedules %}
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:160ms">
+        <div class="px-5 sm:px-6 py-4 border-b border-slate-100">
+          <h2 class="font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-sm">📋</span>
+            일정 적용 이력
+          </h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="sticky-head">
+              <tr class="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
+                <th class="text-left px-5 py-3">적용일</th>
+                <th class="text-left px-4 py-3">목표</th>
+                <th class="text-center px-4 py-3">세션 수</th>
+                <th class="text-center px-4 py-3">진행률</th>
+                <th class="text-center px-4 py-3">상태</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              {% for hist in applied_schedules %}
+              <tr class="hover:bg-slate-50 transition-colors {% if hist.is_active %}applied-row{% endif %}">
+                <td class="px-5 py-3 text-slate-400 font-mono text-xs">{{ hist.applied_at|date:"Y.m.d" }}</td>
+                <td class="px-4 py-3 font-medium text-slate-700">{{ hist.goal }}</td>
+                <td class="px-4 py-3 text-center text-slate-600">{{ hist.session_count }}개</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 mbar"><div class="mbar-fill bg-[#1055e8]" style="width:{{ hist.progress }}%"></div></div>
+                    <span class="text-xs font-bold text-[#1055e8] w-8 text-right">{{ hist.progress }}%</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full
+                    {% if hist.is_active %}bg-blue-50 text-[#1055e8]{% else %}bg-slate-100 text-slate-500{% endif %}">
+                    {% if hist.is_active %}진행 중{% else %}완료{% endif %}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+    </div><!-- /content area -->
+  </main>
+</div><!-- /mainContainer -->
 
 <!-- ─────────────────────────────────────
      JAVASCRIPT
@@ -537,13 +578,13 @@ new Chart(achCtx, {
       {
         label: '실제 달성률',
         data: achActual,
-        borderColor: '#059669',
+        borderColor: '#1055e8',
         backgroundColor: ctx => {
           const g = ctx.chart.ctx.createLinearGradient(0,0,0,160);
-          g.addColorStop(0,'rgba(5,150,105,0.15)'); g.addColorStop(1,'rgba(5,150,105,0)');
+          g.addColorStop(0,'rgba(16,85,232,0.15)'); g.addColorStop(1,'rgba(16,85,232,0)');
           return g;
         },
-        borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#059669',
+        borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#1055e8',
         fill:true, tension:0.4,
       },
       {
@@ -669,7 +710,7 @@ function renderSchedule(schedule, meta) {
   grid.innerHTML = schedule.map(w => `
     <div class="week-card p-4">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">${w.week_label}</span>
+        <span class="text-xs font-bold text-[#1055e8] bg-blue-50 px-2.5 py-1 rounded-full">${w.week_label}</span>
         <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${diffClass(w.difficulty)}">난이도 ${w.difficulty}</span>
       </div>
       <p class="font-bold text-slate-800 text-sm mb-1.5">${escHtml(w.topic)}</p>
@@ -678,7 +719,7 @@ function renderSchedule(schedule, meta) {
         <span>⏱ ${w.hours}시간</span>
         <span>📎 ${w.materials_count||0}개 자료</span>
       </div>
-      <div class="mt-3 mbar"><div class="mbar-fill bg-emerald-400" style="width:0%"></div></div>
+      <div class="mt-3 mbar"><div class="mbar-fill bg-[#1055e8]" style="width:0%"></div></div>
       <p class="text-right text-xs text-slate-400 mt-1">달성 0%</p>
     </div>`).join('');
 }
@@ -692,10 +733,10 @@ function renderResources(items) {
   const list = document.getElementById('resource-recommend-list');
   list.innerHTML = items.map(item => {
     const typeIcon = {영상:'🎬',문서:'📄',사이트:'🌐',도서:'📚'}[item.type] || '🔗';
-    const keywords = (item.keywords||[]).map(k=>`<span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded-full">#${escHtml(k)}</span>`).join(' ');
+    const keywords = (item.keywords||[]).map(k=>`<span class="text-xs bg-blue-50 text-[#1055e8] border border-blue-100 px-2 py-0.5 rounded-full">#${escHtml(k)}</span>`).join(' ');
     return `
-      <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-emerald-200 transition-colors">
-        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0">${typeIcon}</div>
+      <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg flex-shrink-0">${typeIcon}</div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1 flex-wrap">
             <p class="font-semibold text-slate-800 text-sm">${escHtml(item.title)}</p>
@@ -705,7 +746,7 @@ function renderResources(items) {
           <p class="text-xs text-slate-500 mb-2">${escHtml(item.description)}</p>
           <div class="flex flex-wrap gap-1.5">${keywords}</div>
         </div>
-        ${item.url ? `<a href="${escHtml(item.url)}" target="_blank" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
+        ${item.url ? `<a href="${escHtml(item.url)}" target="_blank" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#1055e8] hover:bg-blue-50 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>` : ''}
       </div>`;
   }).join('');
@@ -718,14 +759,14 @@ async function runPrediction() {
     html:`최신 출석 데이터를 기반으로 목표 달성 확률을 다시 계산합니다.<br>
           <span style="font-size:12px;color:#94a3b8;">약 10~20초 소요됩니다.</span>`,
     showCancelButton:true, confirmButtonText:'실행', cancelButtonText:'취소',
-    confirmButtonColor:'#059669',
+    confirmButtonColor:'#1055e8',
   });
   if (!result.isConfirmed) return;
 
   Swal.fire({
     title:'예측 중...', allowOutsideClick:false, showConfirmButton:false,
     html:`<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px">
-            <div class="spin" style="width:40px;height:40px;border:4px solid #d1fae5;border-top-color:#059669;border-radius:50%;"></div>
+            <div class="spin" style="width:40px;height:40px;border:4px solid #dce6fd;border-top-color:#1055e8;border-radius:50%;"></div>
             <p style="font-size:13px;color:#64748b;">데이터 분석 중...</p>
           </div>`,
   });
@@ -735,15 +776,15 @@ async function runPrediction() {
     const d   = res.data;
     Swal.fire({
       icon:'success', title:'예측 완료',
-      html:`목표 달성 확률: <strong style="color:#059669;font-size:20px">${d.achievement_prob}%</strong><br>
+      html:`목표 달성 확률: <strong style="color:#1055e8;font-size:20px">${d.achievement_prob}%</strong><br>
             예상 완료일: <strong>${d.expected_date}</strong>`,
-      confirmButtonColor:'#059669',
+      confirmButtonColor:'#1055e8',
     });
     // Update DOM
     document.getElementById('prob-num').textContent = d.achievement_prob + '%';
     document.getElementById('arc-fill').style.strokeDasharray = `${d.achievement_prob * 3.64} 364`;
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'예측 중 오류가 발생했습니다.', confirmButtonColor:'#059669' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'예측 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -758,15 +799,15 @@ async function generateSuggestions() {
     const suggestions = res.data.suggestions || [];
     const icons = ['🎯','📅','👥','📈','💪','🔥'];
     document.getElementById('suggestion-list').innerHTML = suggestions.map((s,i) => `
-      <div class="flex items-start gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-        <span class="text-emerald-500 mt-0.5 flex-shrink-0">${icons[i]||'💡'}</span>
+      <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+        <span class="text-[#1055e8] mt-0.5 flex-shrink-0">${icons[i]||'💡'}</span>
         <p class="text-sm text-slate-700 leading-relaxed">${escHtml(s)}</p>
       </div>`).join('');
 
     btn.disabled = false;
     btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> 제안 새로 생성';
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:'제안 생성 중 오류가 발생했습니다.', confirmButtonColor:'#059669' });
+    Swal.fire({ icon:'error', title:'오류', text:'제안 생성 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -774,7 +815,7 @@ async function generateSuggestions() {
 async function applySchedule() {
   const weeks = document.querySelectorAll('#week-grid .week-card').length;
   if (!weeks) {
-    Swal.fire({ icon:'warning', title:'일정 없음', text:'먼저 챗봇으로 일정을 생성해 주세요.', confirmButtonColor:'#059669' });
+    Swal.fire({ icon:'warning', title:'일정 없음', text:'먼저 챗봇으로 일정을 생성해 주세요.', confirmButtonColor:'#1055e8' });
     return;
   }
 
@@ -783,7 +824,7 @@ async function applySchedule() {
     html:`<strong>${weeks}주</strong> 스터디 일정을 그룹 세션에 등록합니다.<br>
           <span style="font-size:12px;color:#94a3b8;">AttendanceSession이 자동 생성됩니다.</span>`,
     showCancelButton:true, confirmButtonText:'적용', cancelButtonText:'취소',
-    confirmButtonColor:'#059669',
+    confirmButtonColor:'#1055e8',
     input:'date', inputLabel:'시작일', inputPlaceholder:'시작 날짜를 선택하세요',
     inputAttributes:{ min: new Date().toISOString().split('T')[0] },
   });
@@ -797,11 +838,11 @@ async function applySchedule() {
     Swal.fire({
       icon:'success', title:'적용 완료',
       text:`${weeks}주 일정이 그룹 세션으로 등록되었습니다.`,
-      confirmButtonColor:'#059669',
+      confirmButtonColor:'#1055e8',
     });
     setTimeout(() => location.reload(), 1800);
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'적용 중 오류가 발생했습니다.', confirmButtonColor:'#059669' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'적용 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -819,6 +860,13 @@ function escHtml(str) {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
+
+// ── Sidebar helpers (for mobile) ──────────
+function closeSidebar() {
+  document.querySelector('#mainContainer > aside')?.classList.remove('open');
+  document.getElementById('sidebarOverlay')?.classList.remove('show');
+}
 </script>
+{% include 'inc_common_scripts.html' %}
 </body>
 </html>

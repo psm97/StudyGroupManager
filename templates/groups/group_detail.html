@@ -1,43 +1,39 @@
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- SweetAlert2 -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.all.min.js"></script>
 <!-- Axios -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
 <!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Google Fonts: Noto Sans KR + DM Serif Display -->
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Pretendard Font -->
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <script>
   tailwind.config = {
     theme: {
       extend: {
         fontFamily: {
-          sans: ['Noto Sans KR', 'sans-serif'],
-          display: ['DM Serif Display', 'sans-serif'],
+          sans: ['Pretendard', 'sans-serif'],
         },
         colors: {
           brand: {
-            50:  '#f0f7ff',
-            100: '#e0effe',
-            200: '#bae0fd',
-            300: '#7cc6fb',
-            400: '#36a9f7',
-            500: '#0c8ee8',
-            600: '#0070c5',
-            700: '#0059a0',
-            800: '#034c84',
-            900: '#08406e',
-            950: '#052949',
+            50:  '#eef3ff',
+            100: '#dce6fd',
+            200: '#bacefc',
+            300: '#88a8f8',
+            400: '#5580f4',
+            500: '#1055e8',
+            600: '#0d44c4',
+            700: '#0a36a0',
           },
           surface: '#f8fafc',
           card: '#ffffff',
         },
         boxShadow: {
           card: '0 2px 8px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
-          'card-hover': '0 8px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(12,142,232,0.2)',
+          'card-hover': '0 8px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(16,85,232,0.2)',
         },
         animation: {
           'fade-in': 'fadeIn 0.4s ease forwards',
@@ -54,16 +50,16 @@
 
 <style>
   :root {
-    --brand-500: #0c8ee8;
-    --brand-600: #0070c5;
+    --brand-500: #1055e8;
+    --brand-600: #0d44c4;
   }
 
-  body { font-family: 'Noto Sans KR', sans-serif; background: #f1f5f9; }
+  body { font-family: 'Pretendard', sans-serif; background: #f1f5f9; }
 
   /* Tab active style */
   .tab-btn.active {
-    color: #0c8ee8;
-    border-bottom: 2.5px solid #0c8ee8;
+    color: #1055e8;
+    border-bottom: 2.5px solid #1055e8;
     font-weight: 600;
   }
 
@@ -82,7 +78,7 @@
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
   .group-header-bg {
-    background: linear-gradient(135deg, #0059a0 0%, #0c8ee8 60%, #36a9f7 100%);
+    background: linear-gradient(135deg, #0d44c4 0%, #1055e8 60%, #3a74ef 100%);
   }
 
   .tab-panel { display: none; }
@@ -135,7 +131,7 @@
   .progress-fill {
     height: 100%;
     border-radius: 99px;
-    background: linear-gradient(90deg, #0c8ee8, #36a9f7);
+    background: linear-gradient(90deg, #1055e8, #3a74ef);
     transition: width 0.6s ease;
   }
 </style>
@@ -259,7 +255,7 @@
         <div class="relative mx-auto w-14 h-14 mb-2">
             <img src="{{ membership.user.profile_image.url }}" alt="{{ membership.user.nickname }}"
               class="w-14 h-14 rounded-full object-cover border-2 border-white shadow">
-            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold text-xl shadow">
+            <div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow" style="background:linear-gradient(135deg,#3a74ef,#0d44c4);">
               {{ membership.user.nickname|first|upper }}
             </div>
           <span class="absolute -bottom-1 -right-1 text-xs bg-amber-400 text-white rounded-full px-1.5 py-0.5 font-bold shadow">👑</span>
@@ -684,7 +680,7 @@ function delegateLeader(userId, nickname) {
     showCancelButton: true,
     confirmButtonText: '위임하기',
     cancelButtonText: '취소',
-    confirmButtonColor: '#0c8ee8',
+    confirmButtonColor: '#1055e8',
   }).then(async result => {
     if (!result.isConfirmed) return;
     try {
@@ -762,7 +758,7 @@ function openSessionCreate() {
     showCancelButton: true,
     confirmButtonText: '생성',
     cancelButtonText: '취소',
-    confirmButtonColor: '#0c8ee8',
+    confirmButtonColor: '#1055e8',
     preConfirm: () => {
       const date = document.getElementById('swal-date').value;
       const topic = document.getElementById('swal-topic').value.trim();
@@ -846,7 +842,7 @@ function openNoticeCreate() {
     showCancelButton: true,
     confirmButtonText: '공지 작성',
     cancelButtonText: '취소',
-    confirmButtonColor: '#0c8ee8',
+    confirmButtonColor: '#1055e8',
     width: '500px',
     preConfirm: () => {
       const title = document.getElementById('swal-notice-title').value.trim();
@@ -877,7 +873,7 @@ function viewNotice(id, title, content, date, isPinned) {
     html: `<div class="text-left text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto">${content}</div>
            <p class="text-xs text-gray-400 mt-4 text-right">${date}</p>`,
     confirmButtonText: '닫기',
-    confirmButtonColor: '#0c8ee8',
+    confirmButtonColor: '#1055e8',
     width: '500px',
   });
 }
@@ -937,7 +933,7 @@ async function editNotice(id) {
     showCancelButton: true,
     confirmButtonText: '수정 완료',
     cancelButtonText: '취소',
-    confirmButtonColor: '#0c8ee8',
+    confirmButtonColor: '#1055e8',
     width: '500px',
     preConfirm: () => {
       const title = document.getElementById('swal-edit-title').value.trim();
@@ -983,7 +979,7 @@ function openFileUpload() {
     showCancelButton: true,
     confirmButtonText: '업로드',
     cancelButtonText: '취소',
-    confirmButtonColor: '#0c8ee8',
+    confirmButtonColor: '#1055e8',
     preConfirm: () => {
       const file = document.getElementById('swal-file').files[0];
       const category = document.getElementById('swal-category').value;
@@ -1013,7 +1009,7 @@ function filterResource(category, btn) {
   document.querySelectorAll('.resource-filter-btn').forEach(b => {
     b.className = 'resource-filter-btn text-xs px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium transition-all';
   });
-  btn.className = 'resource-filter-btn text-xs px-3 py-1.5 rounded-full bg-brand-500 text-white font-medium transition-all';
+  btn.className = 'resource-filter-btn text-xs px-3 py-1.5 rounded-full text-white font-medium transition-all'; btn.style.background = '#1055e8';
 
   document.querySelectorAll('.resource-row').forEach(row => {
     if (category === 'all' || row.dataset.category === category) {

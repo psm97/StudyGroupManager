@@ -5,27 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>관리자 대시보드 | StudyGroupManager</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Noto Sans KR', 'sans-serif'],
-            display: ['DM Serif Display', 'sans-serif'],
-          },
+          fontFamily: { sans: ['Pretendard', 'sans-serif'] },
         }
       }
     }
   </script>
 
   <style>
-    * { font-family: 'Noto Sans KR', sans-serif; }
+    * { font-family: 'Pretendard', sans-serif; }
     body { background: #f1f5f9; }
 
     /* ── Sidebar ── */
@@ -48,7 +45,7 @@
     .nav-item.active { color: #fff; background: rgba(255,255,255,.1); font-weight: 700; }
     .nav-item.active::before {
       content: ''; position: absolute; left: 0; top: 4px; bottom: 4px;
-      width: 3px; background: #0c8ee8; border-radius: 0 3px 3px 0;
+      width: 3px; background: #1055e8; border-radius: 0 3px 3px 0;
     }
     .nav-section {
       font-size: 10px; font-weight: 700; letter-spacing: .1em;
@@ -91,7 +88,7 @@
 
     /* ── Section tab ── */
     .sec-tab { transition: all .15s ease; }
-    .sec-tab.active { background: #0c8ee8; color: #fff; box-shadow: 0 2px 8px rgba(12,142,232,.3); }
+    .sec-tab.active { background: #1055e8; color: #fff; box-shadow: 0 2px 8px rgba(12,142,232,.3); }
 
     /* ── Avatar ── */
     .avatar {
@@ -125,7 +122,7 @@
     .log-item { border-left: 3px solid #e2e8f0; padding-left: 12px; }
     .log-item.danger { border-color: #ef4444; }
     .log-item.warn   { border-color: #f59e0b; }
-    .log-item.info   { border-color: #0c8ee8; }
+    .log-item.info   { border-color: #1055e8; }
     .log-item.success{ border-color: #22c55e; }
 
     /* ── Page sections ── */
@@ -155,7 +152,7 @@
     <div style="padding:20px 18px 16px; border-bottom:1px solid rgba(255,255,255,.06);">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold text-sm"
-             style="background:#0c8ee8;">S</div>
+             style="background:#1055e8;">S</div>
         <div>
           <p style="font-size:14px;font-weight:800;color:#fff;letter-spacing:-.01em;">StudyMgr</p>
           <p style="font-size:10px;color:#64748b;">Admin Console</p>
@@ -212,7 +209,7 @@
     <!-- Admin info -->
     <div style="padding:14px 18px; border-top:1px solid rgba(255,255,255,.06);">
       <div class="flex items-center gap-2.5">
-        <div class="avatar" style="background:linear-gradient(135deg,#0c8ee8,#0059a0);color:#fff;">
+        <div class="avatar" style="background:linear-gradient(135deg,#1055e8,#0d44c4);color:#fff;">
           {{ request.user.nickname|first|upper|default:"A" }}
         </div>
         <div style="min-width:0;">
@@ -401,7 +398,7 @@
                       {% if user.profile_image %}
                         <img src="{{ user.profile_image.url }}" class="w-8 h-8 rounded-full object-cover">
                       {% else %}
-                        <div class="avatar" style="background:linear-gradient(135deg,#0c8ee8,#0059a0);color:#fff;">
+                        <div class="avatar" style="background:linear-gradient(135deg,#1055e8,#0d44c4);color:#fff;">
                           {{ user.nickname|first|upper }}
                         </div>
                       {% endif %}
@@ -884,7 +881,7 @@ if (catCtx) {
       labels:[{% for c in category_stats %}"{{ c.label }}"{% if not forloop.last %},{% endif %}{% endfor %}],
       datasets:[{
         data:[{% for c in category_stats %}{{ c.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
-        backgroundColor:['#0c8ee8','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4'],
+        backgroundColor:['#1055e8','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4'],
         borderWidth:0, hoverOffset:4,
       }]
     },
@@ -937,7 +934,7 @@ async function viewUser(id, name) {
               <div class="bg-slate-50 rounded-xl p-3"><p class="text-xs text-slate-400 mb-0.5">관리자</p><p class="font-semibold">${d.is_staff?'✅ 예':'—'}</p></div>
             </div>
           </div>`,
-    confirmButtonText:'닫기', confirmButtonColor:'#0c8ee8', width:'380px',
+    confirmButtonText:'닫기', confirmButtonColor:'#1055e8', width:'380px',
   });
 }
 
@@ -959,7 +956,7 @@ async function blockUser(id, name) {
     }
     Swal.fire({ icon:'success', title:'차단 완료', timer:1200, showConfirmButton:false, toast:true, position:'top-end' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -975,7 +972,7 @@ async function unblockUser(id, name) {
     Swal.fire({ icon:'success', title:'해제 완료', timer:1200, showConfirmButton:false, toast:true, position:'top-end' });
     setTimeout(() => location.reload(), 1200);
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -991,7 +988,7 @@ async function createAdmin() {
             <input id="sw-admin-pw" type="password" placeholder="8자 이상" class="swal2-input !mx-0 !w-full text-sm"></div>
           </div>`,
     showCancelButton:true, confirmButtonText:'추가', cancelButtonText:'취소',
-    confirmButtonColor:'#0c8ee8', width:'420px',
+    confirmButtonColor:'#1055e8', width:'420px',
     preConfirm: () => {
       const email = document.getElementById('sw-admin-email').value.trim();
       const nick  = document.getElementById('sw-admin-nick').value.trim();
@@ -1007,7 +1004,7 @@ async function createAdmin() {
     Swal.fire({ icon:'success', title:'관리자 추가 완료', timer:1500, showConfirmButton:false });
     setTimeout(() => location.reload(), 1500);
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'추가 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'추가 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -1031,7 +1028,7 @@ async function deleteGroup(id, name) {
     if (row) { row.style.opacity='0'; setTimeout(()=>row.remove(), 300); }
     Swal.fire({ icon:'success', title:'삭제 완료', timer:1200, showConfirmButton:false, toast:true, position:'top-end' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'삭제 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'삭제 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -1050,7 +1047,7 @@ async function resolveReport(id, status) {
     Swal.fire({ icon:'success', title:`${label} 처리 완료`, timer:1200, showConfirmButton:false, toast:true, position:'top-end' });
     setTimeout(() => location.reload(), 1200);
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -1068,7 +1065,7 @@ async function deleteFile(id, name) {
     if (row) { row.style.opacity='0'; setTimeout(()=>row.remove(),300); }
     Swal.fire({ icon:'success', title:'삭제 완료', timer:1200, showConfirmButton:false, toast:true, position:'top-end' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'삭제 중 오류가 발생했습니다.', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'삭제 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -1078,7 +1075,7 @@ async function updateSetting(key, value) {
     await axios.post('/admin-console/settings/', { key, value });
     Swal.fire({ icon:'success', title:'설정 저장됨', timer:1000, showConfirmButton:false, toast:true, position:'top-end' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'저장 실패', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'저장 실패', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -1090,19 +1087,19 @@ async function saveEmailSettings() {
     });
     Swal.fire({ icon:'success', title:'저장 완료', timer:1200, showConfirmButton:false });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'저장 실패', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'저장 실패', confirmButtonColor:'#1055e8' });
   }
 }
 
 async function backupDB() {
   const r = await Swal.fire({ icon:'question', title:'DB 백업', text:'데이터베이스를 백업하시겠습니까?',
-    showCancelButton:true, confirmButtonText:'백업', cancelButtonText:'취소', confirmButtonColor:'#0c8ee8' });
+    showCancelButton:true, confirmButtonText:'백업', cancelButtonText:'취소', confirmButtonColor:'#1055e8' });
   if (!r.isConfirmed) return;
   try {
     await axios.post('/admin-console/backup/');
     Swal.fire({ icon:'success', title:'백업 완료', timer:1500, showConfirmButton:false });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'백업 실패', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'백업 실패', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -1114,7 +1111,7 @@ async function clearCache() {
     await axios.post('/admin-console/clear-cache/');
     Swal.fire({ icon:'success', title:'캐시 초기화 완료', timer:1200, showConfirmButton:false });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'오류', confirmButtonColor:'#1055e8' });
   }
 }
 
@@ -1125,9 +1122,9 @@ async function cleanOldFiles() {
   if (!r.isConfirmed) return;
   try {
     const res = await axios.post('/admin-console/clean-files/');
-    Swal.fire({ icon:'success', title:'정리 완료', text:`${res.data.deleted_count||0}개 파일 삭제됨`, confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'success', title:'정리 완료', text:`${res.data.deleted_count||0}개 파일 삭제됨`, confirmButtonColor:'#1055e8' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', confirmButtonColor:'#0c8ee8' });
+    Swal.fire({ icon:'error', title:'오류', confirmButtonColor:'#1055e8' });
   }
 }
 

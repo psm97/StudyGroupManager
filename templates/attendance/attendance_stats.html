@@ -3,66 +3,149 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <title>출석 통계 — {{ group.name }} | StudyGroupManager</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SweetAlert2 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Axios -->
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Noto Sans KR', 'sans-serif'],
-            display: ['DM Serif Display', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50:  '#f0f7ff',
-              100: '#e0effe',
-              200: '#bae0fd',
-              300: '#7cc6fb',
-              400: '#36a9f7',
-              500: '#0c8ee8',
-              600: '#0070c5',
-              700: '#0059a0',
-              800: '#034c84',
-              900: '#08406e',
-            },
-          },
-        }
-      }
-    }
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- Axios -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.all.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.min.css">
+  <!-- Pretendard Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Noto Sans KR', sans-serif; background: #f1f5f9; }
+    * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; }
 
-    .page-header {
-      background: linear-gradient(135deg, #0059a0 0%, #0c8ee8 60%, #36a9f7 100%);
+    :root {
+      --bg-body:        #dbeafe;
+      --bg-container:   #ffffff;
+      --bg-sidebar:     #ffffff;
+      --bg-header:      #ffffff;
+      --bg-content:     #f8fafc;
+      --bg-card:        #ffffff;
+      --bg-card-hover:  #f0f5fe;
+      --bg-input:       #f8fafc;
+      --bg-skeleton:    #e2e8f0;
+      --bg-nav-hover:   #dce6fd;
+      --bg-badge-member:#f1f5f9;
+      --text-primary:   #1e293b;
+      --text-secondary: #475569;
+      --text-muted:     #94a3b8;
+      --text-heading:   #0f172a;
+      --text-nav:       #475569;
+      --text-nav-hover: #1055e8;
+      --border-default: #f1f5f9;
+      --border-card:    #f1f5f9;
+      --border-input:   #e2e8f0;
+      --border-sidebar: #f1f5f9;
+      --scrollbar-track:#f1f5f9;
+      --swal-bg:        #ffffff;
+      --swal-text:      #1e293b;
+      --shadow-card:    rgba(16,85,232,0.08);
+    }
+
+    html[data-theme="dark"] {
+      --bg-body:        #0c1120;
+      --bg-container:   #111827;
+      --bg-sidebar:     #111827;
+      --bg-header:      #111827;
+      --bg-content:     #0f172a;
+      --bg-card:        #1e293b;
+      --bg-card-hover:  #253347;
+      --bg-input:       #1e293b;
+      --bg-skeleton:    #334155;
+      --bg-nav-hover:   #1a2d52;
+      --bg-badge-member:#334155;
+      --text-primary:   #e2e8f0;
+      --text-secondary: #cbd5e1;
+      --text-muted:     #64748b;
+      --text-heading:   #f1f5f9;
+      --text-nav:       #94a3b8;
+      --text-nav-hover: #93c5fd;
+      --border-default: #1e293b;
+      --border-card:    #334155;
+      --border-input:   #334155;
+      --border-sidebar: #1e293b;
+      --scrollbar-track:#1e293b;
+      --swal-bg:        #1e293b;
+      --swal-text:      #e2e8f0;
+      --shadow-card:    rgba(0,0,0,0.4);
+    }
+
+    body                    { background: var(--bg-body) !important; }
+    #mainContainer          { background: var(--bg-container) !important; }
+    #sidebar                { background: var(--bg-sidebar) !important; border-color: var(--border-sidebar) !important; }
+    header                  { background: var(--bg-header) !important; border-color: var(--border-default) !important; }
+    .flex-1.overflow-y-auto { background: var(--bg-content) !important; }
+
+    #sidebar p.font-bold,
+    #sidebar p.text-sm.leading-tight { color: var(--text-heading) !important; }
+    #sidebar p.text-xs.text-slate-400 { color: var(--text-muted) !important; }
+
+    .nav-link:not(.active)       { color: var(--text-nav) !important; }
+    .nav-link:not(.active):hover { background: var(--bg-nav-hover) !important; color: var(--text-nav-hover) !important; }
+
+    .bg-white, .bg-card,
+    [class*="bg-white"]          { background: var(--bg-card) !important; }
+    .border-slate-100,
+    [class*="border-slate-100"]  { border-color: var(--border-card) !important; }
+    .border-slate-200,
+    [class*="border-slate-200"]  { border-color: var(--border-input) !important; }
+
+    .text-slate-800, [class*="text-slate-800"] { color: var(--text-heading) !important; }
+    .text-slate-700, [class*="text-slate-700"] { color: var(--text-primary) !important; }
+    .text-slate-600, [class*="text-slate-600"] { color: var(--text-secondary) !important; }
+    .text-slate-500, [class*="text-slate-500"] { color: var(--text-muted) !important; }
+    .text-slate-400, [class*="text-slate-400"] { color: var(--text-muted) !important; }
+
+    .bg-slate-50,  [class*="bg-slate-50"]  { background: var(--bg-input) !important; }
+    .bg-slate-100, [class*="bg-slate-100"] { background: var(--bg-skeleton) !important; }
+
+    html[data-theme="dark"] .swal2-popup  { background: var(--swal-bg) !important; color: var(--swal-text) !important; }
+    html[data-theme="dark"] .swal2-title  { color: var(--text-heading) !important; }
+    html[data-theme="dark"] .swal2-html-container { color: var(--text-secondary) !important; }
+    html[data-theme="dark"] .divide-y > * + * { border-color: #334155 !important; }
+
+    ::-webkit-scrollbar       { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track, #f1f5f9); }
+    ::-webkit-scrollbar-thumb { background: #c7d7fb; border-radius: 4px; }
+
+    #sidebar { transition: transform 0.3s ease; }
+    #sidebarOverlay { transition: opacity 0.3s ease; }
+
+    .nav-link { transition: all 0.2s ease; }
+    .nav-link.active { background: #1055e8; color: white; }
+
+    .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
+    .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
+    .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
+    input:checked + .toggle-slider { background: #1055e8; }
+    input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+    .swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+    .swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
+
+    @media (max-width: 1024px) {
+      #sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 50; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; }
+      #sidebarOverlay.open { display: block; }
+      #mainContainer { flex-direction: column; }
     }
 
     /* ── Filter Tab ── */
     .filter-tab { transition: all 0.18s ease; }
     .filter-tab.active {
-      background: #0c8ee8;
+      background: #1055e8;
       color: #fff;
-      box-shadow: 0 2px 8px rgba(12,142,232,0.35);
+      box-shadow: 0 2px 8px rgba(16,85,232,0.3);
     }
-
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
     /* ── Rank medals ── */
     .rank-1 { color: #f59e0b; font-weight: 700; }
@@ -96,14 +179,6 @@
       position: relative;
       overflow: hidden;
     }
-    .summary-card::before {
-      content: '';
-      position: absolute;
-      top: -18px; right: -18px;
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      opacity: 0.12;
-    }
 
     /* ── Fade up ── */
     @keyframes fadeUp {
@@ -113,7 +188,7 @@
     .fade-up { animation: fadeUp 0.4s ease forwards; }
 
     /* ── Table sticky header ── */
-    .sticky-head th { position: sticky; top: 0; z-index: 10; background: #f8fafc; }
+    .sticky-head th { position: sticky; top: 0; z-index: 10; background: var(--bg-input); }
 
     /* ── Tooltip ── */
     [data-tip] { position: relative; cursor: default; }
@@ -141,419 +216,411 @@
     }
   </style>
 </head>
-<body>
 
-<!-- CSRF -->
+<body class="bg-blue-100 min-h-screen">
+
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
-<!-- ─────────────────────────────────────
-     PAGE HEADER
-───────────────────────────────────────── -->
-<header class="page-header text-white">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-7 sm:py-9">
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-    <!-- Breadcrumb -->
-    <nav class="text-xs sm:text-sm mb-4 opacity-80 flex items-center gap-1.5 flex-wrap">
-      <a href="{% url 'dashboard' %}" class="hover:underline">홈</a>
-      <span>/</span>
-      <a href="{% url 'group_list' %}" class="hover:underline">그룹 목록</a>
-      <span>/</span>
-      <a href="#" class="hover:underline">{{ group.name }}</a>
-      <span>/</span>
-      <span>출석 통계</span>
-    </nav>
+<div class="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style="min-height:100vh;" id="mainContainer">
 
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-      <div>
-        <span class="inline-block text-xs font-semibold bg-white/20 rounded-full px-3 py-1 mb-2">
-          {{ group.category }}
-        </span>
-        <h1 class="font-display text-2xl sm:text-3xl font-bold">출석 통계</h1>
-        <p class="text-white/70 text-sm mt-1">{{ group.name }} · 총 {{ total_sessions }}개 세션</p>
-      </div>
+  {% include 'inc_left.html' %}
 
-      <!-- Header summary pills -->
-      <div class="flex flex-wrap gap-2">
-        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[72px]">
-          <p class="text-lg font-bold">{{ total_members }}</p>
-          <p class="text-xs opacity-70 mt-0.5">멤버</p>
-        </div>
-        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[72px]">
-          <p class="text-lg font-bold text-green-300">{{ group_avg_rate|floatformat:0 }}%</p>
-          <p class="text-xs opacity-70 mt-0.5">평균 출석률</p>
-        </div>
-        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[72px]">
-          <p class="text-lg font-bold text-amber-300">{{ total_late }}</p>
-          <p class="text-xs opacity-70 mt-0.5">누적 지각</p>
-        </div>
-        <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[72px]">
-          <p class="text-lg font-bold text-red-300">{{ total_absent }}</p>
-          <p class="text-xs opacity-70 mt-0.5">누적 결석</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
+  <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-<!-- ─────────────────────────────────────
-     MAIN CONTENT
-───────────────────────────────────────── -->
-<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+    {% include 'inc_header.html' %}
 
-  <!-- ── 기간 필터 ── -->
-  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-semibold text-slate-500 mr-1">기간 필터</span>
-      <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
-        <button onclick="setFilter('month', this)"
-          class="filter-tab active text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
-          이번 달
-        </button>
-        <button onclick="setFilter('3month', this)"
-          class="filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
-          3개월
-        </button>
-        <button onclick="setFilter('all', this)"
-          class="filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
-          전체 기간
-        </button>
-        <button onclick="setFilter('custom', this)"
-          class="filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
-          직접 설정
-        </button>
-      </div>
-    </div>
+    <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
-    <div class="flex items-center gap-2">
-      <!-- Custom date range (hidden by default) -->
-      <div id="custom-range" class="hidden flex items-center gap-2">
-        <input type="date" id="date-from"
-          class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-brand-400">
-        <span class="text-slate-400 text-xs">~</span>
-        <input type="date" id="date-to"
-          class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-brand-400">
-        <button onclick="applyCustomFilter()"
-          class="text-xs bg-brand-500 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-600 transition-colors">
-          적용
-        </button>
-      </div>
-
-      <!-- CSV Export -->
-      <button onclick="exportCSV()"
-        class="flex items-center gap-1.5 text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors shadow-sm">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-        </svg>
-        CSV 내보내기
-      </button>
-    </div>
-  </div>
-
-  <!-- ── 요약 카드 4개 ── -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="summary-cards">
-    <div class="summary-card bg-white border border-slate-100 shadow-sm fade-up" style="animation-delay:0ms">
-      <div class="flex items-start justify-between">
-        <div>
-          <p class="text-xs text-slate-400 font-medium mb-1">총 출석 횟수</p>
-          <p class="text-2xl font-bold text-slate-800" id="card-present">{{ total_present }}</p>
-          <p class="text-xs text-slate-400 mt-1">전체 기록 중</p>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
+      <!-- ── 페이지 헤더 배너 ── -->
+      <div class="rounded-2xl p-5 sm:p-6 text-white" style="background: linear-gradient(135deg,#0d44c4 0%,#1055e8 50%,#3a74ef 100%);">
+        <nav class="text-xs mb-3 opacity-80 flex items-center gap-1.5 flex-wrap">
+          <a href="{% url 'dashboard' %}" class="hover:underline">홈</a>
+          <span>/</span>
+          <a href="{% url 'group_list' %}" class="hover:underline">그룹 목록</a>
+          <span>/</span>
+          <a href="#" class="hover:underline">{{ group.name }}</a>
+          <span>/</span>
+          <span>출석 통계</span>
+        </nav>
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <span class="inline-block text-xs font-semibold bg-white/20 rounded-full px-3 py-1 mb-2">{{ group.category }}</span>
+            <h1 class="text-2xl sm:text-3xl font-bold">출석 통계</h1>
+            <p class="text-white/70 text-sm mt-1">{{ group.name }} · 총 {{ total_sessions }}개 세션</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[72px]">
+              <p class="text-lg font-bold">{{ total_members }}</p>
+              <p class="text-xs opacity-70 mt-0.5">멤버</p>
+            </div>
+            <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[72px]">
+              <p class="text-lg font-bold text-green-300">{{ group_avg_rate|floatformat:0 }}%</p>
+              <p class="text-xs opacity-70 mt-0.5">평균 출석률</p>
+            </div>
+            <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[72px]">
+              <p class="text-lg font-bold text-amber-300">{{ total_late }}</p>
+              <p class="text-xs opacity-70 mt-0.5">누적 지각</p>
+            </div>
+            <div class="bg-white/15 border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[72px]">
+              <p class="text-lg font-bold text-red-300">{{ total_absent }}</p>
+              <p class="text-xs opacity-70 mt-0.5">누적 결석</p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="summary-card bg-white border border-slate-100 shadow-sm fade-up" style="animation-delay:80ms">
-      <div class="flex items-start justify-between">
-        <div>
-          <p class="text-xs text-slate-400 font-medium mb-1">총 지각 횟수</p>
-          <p class="text-2xl font-bold text-amber-600" id="card-late">{{ total_late }}</p>
-          <p class="text-xs text-slate-400 mt-1">누적 합산</p>
+      <!-- ── 기간 필터 ── -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-slate-500 mr-1">기간 필터</span>
+          <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
+            <button onclick="setFilter('month', this)"
+              class="filter-tab active text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+              이번 달
+            </button>
+            <button onclick="setFilter('3month', this)"
+              class="filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+              3개월
+            </button>
+            <button onclick="setFilter('all', this)"
+              class="filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+              전체 기간
+            </button>
+            <button onclick="setFilter('custom', this)"
+              class="filter-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600">
+              직접 설정
+            </button>
+          </div>
         </div>
-        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+        <div class="flex items-center gap-2">
+          <div id="custom-range" class="hidden flex items-center gap-2">
+            <input type="date" id="date-from"
+              class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400">
+            <span class="text-slate-400 text-xs">~</span>
+            <input type="date" id="date-to"
+              class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400">
+            <button onclick="applyCustomFilter()"
+              class="text-xs bg-[#1055e8] text-white px-3 py-1.5 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+              적용
+            </button>
+          </div>
+          <button onclick="exportCSV()"
+            class="flex items-center gap-1.5 text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            CSV 내보내기
+          </button>
         </div>
       </div>
-    </div>
 
-    <div class="summary-card bg-white border border-slate-100 shadow-sm fade-up" style="animation-delay:160ms">
-      <div class="flex items-start justify-between">
-        <div>
-          <p class="text-xs text-slate-400 font-medium mb-1">총 결석 횟수</p>
-          <p class="text-2xl font-bold text-red-600" id="card-absent">{{ total_absent }}</p>
-          <p class="text-xs text-slate-400 mt-1">누적 합산</p>
+      <!-- ── 요약 카드 4개 ── -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="summary-cards">
+        <div class="summary-card bg-white border border-slate-100 shadow-sm fade-up" style="animation-delay:0ms">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-medium mb-1">총 출석 횟수</p>
+              <p class="text-2xl font-bold text-slate-800" id="card-present">{{ total_present }}</p>
+              <p class="text-xs text-slate-400 mt-1">전체 기록 중</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+          </div>
         </div>
-        <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+
+        <div class="summary-card bg-white border border-slate-100 shadow-sm fade-up" style="animation-delay:80ms">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-medium mb-1">총 지각 횟수</p>
+              <p class="text-2xl font-bold text-amber-600" id="card-late">{{ total_late }}</p>
+              <p class="text-xs text-slate-400 mt-1">누적 합산</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-card bg-white border border-slate-100 shadow-sm fade-up" style="animation-delay:160ms">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-medium mb-1">총 결석 횟수</p>
+              <p class="text-2xl font-bold text-red-600" id="card-absent">{{ total_absent }}</p>
+              <p class="text-xs text-slate-400 mt-1">누적 합산</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-card bg-white border border-slate-100 shadow-sm fade-up" style="animation-delay:240ms">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-medium mb-1">그룹 평균 출석률</p>
+              <p class="text-2xl font-bold text-[#1055e8]" id="card-rate">{{ group_avg_rate|floatformat:1 }}%</p>
+              <p class="text-xs text-slate-400 mt-1">전 세션 기준</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="summary-card bg-white border border-slate-100 shadow-sm fade-up" style="animation-delay:240ms">
-      <div class="flex items-start justify-between">
-        <div>
-          <p class="text-xs text-slate-400 font-medium mb-1">그룹 평균 출석률</p>
-          <p class="text-2xl font-bold text-brand-600" id="card-rate">{{ group_avg_rate|floatformat:1 }}%</p>
-          <p class="text-xs text-slate-400 mt-1">전 세션 기준</p>
+      <!-- ── 월별 추이 라인 차트 ── -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 fade-up" style="animation-delay:300ms">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <div>
+            <h2 class="font-bold text-slate-800 flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+              </svg>
+              월별 출석률 추이
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">그룹 전체 월별 평균 출석률 변화</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs text-slate-500">
+            <span class="flex items-center gap-1.5">
+              <span class="w-3 h-0.5 bg-[#1055e8] inline-block rounded"></span>출석률
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-3 h-0.5 bg-amber-400 inline-block rounded"></span>지각률
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-3 h-0.5 bg-red-400 inline-block rounded"></span>결석률
+            </span>
+          </div>
         </div>
-        <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-          </svg>
+        <div class="relative" style="height: 260px;">
+          <canvas id="monthly-chart"></canvas>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ── 월별 추이 라인 차트 ── -->
-  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-6 fade-up" style="animation-delay:300ms">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-      <div>
-        <h2 class="font-bold text-slate-800 flex items-center gap-2">
-          <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
-          </svg>
-          월별 출석률 추이
-        </h2>
-        <p class="text-xs text-slate-400 mt-0.5">그룹 전체 월별 평균 출석률 변화</p>
-      </div>
-      <!-- Legend -->
-      <div class="flex items-center gap-4 text-xs text-slate-500">
-        <span class="flex items-center gap-1.5">
-          <span class="w-3 h-0.5 bg-brand-500 inline-block rounded"></span>출석률
-        </span>
-        <span class="flex items-center gap-1.5">
-          <span class="w-3 h-0.5 bg-amber-400 inline-block rounded"></span>지각률
-        </span>
-        <span class="flex items-center gap-1.5">
-          <span class="w-3 h-0.5 bg-red-400 inline-block rounded"></span>결석률
-        </span>
-      </div>
-    </div>
-    <div class="relative" style="height: 260px;">
-      <canvas id="monthly-chart"></canvas>
-    </div>
-  </div>
-
-  <!-- ── 멤버별 출석률 테이블 ── -->
-  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style="animation-delay:360ms">
-    <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <h2 class="font-bold text-slate-800 flex items-center gap-2">
-        <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/>
-        </svg>
-        멤버별 출석 현황
-      </h2>
-      <!-- Sort -->
-      <div class="flex items-center gap-2 text-xs">
-        <span class="text-slate-400">정렬:</span>
-        <select id="member-sort" onchange="sortMemberTable(this.value)"
-          class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-brand-400 bg-white text-slate-600">
-          <option value="rate-desc">출석률 높은 순</option>
-          <option value="rate-asc">출석률 낮은 순</option>
-          <option value="absent-desc">결석 많은 순</option>
-          <option value="name-asc">이름 순</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm" id="member-table">
-        <thead class="sticky-head">
-          <tr class="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
-            <th class="text-center px-4 py-3 w-10">순위</th>
-            <th class="text-left px-4 py-3">멤버</th>
-            <th class="text-center px-4 py-3">출석</th>
-            <th class="text-center px-4 py-3">지각</th>
-            <th class="text-center px-4 py-3">결석</th>
-            <th class="text-center px-4 py-3">총 세션</th>
-            <th class="text-right px-4 py-3 min-w-[140px]">출석률</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-50" id="member-tbody">
-          {% for stat in member_stats %}
-          <tr class="hover:bg-slate-50 transition-colors member-row"
-              data-rate="{{ stat.attendance_rate }}"
-              data-absent="{{ stat.absent_count }}"
-              data-name="{{ stat.user.nickname }}">
-            <td class="px-4 py-3 text-center">
-              {% if forloop.counter == 1 %}
-                <span class="rank-1 text-base">🥇</span>
-              {% elif forloop.counter == 2 %}
-                <span class="rank-2 text-base">🥈</span>
-              {% elif forloop.counter == 3 %}
-                <span class="rank-3 text-base">🥉</span>
-              {% else %}
-                <span class="text-slate-400 text-xs font-medium">{{ forloop.counter }}</span>
-              {% endif %}
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-2.5">
-                {% if stat.user.profile_image %}
-                  <img src="{{ stat.user.profile_image.url }}"
-                    class="w-8 h-8 rounded-full object-cover border border-slate-100 flex-shrink-0">
-                {% else %}
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                    {{ stat.user.nickname|first|upper }}
-                  </div>
-                {% endif %}
-                <div>
-                  <p class="font-semibold text-slate-800 text-sm">{{ stat.user.nickname }}</p>
-                  {% if stat.user == group.leader %}
-                  <span class="text-xs text-amber-500 font-medium">👑 리더</span>
+      <!-- ── 멤버별 출석률 테이블 ── -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style="animation-delay:360ms">
+        <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h2 class="font-bold text-slate-800 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            멤버별 출석 현황
+          </h2>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-slate-400">정렬:</span>
+            <select id="member-sort" onchange="sortMemberTable(this.value)"
+              class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400 bg-white text-slate-600">
+              <option value="rate-desc">출석률 높은 순</option>
+              <option value="rate-asc">출석률 낮은 순</option>
+              <option value="absent-desc">결석 많은 순</option>
+              <option value="name-asc">이름 순</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm" id="member-table">
+            <thead class="sticky-head">
+              <tr class="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
+                <th class="text-center px-4 py-3 w-10">순위</th>
+                <th class="text-left px-4 py-3">멤버</th>
+                <th class="text-center px-4 py-3">출석</th>
+                <th class="text-center px-4 py-3">지각</th>
+                <th class="text-center px-4 py-3">결석</th>
+                <th class="text-center px-4 py-3">총 세션</th>
+                <th class="text-right px-4 py-3 min-w-[140px]">출석률</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50" id="member-tbody">
+              {% for stat in member_stats %}
+              <tr class="hover:bg-slate-50 transition-colors member-row"
+                  data-rate="{{ stat.attendance_rate }}"
+                  data-absent="{{ stat.absent_count }}"
+                  data-name="{{ stat.user.nickname }}">
+                <td class="px-4 py-3 text-center">
+                  {% if forloop.counter == 1 %}
+                    <span class="rank-1 text-base">🥇</span>
+                  {% elif forloop.counter == 2 %}
+                    <span class="rank-2 text-base">🥈</span>
+                  {% elif forloop.counter == 3 %}
+                    <span class="rank-3 text-base">🥉</span>
+                  {% else %}
+                    <span class="text-slate-400 text-xs font-medium">{{ forloop.counter }}</span>
                   {% endif %}
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span class="inline-block text-xs font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
-                {{ stat.present_count }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span class="inline-block text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
-                {{ stat.late_count }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span class="inline-block text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full">
-                {{ stat.absent_count }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-center text-slate-500 text-xs">
-              {{ stat.total_sessions }}
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex items-center justify-end gap-2.5">
-                <div class="rate-bar flex-1 max-w-[80px]">
-                  <div class="rate-fill
-                    {% if stat.attendance_rate >= 80 %}bg-green-400
-                    {% elif stat.attendance_rate >= 50 %}bg-amber-400
-                    {% else %}bg-red-400{% endif %}"
-                    style="width: {{ stat.attendance_rate }}%">
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2.5">
+                    {% if stat.user.profile_image %}
+                      <img src="{{ stat.user.profile_image.url }}"
+                        class="w-8 h-8 rounded-full object-cover border border-slate-100 flex-shrink-0">
+                    {% else %}
+                      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                        {{ stat.user.nickname|first|upper }}
+                      </div>
+                    {% endif %}
+                    <div>
+                      <p class="font-semibold text-slate-800 text-sm">{{ stat.user.nickname }}</p>
+                      {% if stat.user == group.leader %}
+                      <span class="text-xs text-amber-500 font-medium">👑 리더</span>
+                      {% endif %}
+                    </div>
                   </div>
-                </div>
-                <span class="text-sm font-bold w-12 text-right
-                  {% if stat.attendance_rate >= 80 %}text-green-600
-                  {% elif stat.attendance_rate >= 50 %}text-amber-600
-                  {% else %}text-red-600{% endif %}">
-                  {{ stat.attendance_rate|floatformat:1 }}%
-                </span>
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="7" class="text-center py-12 text-slate-400 text-sm">
-              출석 데이터가 없습니다.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ── 세션별 출석 현황 테이블 ── -->
-  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style="animation-delay:420ms">
-    <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <h2 class="font-bold text-slate-800 flex items-center gap-2">
-        <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-        </svg>
-        세션별 출석 현황
-      </h2>
-      <div class="flex items-center gap-3 text-xs text-slate-500">
-        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded cell-present inline-block"></span>출석</span>
-        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded cell-late inline-block"></span>지각</span>
-        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded cell-absent inline-block"></span>결석</span>
-        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded cell-none inline-block"></span>미입력</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="inline-block text-xs font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                    {{ stat.present_count }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="inline-block text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                    {{ stat.late_count }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="inline-block text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full">
+                    {{ stat.absent_count }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-center text-slate-500 text-xs">
+                  {{ stat.total_sessions }}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-2.5">
+                    <div class="rate-bar flex-1 max-w-[80px]">
+                      <div class="rate-fill
+                        {% if stat.attendance_rate >= 80 %}bg-green-400
+                        {% elif stat.attendance_rate >= 50 %}bg-amber-400
+                        {% else %}bg-red-400{% endif %}"
+                        style="width: {{ stat.attendance_rate }}%">
+                      </div>
+                    </div>
+                    <span class="text-sm font-bold w-12 text-right
+                      {% if stat.attendance_rate >= 80 %}text-green-600
+                      {% elif stat.attendance_rate >= 50 %}text-amber-600
+                      {% else %}text-red-600{% endif %}">
+                      {{ stat.attendance_rate|floatformat:1 }}%
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-12 text-slate-400 text-sm">
+                  출석 데이터가 없습니다.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm" id="session-table">
-        <thead class="sticky-head">
-          <tr class="text-xs text-slate-500 border-b border-slate-100">
-            <th class="text-left px-4 py-3 min-w-[120px]">날짜</th>
-            <th class="text-left px-4 py-3 min-w-[140px]">세션 주제</th>
-            {% for stat in member_stats %}
-            <th class="text-center px-3 py-3 min-w-[72px] font-medium">
-              {{ stat.user.nickname|truncatechars:5 }}
-            </th>
-            {% endfor %}
-            <th class="text-center px-4 py-3 min-w-[80px]">출석률</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-50" id="session-tbody">
-          {% for session in sessions %}
-          <tr class="hover:bg-slate-50 transition-colors">
-            <td class="px-4 py-3 text-xs text-slate-500 font-mono whitespace-nowrap">
-              {{ session.date|date:"Y.m.d" }}
-            </td>
-            <td class="px-4 py-3">
-              <span class="text-xs font-medium text-slate-700 bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">
-                {{ session.topic }}
-              </span>
-            </td>
-            <td class="px-3 py-3 text-center">
-              <span class="inline-flex items-center justify-center w-8 h-7 rounded-lg text-xs font-bold
-                {% if record.status == 'present' %}cell-present
-                {% elif record.status == 'late' %}cell-late
-                {% elif record.status == 'absent' %}cell-absent
-                {% else %}cell-none{% endif %}"
-                data-tip="{% if record.status == 'present' %}출석{% elif record.status == 'late' %}지각{% elif record.status == 'absent' %}결석{% else %}미입력{% endif %}">
-                {% if record.status == 'present' %}✓
-                {% elif record.status == 'late' %}△
-                {% elif record.status == 'absent' %}✗
-                {% else %}—{% endif %}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span class="text-xs font-bold
-                {% if session.attendance_rate >= 80 %}text-green-600
-                {% elif session.attendance_rate >= 50 %}text-amber-600
-                {% else %}text-red-600{% endif %}">
-                {{ session.attendance_rate|floatformat:0 }}%
-              </span>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="20" class="text-center py-12 text-slate-400 text-sm">
-              세션 데이터가 없습니다.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+      <!-- ── 세션별 출석 현황 테이블 ── -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style="animation-delay:420ms">
+        <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h2 class="font-bold text-slate-800 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            세션별 출석 현황
+          </h2>
+          <div class="flex items-center gap-3 text-xs text-slate-500">
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded cell-present inline-block"></span>출석</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded cell-late inline-block"></span>지각</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded cell-absent inline-block"></span>결석</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded cell-none inline-block"></span>미입력</span>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm" id="session-table">
+            <thead class="sticky-head">
+              <tr class="text-xs text-slate-500 border-b border-slate-100">
+                <th class="text-left px-4 py-3 min-w-[120px]">날짜</th>
+                <th class="text-left px-4 py-3 min-w-[140px]">세션 주제</th>
+                {% for stat in member_stats %}
+                <th class="text-center px-3 py-3 min-w-[72px] font-medium">
+                  {{ stat.user.nickname|truncatechars:5 }}
+                </th>
+                {% endfor %}
+                <th class="text-center px-4 py-3 min-w-[80px]">출석률</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50" id="session-tbody">
+              {% for session in sessions %}
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="px-4 py-3 text-xs text-slate-500 font-mono whitespace-nowrap">
+                  {{ session.date|date:"Y.m.d" }}
+                </td>
+                <td class="px-4 py-3">
+                  <span class="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                    {{ session.topic }}
+                  </span>
+                </td>
+                <td class="px-3 py-3 text-center">
+                  <span class="inline-flex items-center justify-center w-8 h-7 rounded-lg text-xs font-bold
+                    {% if record.status == 'present' %}cell-present
+                    {% elif record.status == 'late' %}cell-late
+                    {% elif record.status == 'absent' %}cell-absent
+                    {% else %}cell-none{% endif %}"
+                    data-tip="{% if record.status == 'present' %}출석{% elif record.status == 'late' %}지각{% elif record.status == 'absent' %}결석{% else %}미입력{% endif %}">
+                    {% if record.status == 'present' %}✓
+                    {% elif record.status == 'late' %}△
+                    {% elif record.status == 'absent' %}✗
+                    {% else %}—{% endif %}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="text-xs font-bold
+                    {% if session.attendance_rate >= 80 %}text-green-600
+                    {% elif session.attendance_rate >= 50 %}text-amber-600
+                    {% else %}text-red-600{% endif %}">
+                    {{ session.attendance_rate|floatformat:0 }}%
+                  </span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="20" class="text-center py-12 text-slate-400 text-sm">
+                  세션 데이터가 없습니다.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-</div><!-- /main -->
+    </div><!-- /content -->
+  </main>
+</div><!-- /mainContainer -->
 
-<!-- ─────────────────────────────────────
-     JAVASCRIPT
-───────────────────────────────────────── -->
 <script>
-const GROUP_ID   = {{ group.id }};
-const CSRF       = document.getElementById('csrf-token').value;
+const GROUP_ID = {{ group.id }};
+const CSRF     = document.getElementById('csrf-token').value;
 axios.defaults.headers.common['X-CSRFToken'] = CSRF;
 
+// ── Dark mode ──
+(function() {
+  const saved = localStorage.getItem('sgm-dark-mode');
+  if (saved === 'true') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+
 // ── Monthly chart data from Django context ──
-const monthlyLabels = [{% for m in monthly_stats %}"{{ m.label }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+const monthlyLabels  = [{% for m in monthly_stats %}"{{ m.label }}"{% if not forloop.last %},{% endif %}{% endfor %}];
 const monthlyPresent = [{% for m in monthly_stats %}{{ m.present_rate }}{% if not forloop.last %},{% endif %}{% endfor %}];
 const monthlyLate    = [{% for m in monthly_stats %}{{ m.late_rate }}{% if not forloop.last %},{% endif %}{% endfor %}];
 const monthlyAbsent  = [{% for m in monthly_stats %}{{ m.absent_rate }}{% if not forloop.last %},{% endif %}{% endfor %}];
 
-// ── Chart.js 월별 라인 차트 ──────────────
 const ctx = document.getElementById('monthly-chart').getContext('2d');
 const monthlyChart = new Chart(ctx, {
   type: 'line',
@@ -563,10 +630,10 @@ const monthlyChart = new Chart(ctx, {
       {
         label: '출석률',
         data: monthlyPresent,
-        borderColor: '#0c8ee8',
-        backgroundColor: 'rgba(12,142,232,0.08)',
+        borderColor: '#1055e8',
+        backgroundColor: 'rgba(16,85,232,0.08)',
         borderWidth: 2.5,
-        pointBackgroundColor: '#0c8ee8',
+        pointBackgroundColor: '#1055e8',
         pointRadius: 4,
         pointHoverRadius: 6,
         fill: true,
@@ -612,37 +679,27 @@ const monthlyChart = new Chart(ctx, {
         bodyColor: '#f1f5f9',
         padding: 12,
         cornerRadius: 10,
-        callbacks: {
-          label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`
-        }
+        callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%` }
       }
     },
     scales: {
-      x: {
-        grid: { color: '#f1f5f9' },
-        ticks: { color: '#94a3b8', font: { size: 11 } }
-      },
+      x: { grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
       y: {
         min: 0, max: 100,
         grid: { color: '#f1f5f9' },
-        ticks: {
-          color: '#94a3b8',
-          font: { size: 11 },
-          callback: v => v + '%'
-        }
+        ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => v + '%' }
       }
     }
   }
 });
 
-// ── 기간 필터 ────────────────────────────
+// ── 기간 필터 ──
 let currentFilter = 'month';
 
 function setFilter(filter, btn) {
   currentFilter = filter;
   document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-
   const customRange = document.getElementById('custom-range');
   if (filter === 'custom') {
     customRange.classList.remove('hidden');
@@ -658,64 +715,37 @@ function applyCustomFilter() {
   const from = document.getElementById('date-from').value;
   const to   = document.getElementById('date-to').value;
   if (!from || !to) {
-    Swal.fire({
-      icon: 'warning',
-      title: '날짜 선택',
-      text: '시작일과 종료일을 모두 선택해 주세요.',
-      confirmButtonColor: '#0c8ee8',
-    });
+    Swal.fire({ icon: 'warning', title: '날짜 선택', text: '시작일과 종료일을 모두 선택해 주세요.', confirmButtonColor: '#1055e8' });
     return;
   }
   if (from > to) {
-    Swal.fire({
-      icon: 'warning',
-      title: '날짜 오류',
-      text: '시작일은 종료일보다 이전이어야 합니다.',
-      confirmButtonColor: '#0c8ee8',
-    });
+    Swal.fire({ icon: 'warning', title: '날짜 오류', text: '시작일은 종료일보다 이전이어야 합니다.', confirmButtonColor: '#1055e8' });
     return;
   }
   fetchFilteredData('custom', from, to);
 }
 
 async function fetchFilteredData(filter, from, to) {
-  // Show loading state
   showSkeleton();
-
   try {
     const params = { filter };
     if (from) params.from = from;
     if (to)   params.to   = to;
-
     const res = await axios.get(`/groups/${GROUP_ID}/attendance/stats/api/`, { params });
     const d   = res.data;
-
-    // Update summary cards
     document.getElementById('card-present').textContent = d.total_present;
     document.getElementById('card-late').textContent    = d.total_late;
     document.getElementById('card-absent').textContent  = d.total_absent;
     document.getElementById('card-rate').textContent    = d.group_avg_rate.toFixed(1) + '%';
-
-    // Update chart
     monthlyChart.data.labels           = d.monthly_labels;
     monthlyChart.data.datasets[0].data = d.monthly_present;
     monthlyChart.data.datasets[1].data = d.monthly_late;
     monthlyChart.data.datasets[2].data = d.monthly_absent;
     monthlyChart.update('active');
-
-    // Update member table
     updateMemberTable(d.member_stats);
-
-    // Update session table
     updateSessionTable(d.sessions, d.member_stats);
-
   } catch (err) {
-    Swal.fire({
-      icon: 'error',
-      title: '데이터 로드 실패',
-      text: err.response?.data?.message || '데이터를 불러오는 중 오류가 발생했습니다.',
-      confirmButtonColor: '#0c8ee8',
-    });
+    Swal.fire({ icon: 'error', title: '데이터 로드 실패', text: err.response?.data?.message || '데이터를 불러오는 중 오류가 발생했습니다.', confirmButtonColor: '#1055e8' });
   } finally {
     hideSkeleton();
   }
@@ -735,7 +765,7 @@ function showSkeleton() {
     </tr>`).join('');
 }
 
-function hideSkeleton() { /* rows replaced by updateMemberTable */ }
+function hideSkeleton() {}
 
 function updateMemberTable(stats) {
   const tbody = document.getElementById('member-tbody');
@@ -795,11 +825,9 @@ function updateSessionTable(sessions, members) {
   }).join('');
 }
 
-// ── 멤버 테이블 정렬 ──────────────────────
 function sortMemberTable(key) {
   const tbody = document.getElementById('member-tbody');
   const rows  = Array.from(tbody.querySelectorAll('.member-row'));
-
   rows.sort((a, b) => {
     if (key === 'rate-desc') return parseFloat(b.dataset.rate) - parseFloat(a.dataset.rate);
     if (key === 'rate-asc')  return parseFloat(a.dataset.rate) - parseFloat(b.dataset.rate);
@@ -807,8 +835,6 @@ function sortMemberTable(key) {
     if (key === 'name-asc')  return a.dataset.name.localeCompare(b.dataset.name, 'ko');
     return 0;
   });
-
-  // Re-assign rank after sort
   rows.forEach((row, i) => {
     const rankCell = row.querySelector('td:first-child');
     rankCell.innerHTML = i === 0 ? '<span class="rank-1 text-base">🥇</span>'
@@ -819,7 +845,6 @@ function sortMemberTable(key) {
   });
 }
 
-// ── CSV 내보내기 ──────────────────────────
 function exportCSV() {
   Swal.fire({
     title: 'CSV 내보내기',
@@ -853,20 +878,9 @@ function exportCSV() {
   }).then(result => {
     if (!result.isConfirmed) return;
     const type = result.value.type;
-
-    // Build CSV from current table data
     if (type === 'member' || type === 'all') downloadMemberCSV();
     if (type === 'session' || type === 'all') downloadSessionCSV();
-
-    Swal.fire({
-      icon: 'success',
-      title: '다운로드 완료',
-      text: 'CSV 파일이 다운로드됩니다.',
-      timer: 1500,
-      showConfirmButton: false,
-      toast: true,
-      position: 'top-end',
-    });
+    Swal.fire({ icon: 'success', title: '다운로드 완료', text: 'CSV 파일이 다운로드됩니다.', timer: 1500, showConfirmButton: false, toast: true, position: 'top-end' });
   });
 }
 
@@ -901,7 +915,7 @@ function downloadSessionCSV() {
 }
 
 function triggerCSVDownload(rows, filename) {
-  const BOM  = '\uFEFF'; // UTF-8 BOM for Excel
+  const BOM  = '﻿';
   const csv  = BOM + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
@@ -910,5 +924,6 @@ function triggerCSVDownload(rows, filename) {
   URL.revokeObjectURL(url);
 }
 </script>
+{% include 'inc_common_scripts.html' %}
 </body>
 </html>
