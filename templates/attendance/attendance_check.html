@@ -131,46 +131,12 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 <div class="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden"
      style="min-height:100vh;">
 
-       {% include 'left_sidemenu.html' %}
+       {% include 'inc_leftsidemenu.html' %}
 
   <!-- ════════════════ MAIN ════════════════ -->
   <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-    <!-- ── 헤더 ── -->
-    <header class="flex items-center justify-between py-3 px-4 lg:px-8 border-b border-slate-100 bg-white flex-shrink-0 gap-3">
-      <button class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100" onclick="openSidebar()">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-
-      <!-- 브레드크럼 -->
-      <nav class="flex items-center gap-1.5 text-xs text-slate-400 flex-1 min-w-0">
-        <a href="{% url 'dashboard' %}" class="hover:text-blue-600 transition-colors whitespace-nowrap">홈</a>
-        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        <a href="#" class="hover:text-blue-600 transition-colors truncate">{{ group.name|default:"그룹" }}</a>
-        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        <span class="text-slate-600 font-semibold truncate">출석 체크</span>
-      </nav>
-
-      <div class="flex items-center gap-3 lg:gap-5 flex-shrink-0">
-        <div class="hidden md:flex items-center gap-2">
-          <span class="text-sm text-slate-500">다크 모드</span>
-          <label class="toggle-wrap"><input type="checkbox"><span class="toggle-slider"></span></label>
-        </div>
-        <div class="relative cursor-pointer">
-          <svg class="w-6 h-6 text-slate-500 hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-          <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white" style="background:#1055e8;"></span>
-        </div>
-        <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='{% url 'profile' %}'">
-          <div class="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow" style="background:linear-gradient(135deg,#3a74ef,#0d44c4);">
-            {{ user.nickname|first|upper|default:"U" }}
-          </div>
-          <div class="hidden lg:block">
-            <p class="text-sm font-semibold text-slate-800 leading-tight">{{ user.nickname|default:"사용자" }}</p>
-            <p class="text-xs text-slate-400">Welcome back</p>
-          </div>
-        </div>
-      </div>
-    </header>
+    {% include 'inc_header.html' %}
 
     <!-- ════════════════ 페이지 콘텐츠 ════════════════ -->
     <div class="flex-1 overflow-y-auto bg-slate-50 pb-28">

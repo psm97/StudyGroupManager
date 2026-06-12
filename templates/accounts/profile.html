@@ -113,55 +113,12 @@ select.form-input { cursor: pointer; }
 ══════════════════════════════════════════════════════ -->
 <div class="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style="min-height:100vh;">
 
-  {% include 'left_sidemenu.html' %}
+  {% include 'inc_leftsidemenu.html' %}
 
   <!-- ════════════════ MAIN ════════════════ -->
   <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-    <!-- ── 헤더 ── -->
-    <header class="flex items-center justify-between py-3 px-4 lg:px-8 border-b border-slate-100 bg-white flex-shrink-0 gap-3">
-      <!-- 햄버거 -->
-      <button class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100" onclick="openSidebar()">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-      <!-- 검색 -->
-      <div class="relative flex-1 max-w-xs">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input type="text" placeholder="그룹, 공지 검색..." class="pl-9 pr-4 py-2 bg-slate-50 rounded-xl text-sm text-slate-600 placeholder-slate-400 border border-slate-200 w-full"
-          style="outline:none;"
-          onfocus="this.style.borderColor='#1055e8';this.style.boxShadow='0 0 0 3px rgba(16,85,232,.1)'"
-          onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'"
-          onkeydown="if(event.key==='Enter')window.location.href='/groups/?q='+encodeURIComponent(this.value)">
-      </div>
-      <!-- 우측 -->
-      <div class="flex items-center gap-3 lg:gap-5 flex-shrink-0">
-        <div class="hidden md:flex items-center gap-2">
-          <span class="text-sm text-slate-500">다크 모드</span>
-          <label class="toggle-wrap"><input type="checkbox"><span class="toggle-slider"></span></label>
-        </div>
-        <!-- 알림 -->
-        <div class="relative cursor-pointer">
-          <svg class="w-6 h-6 text-slate-500 hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-          <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white" style="background:#1055e8;"></span>
-        </div>
-        <!-- 프로필 아바타 -->
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow"
-            style="background:linear-gradient(135deg,#3a74ef,#0d44c4);"
-            id="headerAvatar">
-            {{ user.nickname|first|upper|default:"U" }}
-          </div>
-          <div class="hidden lg:block">
-            <p class="text-sm font-semibold text-slate-800 leading-tight">{{ user.nickname|default:"사용자" }}</p>
-            <p class="text-xs text-slate-400">프로필 설정</p>
-          </div>
-        </div>
-        <!-- 로그아웃 -->
-        <button onclick="handleLogout()" class="hidden sm:block p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors" title="로그아웃">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-        </button>
-      </div>
-    </header>
+    {% include 'inc_header.html' %}
 
     <!-- ── 페이지 콘텐츠 ── -->
     <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-6">
