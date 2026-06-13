@@ -10,6 +10,9 @@ def login_view(request):
 def profile_view(request):
     return render(request, 'accounts/profile.html')
 
+def profile_settings_view(request):
+    return render(request, 'accounts/profile_settings.html')
+
 def signup_view(request):
     return render(request, 'accounts/signup.html')
 

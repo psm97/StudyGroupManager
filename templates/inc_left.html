@@ -151,7 +151,7 @@
         </a>
       </li>
       <li>
-        <a href="{% url 'profile' %}?tab=settings" class="nav-link text-slate-600 flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm">
+        <a href="{% url 'profile_settings' %}" class="nav-link {% if url_name == 'profile_settings' %}active text-white{% else %}text-slate-600{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm">
           <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0

@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyGroup Manager - 프로필</title>
+<script>(function(){var s=localStorage.getItem('sgm-dark-mode');if(s==='true'||(s===null&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');})();</script>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Axios -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.all.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.min.css">
+<!-- Google Fonts: Pretendard -->
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ── 기본 ── */
+* { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; box-sizing: border-box; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #c7d7fb; border-radius: 4px; }
+
+/* ── 사이드바 모바일 슬라이드 ── */
+#sidebar { transition: transform 0.3s ease; }
+#sidebarOverlay { transition: opacity 0.3s ease; }
+
+/* ── 네비게이션 링크 ── */
+.nav-link { transition: all 0.2s ease; }
+.nav-link.active { background: #1055e8; color: #fff; }
+.nav-link:not(.active):hover { background: #dce6fd; color: #1055e8; }
+
+/* ── 토글 스위치 ── */
+.toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
+.toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+input:checked + .toggle-slider { background: #1055e8; }
+input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* ── 탭 ── */
+.tab-btn { transition: all 0.2s; position: relative; border-bottom: 2px solid transparent; }
+.tab-btn.active { color: #1055e8; border-bottom-color: #1055e8; font-weight: 700; }
+.tab-btn:not(.active):hover { color: #1055e8; background: #f0f5fe; }
+
+/* ── 인풋 ── */
+.form-input { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px;
+  font-size:14px; color:#1e293b; background:#f8fafc; outline:none;
+  transition: border-color .15s, box-shadow .15s; }
+.form-input:focus { border-color:#1055e8; box-shadow:0 0 0 3px rgba(16,85,232,.1); background:#fff; }
+.form-input:disabled { background:#f1f5f9; color:#94a3b8; cursor:not-allowed; }
+textarea.form-input { resize: none; }
+select.form-input { cursor: pointer; }
+
+/* ── 배지 ── */
+.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+.badge-blue   { background:#dce6fd; color:#1055e8; }
+.badge-green  { background:#dcfce7; color:#16a34a; }
+.badge-amber  { background:#fef3c7; color:#d97706; }
+.badge-rose   { background:#ffe4e6; color:#e11d48; }
+.badge-slate  { background:#f1f5f9; color:#64748b; }
+.badge-leader { background:#dce6fd; color:#1055e8; }
+.badge-member { background:#f1f5f9; color:#64748b; }
+
+/* ── 아바타 업로드 ── */
+.avatar-wrap { position:relative; cursor:pointer; display:inline-block; }
+.avatar-overlay { position:absolute; inset:0; border-radius:50%; background:rgba(16,85,232,.55);
+  display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; }
+.avatar-wrap:hover .avatar-overlay { opacity:1; }
+
+/* ── 카드 ── */
+.section-card { background:#fff; border:1px solid #f1f5f9; border-radius:16px; padding:24px; }
+
+/* ── 비밀번호 강도 바 ── */
+.pw-bar { height:4px; border-radius:4px; transition: background .3s, width .3s; }
+
+/* ── 닉네임 중복확인 상태 ── */
+.nick-ok   { border-color:#16a34a !important; }
+.nick-dupe { border-color:#e11d48 !important; }
+
+/* ── SweetAlert2 커스텀 ── */
+.swal-lbl  { display:block; text-align:left; font-size:13px; font-weight:600; color:#475569; margin-bottom:6px; }
+.swal-inp  { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px;
+  font-size:14px; outline:none; transition:border-color .2s; }
+.swal-inp:focus { border-color:#1055e8; box-shadow:0 0 0 3px rgba(16,85,232,.12); }
+.swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+.swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
+.swal2-deny    { background:#e11d48 !important; border-radius:10px !important; }
+
+/* ── 반응형 ── */
+@media (max-width:1024px) {
+  #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
+  #sidebar.open { transform:translateX(0); }
+  #sidebarOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:40; }
+  #sidebarOverlay.open { display:block; }
+}
+@media (max-width:768px) {
+  .profile-grid { grid-template-columns: 1fr !important; }
+}
+</style>
+</head>
+
+<body class="bg-blue-100 min-h-screen">
+
+<!-- 사이드바 오버레이 (모바일) -->
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     OUTER CONTAINER
+══════════════════════════════════════════════════════ -->
+<div class="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style="min-height:100vh;">
+
+  {% include 'inc_left.html' %}
+
+  <!-- ════════════════ MAIN ════════════════ -->
+  <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    {% include 'inc_header.html' %}
+
+    <!-- ── 페이지 콘텐츠 ── -->
+    <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-6">
+
+      <!-- 페이지 타이틀 -->
+      <div class="mb-5">
+        <h1 class="text-xl font-bold text-slate-800">프로필 설정</h1>
+        <p class="text-sm text-slate-400 mt-0.5">개인 정보 및 계정 보안 설정을 관리합니다.</p>
+      </div>
+
+      <!-- ── 탭 바 ── -->
+      <div class="bg-white rounded-t-2xl border border-b-0 border-slate-100 px-6 flex gap-1 overflow-x-auto" id="tabBar">
+        <button onclick="switchTab('info',this)"   class="tab-btn active px-5 py-3.5 text-sm whitespace-nowrap">기본 정보</button>
+        <button onclick="switchTab('password',this)" class="tab-btn px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">비밀번호 변경</button>
+        <button onclick="switchTab('activity',this)" class="tab-btn px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">활동 통계</button>
+        <button onclick="switchTab('danger',this)"  class="tab-btn px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">계정 관리</button>
+      </div>
+
+      <!-- ══════════════ TAB 1: 기본 정보 ══════════════ -->
+      <div id="tab-info" class="tab-panel">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 profile-grid pt-0">
+
+          <!-- 좌측 카드: 아바타 + 통계 -->
+          <div class="flex flex-col gap-5">
+
+            <!-- 아바타 카드 -->
+            <div class="section-card rounded-t-none border-t-0 flex flex-col items-center text-center" style="border-top-left-radius:0; border-top-right-radius:0;">
+              <div class="avatar-wrap mb-4 mt-2" id="avatarWrap" onclick="document.getElementById('avatarInput').click()">
+                <!-- 이미지가 있으면 표시, 없으면 이니셜 -->
+                {% if user.profile_image %}
+                  <img id="avatarImg" src="{{ user.profile_image.url }}" alt="프로필"
+                    class="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white">
+                {% else %}
+                  <div id="avatarInitial" class="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg border-4 border-white"
+                    style="background:linear-gradient(135deg,#3a74ef,#0d44c4);">
+                    {{ user.nickname|first|upper|default:"U" }}
+                  </div>
+                {% endif %}
+                <div class="avatar-overlay">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+                         a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9
+                         a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </div>
+              </div>
+              <input type="file" id="avatarInput" class="hidden" accept="image/jpeg,image/png,image/webp"
+                onchange="previewAndUploadAvatar(this)">
+
+              <p class="font-bold text-slate-800 text-lg" id="displayNickname">{{ user.nickname|default:"사용자" }}</p>
+              <p class="text-sm text-slate-400 mb-1">{{ user.email }}</p>
+              <span class="badge badge-blue mb-3">스터디 멤버</span>
+              <p class="text-xs text-slate-400">{{ user.date_joined|date:"Y년 m월 d일" }}부터 활동</p>
+
+              <div class="w-full mt-4 pt-4 border-t border-slate-100 space-y-2">
+                <button onclick="document.getElementById('avatarInput').click()"
+                  class="w-full text-xs font-semibold py-2 rounded-lg border transition-colors"
+                  style="color:#1055e8; border-color:#c7d7fb; background:#f0f5fe;"
+                  onmouseover="this.style.background='#dce6fd'" onmouseout="this.style.background='#f0f5fe'">
+                  📷 프로필 사진 변경
+                </button>
+                {% if user.profile_image %}
+                <button onclick="deleteAvatar()"
+                  class="w-full text-xs font-semibold py-2 rounded-lg border border-rose-200 text-rose-500 transition-colors hover:bg-rose-50">
+                  🗑 사진 삭제
+                </button>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- 활동 요약 카드 -->
+            <div class="section-card">
+              <p class="text-sm font-bold text-slate-700 mb-4">나의 활동 요약</p>
+              <div class="space-y-3" id="activitySummary">
+                <div class="animate-pulse space-y-2">
+                  <div class="h-7 bg-slate-100 rounded-lg"></div>
+                  <div class="h-7 bg-slate-100 rounded-lg"></div>
+                  <div class="h-7 bg-slate-100 rounded-lg"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 참여 그룹 카드 -->
+            <div class="section-card">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-sm font-bold text-slate-700">참여 중인 그룹</p>
+                <a href="{% url 'group_list' %}" class="text-xs font-semibold hover:underline" style="color:#1055e8;">전체 →</a>
+              </div>
+              <div class="space-y-2" id="myGroupsSidebar">
+                <p class="text-xs text-slate-400">로딩 중...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측 (col-span-2): 기본 정보 폼 + 출석 히트맵 -->
+          <div class="lg:col-span-2 flex flex-col gap-5">
+
+            <!-- 기본 정보 폼 -->
+            <div class="section-card rounded-tl-none" style="border-top-left-radius:0;">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <p class="font-bold text-slate-800">기본 정보 수정</p>
+                  <p class="text-xs text-slate-400 mt-0.5">닉네임, 소개 등 프로필 정보를 수정합니다.</p>
+                </div>
+                <span class="badge badge-green text-xs" id="saveStatusBadge" style="display:none;">✓ 저장됨</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- 닉네임 (실시간 중복 확인) -->
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-500 mb-1.5">닉네임 <span class="text-rose-500">*</span></label>
+                  <div class="flex gap-2">
+                    <div class="relative flex-1">
+                      <input type="text" id="nicknameInput" class="form-input pr-8"
+                        value="{{ user.nickname|default:'' }}" maxlength="50" placeholder="닉네임 입력"
+                        oninput="onNicknameInput(this.value)">
+                      <span id="nickIcon" class="absolute right-3 top-1/2 -translate-y-1/2 text-sm hidden"></span>
+                    </div>
+                    <button onclick="checkNickname()" id="nickCheckBtn"
+                      class="flex-shrink-0 text-xs font-bold px-4 py-2 rounded-xl border transition-colors"
+                      style="color:#1055e8; border-color:#c7d7fb; background:#f0f5fe;"
+                      onmouseover="this.style.background='#dce6fd'" onmouseout="this.style.background='#f0f5fe'">
+                      중복 확인
+                    </button>
+                  </div>
+                  <p id="nickMsg" class="text-xs mt-1 text-slate-400">닉네임은 2~50자로 입력해 주세요.</p>
+                </div>
+
+                <!-- 이메일 (읽기 전용) -->
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-500 mb-1.5">이메일</label>
+                  <div class="relative">
+                    <input type="email" class="form-input pr-24" value="{{ user.email }}" disabled>
+                    <span class="badge badge-green absolute right-3 top-1/2 -translate-y-1/2" style="font-size:11px;">인증 완료</span>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1">이메일은 변경할 수 없습니다.</p>
+                </div>
+
+                <!-- 자기소개 -->
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-500 mb-1.5">자기소개</label>
+                  <textarea id="bioInput" class="form-input" rows="3"
+                    placeholder="간단한 자기소개를 입력해 주세요.">{{ user.bio|default:'' }}</textarea>
+                  <p class="text-xs text-slate-400 mt-1 text-right"><span id="bioCount">{{ user.bio|length|default:0 }}</span>/200자</p>
+                </div>
+
+                <!-- 관심 분야 -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 mb-1.5">관심 분야</label>
+                  <select id="categoryInput" class="form-input">
+                    <option value="dev"     {% if user.category == 'dev' %}selected{% endif %}>개발 / 프로그래밍</option>
+                    <option value="lang"    {% if user.category == 'lang' %}selected{% endif %}>어학 / 외국어</option>
+                    <option value="job"     {% if user.category == 'job' %}selected{% endif %}>취업 / 자격증</option>
+                    <option value="selfdev" {% if user.category == 'selfdev' %}selected{% endif %}>자기계발</option>
+                    <option value="etc"     {% if user.category == 'etc' %}selected{% endif %}>기타</option>
+                  </select>
+                </div>
+
+                <!-- 가입일 (읽기 전용) -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 mb-1.5">가입일</label>
+                  <input type="text" class="form-input" value="{{ user.date_joined|date:'Y년 m월 d일' }}" disabled>
+                </div>
+              </div>
+
+              <!-- 저장 버튼 -->
+              <div class="flex flex-wrap justify-end gap-3 mt-6 pt-5 border-t border-slate-100">
+                <button onclick="resetProfileForm()"
+                  class="text-sm font-semibold px-5 py-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                  초기화
+                </button>
+                <button onclick="saveProfile()" id="saveProfileBtn"
+                  class="text-sm font-bold px-6 py-2.5 rounded-xl text-white transition-colors"
+                  style="background:#1055e8;"
+                  onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1055e8'">
+                  변경사항 저장
+                </button>
+              </div>
+            </div>
+
+            <!-- 이번달 출석 현황 -->
+            <div class="section-card">
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <p class="font-bold text-slate-800">이번달 출석 현황</p>
+                  <p class="text-xs text-slate-400 mt-0.5" id="attendanceMonth"></p>
+                </div>
+                <div class="flex gap-4 text-center" id="attendanceStats">
+                  <div><p class="text-xl font-bold" style="color:#1055e8;" id="atRate">—</p><p class="text-xs text-slate-400">출석률</p></div>
+                  <div class="w-px bg-slate-100"></div>
+                  <div><p class="text-xl font-bold text-slate-800" id="atPresent">—</p><p class="text-xs text-slate-400">출석</p></div>
+                  <div class="w-px bg-slate-100"></div>
+                  <div><p class="text-xl font-bold text-amber-500" id="atLate">—</p><p class="text-xs text-slate-400">지각</p></div>
+                  <div class="w-px bg-slate-100"></div>
+                  <div><p class="text-xl font-bold text-rose-500" id="atAbsent">—</p><p class="text-xs text-slate-400">결석</p></div>
+                </div>
+              </div>
+              <!-- 히트맵 -->
+              <div class="grid grid-cols-7 gap-1 mb-1">
+                <span class="text-center text-xs text-slate-400">일</span><span class="text-center text-xs text-slate-400">월</span>
+                <span class="text-center text-xs text-slate-400">화</span><span class="text-center text-xs text-slate-400">수</span>
+                <span class="text-center text-xs text-slate-400">목</span><span class="text-center text-xs text-slate-400">금</span>
+                <span class="text-center text-xs text-slate-400">토</span>
+              </div>
+              <div id="heatmap" class="flex flex-wrap gap-1"></div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-xs text-slate-400">적음</span>
+                <div class="flex gap-1">
+                  <div class="w-3 h-3 rounded-sm" style="background:#f1f5f9;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background:#c7d7fb;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background:#6d98e8;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background:#1055e8;"></div>
+                </div>
+                <span class="text-xs text-slate-400">많음</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ TAB 2: 비밀번호 변경 ══════════════ -->
+      <div id="tab-password" class="tab-panel hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-0">
+
+          <!-- 비밀번호 변경 폼 -->
+          <div class="section-card rounded-t-none" style="border-top-left-radius:0; border-top-right-radius:0;">
+            <p class="font-bold text-slate-800 mb-1">비밀번호 변경</p>
+            <p class="text-xs text-slate-400 mb-5">최소 8자 이상, 영문·숫자·특수문자 조합을 권장합니다.</p>
+
+            <div class="space-y-4">
+              <!-- 현재 비밀번호 -->
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">현재 비밀번호 <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="password" id="currentPw" class="form-input pr-10" placeholder="현재 비밀번호 입력">
+                  <button type="button" onclick="togglePw('currentPw','eyeIcon0')"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <svg id="eyeIcon0" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 새 비밀번호 -->
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">새 비밀번호 <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="password" id="newPw" class="form-input pr-10" placeholder="새 비밀번호 입력 (8자 이상)"
+                    oninput="checkPwStrength(this.value)">
+                  <button type="button" onclick="togglePw('newPw','eyeIcon1')"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <svg id="eyeIcon1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+                </div>
+                <!-- 강도 바 -->
+                <div class="flex gap-1.5 mt-2">
+                  <div class="pw-bar flex-1" id="pb1" style="background:#e2e8f0;"></div>
+                  <div class="pw-bar flex-1" id="pb2" style="background:#e2e8f0;"></div>
+                  <div class="pw-bar flex-1" id="pb3" style="background:#e2e8f0;"></div>
+                  <div class="pw-bar flex-1" id="pb4" style="background:#e2e8f0;"></div>
+                </div>
+                <p class="text-xs mt-1 text-slate-400" id="pwStrengthMsg">비밀번호를 입력하세요.</p>
+              </div>
+
+              <!-- 새 비밀번호 확인 -->
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">새 비밀번호 확인 <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="password" id="confirmPw" class="form-input pr-10" placeholder="새 비밀번호 재입력"
+                    oninput="checkPwMatch()">
+                  <button type="button" onclick="togglePw('confirmPw','eyeIcon2')"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <svg id="eyeIcon2" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="text-xs mt-1 text-slate-400" id="pwMatchMsg"></p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-3 mt-6 pt-5 border-t border-slate-100">
+              <button onclick="clearPasswordForm()"
+                class="text-sm font-semibold px-5 py-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                초기화
+              </button>
+              <button onclick="changePassword()" id="changePwBtn"
+                class="text-sm font-bold px-6 py-2.5 rounded-xl text-white transition-colors"
+                style="background:#1055e8;"
+                onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1055e8'">
+                비밀번호 변경
+              </button>
+            </div>
+          </div>
+
+          <!-- 보안 정보 카드 -->
+          <div class="flex flex-col gap-5">
+            <!-- 비밀번호 가이드 -->
+            <div class="section-card" style="border-top-right-radius:0;">
+              <p class="font-bold text-slate-800 mb-3">🔐 안전한 비밀번호 가이드</p>
+              <ul class="space-y-2" id="pwGuideList">
+                <li class="flex items-center gap-2 text-sm" id="guide-len">
+                  <span class="w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0 text-xs">✓</span>
+                  <span class="text-slate-400">8자 이상</span>
+                </li>
+                <li class="flex items-center gap-2 text-sm" id="guide-upper">
+                  <span class="w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0 text-xs">✓</span>
+                  <span class="text-slate-400">영문 대문자 포함</span>
+                </li>
+                <li class="flex items-center gap-2 text-sm" id="guide-num">
+                  <span class="w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0 text-xs">✓</span>
+                  <span class="text-slate-400">숫자 포함</span>
+                </li>
+                <li class="flex items-center gap-2 text-sm" id="guide-special">
+                  <span class="w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0 text-xs">✓</span>
+                  <span class="text-slate-400">특수문자 포함 (!@#$...)</span>
+                </li>
+              </ul>
+            </div>
+            <!-- 마지막 변경 -->
+            <div class="section-card">
+              <p class="font-bold text-slate-800 mb-3">보안 정보</p>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-slate-600">마지막 비밀번호 변경</span>
+                  <span class="text-sm font-semibold text-slate-800">{{ user.last_password_change|date:"Y.m.d"|default:"정보 없음" }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-slate-600">마지막 로그인</span>
+                  <span class="text-sm font-semibold text-slate-800">{{ user.last_login|date:"Y.m.d H:i"|default:"정보 없음" }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-slate-600">이메일 인증</span>
+                  <span class="badge badge-green" style="font-size:11px;">완료</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══════════════ TAB 3: 활동 통계 ══════════════ -->
+      <div id="tab-activity" class="tab-panel hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-0">
+
+          <!-- 월별 출석 바 차트 (col-span-2) -->
+          <div class="lg:col-span-2 section-card rounded-t-none" style="border-top-left-radius:0; border-top-right-radius:0;">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="font-bold text-slate-800">월별 출석 기록</p>
+                <p class="text-xs text-slate-400">최근 6개월</p>
+              </div>
+            </div>
+            <div style="height:220px; position:relative;">
+              <canvas id="monthlyAttendanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- 레이더 차트 -->
+          <div class="section-card" style="border-top-right-radius:0; border-top-left-radius:0;">
+            <p class="font-bold text-slate-800 mb-1">활동 분야 비중</p>
+            <p class="text-xs text-slate-400 mb-3">그룹별 참여도</p>
+            <div style="height:200px; position:relative;">
+              <canvas id="activityRadarChart"></canvas>
+            </div>
+          </div>
+
+          <!-- 벌금 이력 테이블 (col-span-2) -->
+          <div class="lg:col-span-2 section-card">
+            <div class="flex items-center justify-between mb-4">
+              <p class="font-bold text-slate-800">벌금 이력</p>
+              <div id="penaltySummary" class="text-xs text-slate-400"></div>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-100">
+              <table class="w-full text-sm min-w-[480px]">
+                <thead>
+                  <tr style="background:#f8fafc;">
+                    <th class="px-4 py-2.5 text-left text-xs text-slate-500 font-bold">날짜</th>
+                    <th class="px-4 py-2.5 text-left text-xs text-slate-500 font-bold">그룹</th>
+                    <th class="px-4 py-2.5 text-left text-xs text-slate-500 font-bold">사유</th>
+                    <th class="px-4 py-2.5 text-right text-xs text-slate-500 font-bold">금액</th>
+                    <th class="px-4 py-2.5 text-center text-xs text-slate-500 font-bold">납부</th>
+                  </tr>
+                </thead>
+                <tbody id="penaltyTableBody" class="divide-y divide-slate-50">
+                  <tr><td colspan="5" class="px-4 py-6 text-center text-xs text-slate-400">로딩 중...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 최근 자료 업로드 -->
+          <div class="section-card">
+            <p class="font-bold text-slate-800 mb-4">최근 자료 업로드</p>
+            <div id="recentUploads" class="space-y-3">
+              <p class="text-xs text-slate-400">로딩 중...</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══════════════ TAB 4: 계정 관리 ══════════════ -->
+      <div id="tab-danger" class="tab-panel hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-0">
+
+          <!-- 계정 비활성화 -->
+          <div class="section-card rounded-t-none" style="border-top-left-radius:0; border-top-right-radius:0;">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-1" style="background:#fef3c7;">
+                <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="font-bold text-slate-800 mb-1">계정 비활성화</p>
+                <p class="text-sm text-slate-500 mb-4">계정을 일시적으로 비활성화합니다. 언제든지 다시 로그인하면 재활성화됩니다. 기존 데이터는 모두 보존됩니다.</p>
+                <ul class="text-xs text-slate-400 space-y-1 mb-4 list-disc list-inside">
+                  <li>스터디 그룹에서 일시적으로 숨김 처리됩니다.</li>
+                  <li>출석 기록 및 벌금 이력은 보존됩니다.</li>
+                  <li>재로그인 시 즉시 복구됩니다.</li>
+                </ul>
+                <button onclick="deactivateAccount()"
+                  class="text-sm font-semibold px-5 py-2.5 rounded-xl border border-amber-300 text-amber-600 bg-amber-50 hover:bg-amber-100 transition-colors">
+                  계정 비활성화
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 회원 탈퇴 (2단계 확인) -->
+          <div class="section-card border" style="border-color:#fecdd3; border-top-right-radius:0;">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-1" style="background:#ffe4e6;">
+                <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="font-bold text-rose-600 mb-1">회원 탈퇴</p>
+                <p class="text-sm text-slate-500 mb-4">계정을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p>
+                <ul class="text-xs text-slate-400 space-y-1 mb-4 list-disc list-inside">
+                  <li>모든 개인 정보가 즉시 삭제됩니다.</li>
+                  <li>리더인 그룹은 다른 멤버에게 위임 후 탈퇴 가능합니다.</li>
+                  <li>출석 기록, 벌금 이력 등 모든 데이터가 삭제됩니다.</li>
+                  <li>삭제된 데이터는 복구할 수 없습니다.</li>
+                </ul>
+                <button onclick="deleteAccount()"
+                  class="text-sm font-bold px-5 py-2.5 rounded-xl text-white transition-colors"
+                  style="background:#e11d48;"
+                  onmouseover="this.style.background='#be123c'" onmouseout="this.style.background='#e11d48'">
+                  회원 탈퇴
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 데이터 내보내기 -->
+          <div class="section-card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-1" style="background:#dce6fd;">
+                <svg class="w-5 h-5" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="font-bold text-slate-800 mb-1">내 데이터 내보내기</p>
+                <p class="text-sm text-slate-500 mb-4">출석 기록, 벌금 이력 등 내 모든 데이터를 JSON 형식으로 내보냅니다.</p>
+                <button onclick="exportMyData()"
+                  class="text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+                  style="color:#1055e8; border:1px solid #c7d7fb; background:#f0f5fe;"
+                  onmouseover="this.style.background='#dce6fd'" onmouseout="this.style.background='#f0f5fe'">
+                  데이터 내보내기
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 로그인 세션 -->
+          <div class="section-card">
+            <p class="font-bold text-slate-800 mb-3">로그인 세션 관리</p>
+            <div class="space-y-3" id="sessionList">
+              <div class="flex items-center justify-between p-3 rounded-xl" style="background:#f8fafc; border:1px solid #f1f5f9;">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:#dce6fd;">
+                    <svg class="w-4 h-4" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-slate-700">현재 기기</p>
+                    <p class="text-xs text-slate-400">현재 접속 중</p>
+                  </div>
+                </div>
+                <span class="badge badge-green" style="font-size:11px;">현재</span>
+              </div>
+            </div>
+            <button onclick="logoutAllDevices()" class="mt-3 text-xs font-semibold" style="color:#1055e8;">
+              + 모든 기기에서 로그아웃
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- end page content -->
+  </main>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════ -->
+<script>
+// ── 기본 설정 ──────────────────────────────────────────────
+const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
+axios.defaults.headers.common['X-CSRFToken'] = CSRF;
+
+let nickChecked = false;      // 닉네임 중복 확인 여부
+let originalNickname = document.getElementById('nicknameInput').value;
+let activityChartsInit = false;
+
+// ════════════════════════════════════════════════════════════
+// 사이드바 (모바일)
+// ════════════════════════════════════════════════════════════
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ════════════════════════════════════════════════════════════
+// 탭 전환
+// ════════════════════════════════════════════════════════════
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.classList.add('text-slate-500');
+  });
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  btn.classList.add('active');
+  btn.classList.remove('text-slate-500');
+  if (name === 'activity' && !activityChartsInit) initActivityCharts();
+}
+
+// ════════════════════════════════════════════════════════════
+// 1. 프로필 정보 조회 + 활동 요약
+// ════════════════════════════════════════════════════════════
+async function loadProfileData() {
+  try {
+    const { data } = await axios.get('/accounts/api/profile/');
+    // 활동 요약
+    document.getElementById('activitySummary').innerHTML = `
+      <div class="flex items-center justify-between py-2 border-b border-slate-50">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#dce6fd;">
+            <svg class="w-4 h-4" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="text-sm text-slate-600">총 출석 횟수</span>
+        </div>
+        <span class="text-sm font-bold text-slate-800">${data.total_attendance}회</span>
+      </div>
+      <div class="flex items-center justify-between py-2 border-b border-slate-50">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#dcfce7;">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <span class="text-sm text-slate-600">참여 그룹 수</span>
+        </div>
+        <span class="text-sm font-bold text-slate-800">${data.group_count}개</span>
+      </div>
+      <div class="flex items-center justify-between py-2 border-b border-slate-50">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#fef3c7;">
+            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="text-sm text-slate-600">납부 완료 벌금</span>
+        </div>
+        <span class="text-sm font-bold text-slate-800">₩${(data.paid_penalty||0).toLocaleString()}</span>
+      </div>
+      <div class="flex items-center justify-between py-2 border-b border-slate-50">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#ffe4e6;">
+            <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <span class="text-sm text-slate-600">미납 벌금</span>
+        </div>
+        <span class="text-sm font-bold text-rose-500">₩${(data.unpaid_penalty||0).toLocaleString()}</span>
+      </div>
+      <div class="flex items-center justify-between py-2">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#ede9fe;">
+            <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          </div>
+          <span class="text-sm text-slate-600">자료 업로드</span>
+        </div>
+        <span class="text-sm font-bold text-slate-800">${data.upload_count}개</span>
+      </div>`;
+
+    // 출석 통계
+    const now = new Date();
+    document.getElementById('attendanceMonth').textContent = `${now.getFullYear()}년 ${now.getMonth()+1}월 기준`;
+    document.getElementById('atRate').textContent    = (data.monthly_rate || 0) + '%';
+    document.getElementById('atPresent').textContent = (data.monthly_present || 0) + '회';
+    document.getElementById('atLate').textContent    = (data.monthly_late || 0) + '회';
+    document.getElementById('atAbsent').textContent  = (data.monthly_absent || 0) + '회';
+    buildHeatmap(data.heatmap_data || []);
+
+  } catch {
+    // 더미
+    document.getElementById('activitySummary').innerHTML = buildActivitySummaryDummy();
+    buildHeatmap([]);
+    document.getElementById('atRate').textContent    = '87%';
+    document.getElementById('atPresent').textContent = '13회';
+    document.getElementById('atLate').textContent    = '1회';
+    document.getElementById('atAbsent').textContent  = '1회';
+    const now = new Date();
+    document.getElementById('attendanceMonth').textContent = `${now.getFullYear()}년 ${now.getMonth()+1}월 기준`;
+  }
+}
+
+function buildActivitySummaryDummy() {
+  return `<p class="text-xs text-slate-400 text-center py-4">데이터를 불러올 수 없습니다.</p>`;
+}
+
+async function loadMyGroups() {
+  try {
+    const { data } = await axios.get('/groups/api/my-groups/');
+    if (!data.length) {
+      document.getElementById('myGroupsSidebar').innerHTML = '<p class="text-xs text-slate-400">참여 그룹 없음</p>';
+      return;
+    }
+    document.getElementById('myGroupsSidebar').innerHTML = data.slice(0,4).map(g => `
+      <a href="/groups/${g.id}/" class="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 transition-colors group">
+        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+          style="background:${g.color||'#1055e8'};">${g.name.charAt(0)}</div>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold text-slate-700 truncate">${g.name}</p>
+          <p class="text-xs text-slate-400">${g.role==='leader'?'리더':'멤버'}</p>
+        </div>
+        <span class="text-xs px-1.5 py-0.5 rounded-full font-medium ml-auto flex-shrink-0 ${g.role==='leader'?'badge-leader':'badge-member'}">${g.member_count}/${g.max_members}</span>
+      </a>`).join('');
+  } catch {
+    document.getElementById('myGroupsSidebar').innerHTML = `
+      <div class="flex items-center gap-2 p-2 rounded-lg">
+        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs" style="background:#1055e8;">W</div>
+        <div><p class="text-xs font-semibold text-slate-700">Web Developer</p><p class="text-xs text-slate-400">리더</p></div>
+      </div>`;
+  }
+}
+
+// ── 히트맵 ──────────────────────────────────────────────────
+function buildHeatmap(heatmapData) {
+  const container = document.getElementById('heatmap');
+  const colors = ['#f1f5f9','#c7d7fb','#6d98e8','#1055e8'];
+  // 35칸 기준 (5주)
+  for (let i = 0; i < 35; i++) {
+    const lv = heatmapData[i] !== undefined ? Math.min(heatmapData[i], 3) : Math.floor(Math.random()*4);
+    const d = document.createElement('div');
+    d.style.cssText = `width:20px;height:20px;border-radius:4px;background:${colors[lv]};cursor:pointer;transition:.1s;flex-shrink:0;`;
+    d.title = lv === 0 ? '출석 없음' : `${lv}회 세션`;
+    d.onmouseover = () => d.style.opacity = '0.7';
+    d.onmouseout  = () => d.style.opacity = '1';
+    container.appendChild(d);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// 2. 프로필 이미지 업로드 + 미리보기 + 저장
+// ════════════════════════════════════════════════════════════
+async function previewAndUploadAvatar(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) {
+    Swal.fire({ icon:'error', title:'파일 크기 초과', text:'5MB 이하의 이미지를 선택해 주세요.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+    return;
+  }
+  // 미리보기
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wrap = document.getElementById('avatarWrap');
+    wrap.innerHTML = `
+      <img id="avatarImg" src="${e.target.result}" alt="프로필"
+        class="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white">
+      <div class="avatar-overlay">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+               a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9
+               a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>`;
+    wrap.onclick = () => document.getElementById('avatarInput').click();
+  };
+  reader.readAsDataURL(file);
+
+  // 서버 업로드
+  const formData = new FormData();
+  formData.append('profile_image', file);
+  formData.append('csrfmiddlewaretoken', CSRF);
+  try {
+    Swal.fire({ title:'업로드 중...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+    await axios.post('/accounts/api/profile/avatar/', formData, { headers:{'Content-Type':'multipart/form-data'} });
+    Swal.fire({ icon:'success', title:'업로드 완료', text:'프로필 사진이 변경되었습니다.', timer:1800, showConfirmButton:false });
+  } catch {
+    Swal.fire({ icon:'error', title:'업로드 실패', text:'이미지 업로드에 실패했습니다.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+  }
+}
+
+async function deleteAvatar() {
+  const result = await Swal.fire({
+    title:'프로필 사진 삭제',
+    text:'프로필 사진을 삭제하시겠습니까?',
+    icon:'question',
+    showCancelButton:true,
+    confirmButtonText:'삭제',
+    cancelButtonText:'취소',
+    customClass:{confirmButton:'swal2-confirm', cancelButton:'swal2-cancel'},
+  });
+  if (!result.isConfirmed) return;
+  try {
+    await axios.delete('/accounts/api/profile/avatar/');
+    location.reload();
+  } catch {
+    Swal.fire({ icon:'error', title:'오류', text:'사진 삭제에 실패했습니다.' });
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// 3. 닉네임 수정 + 실시간 중복 확인
+// ════════════════════════════════════════════════════════════
+let nickTimer = null;
+
+function onNicknameInput(val) {
+  nickChecked = false;
+  document.getElementById('nickIcon').classList.add('hidden');
+  const inp = document.getElementById('nicknameInput');
+  inp.classList.remove('nick-ok', 'nick-dupe');
+  clearTimeout(nickTimer);
+  if (val.length < 2) {
+    document.getElementById('nickMsg').textContent = '닉네임은 2자 이상 입력해 주세요.';
+    document.getElementById('nickMsg').className = 'text-xs mt-1 text-rose-500';
+    return;
+  }
+  document.getElementById('nickMsg').textContent = '중복 확인이 필요합니다.';
+  document.getElementById('nickMsg').className = 'text-xs mt-1 text-slate-400';
+  // 변경 없으면 체크 불필요
+  if (val === originalNickname) {
+    nickChecked = true;
+    document.getElementById('nickMsg').textContent = '현재 사용 중인 닉네임입니다.';
+    document.getElementById('nickMsg').className = 'text-xs mt-1 text-emerald-500';
+    inp.classList.add('nick-ok');
+    document.getElementById('nickIcon').textContent = '✓';
+    document.getElementById('nickIcon').style.color = '#16a34a';
+    document.getElementById('nickIcon').classList.remove('hidden');
+  }
+}
+
+async function checkNickname() {
+  const val = document.getElementById('nicknameInput').value.trim();
+  const inp = document.getElementById('nicknameInput');
+  const msg = document.getElementById('nickMsg');
+  const icon = document.getElementById('nickIcon');
+  if (!val || val.length < 2) {
+    msg.textContent = '닉네임은 2자 이상 입력해 주세요.';
+    msg.className = 'text-xs mt-1 text-rose-500';
+    return;
+  }
+  if (val === originalNickname) {
+    nickChecked = true;
+    inp.classList.remove('nick-dupe'); inp.classList.add('nick-ok');
+    icon.textContent='✓'; icon.style.color='#16a34a'; icon.classList.remove('hidden');
+    msg.textContent = '현재 사용 중인 닉네임입니다.';
+    msg.className = 'text-xs mt-1 text-emerald-500';
+    return;
+  }
+  try {
+    document.getElementById('nickCheckBtn').textContent = '확인 중...';
+    const { data } = await axios.get(`/accounts/api/check-nickname/?nickname=${encodeURIComponent(val)}`);
+    if (data.available) {
+      nickChecked = true;
+      inp.classList.remove('nick-dupe'); inp.classList.add('nick-ok');
+      icon.textContent='✓'; icon.style.color='#16a34a'; icon.classList.remove('hidden');
+      msg.textContent = '사용 가능한 닉네임입니다.';
+      msg.className = 'text-xs mt-1 text-emerald-500';
+    } else {
+      nickChecked = false;
+      inp.classList.remove('nick-ok'); inp.classList.add('nick-dupe');
+      icon.textContent='✗'; icon.style.color='#e11d48'; icon.classList.remove('hidden');
+      msg.textContent = '이미 사용 중인 닉네임입니다.';
+      msg.className = 'text-xs mt-1 text-rose-500';
+    }
+  } catch {
+    msg.textContent = '확인 중 오류가 발생했습니다.';
+    msg.className = 'text-xs mt-1 text-rose-500';
+  } finally {
+    document.getElementById('nickCheckBtn').textContent = '중복 확인';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// 기본 정보 저장
+// ════════════════════════════════════════════════════════════
+async function saveProfile() {
+  const nickname = document.getElementById('nicknameInput').value.trim();
+  const bio      = document.getElementById('bioInput').value.trim();
+  const category = document.getElementById('categoryInput').value;
+
+  if (!nickname || nickname.length < 2) {
+    Swal.fire({ icon:'warning', title:'닉네임 확인', text:'닉네임은 2자 이상 입력해 주세요.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+    return;
+  }
+  if (nickname !== originalNickname && !nickChecked) {
+    Swal.fire({ icon:'warning', title:'중복 확인 필요', text:'닉네임 중복 확인을 먼저 진행해 주세요.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+    return;
+  }
+  try {
+    const btn = document.getElementById('saveProfileBtn');
+    btn.textContent = '저장 중...'; btn.disabled = true;
+    await axios.patch('/accounts/api/profile/', { nickname, bio, category });
+    originalNickname = nickname;
+    document.getElementById('displayNickname').textContent = nickname;
+    document.getElementById('headerAvatar').textContent = nickname.charAt(0).toUpperCase();
+    const badge = document.getElementById('saveStatusBadge');
+    badge.style.display = 'inline-flex';
+    setTimeout(() => badge.style.display='none', 3000);
+    Swal.fire({ icon:'success', title:'저장 완료', text:'프로필이 업데이트되었습니다.', timer:1500, showConfirmButton:false });
+  } catch (e) {
+    Swal.fire({ icon:'error', title:'저장 실패', text:e.response?.data?.message||'저장에 실패했습니다.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+  } finally {
+    const btn = document.getElementById('saveProfileBtn');
+    btn.textContent = '변경사항 저장'; btn.disabled = false;
+  }
+}
+
+function resetProfileForm() {
+  document.getElementById('nicknameInput').value = originalNickname;
+  document.getElementById('nicknameInput').classList.remove('nick-ok','nick-dupe');
+  document.getElementById('nickMsg').textContent = '닉네임은 2~50자로 입력해 주세요.';
+  document.getElementById('nickMsg').className = 'text-xs mt-1 text-slate-400';
+  document.getElementById('nickIcon').classList.add('hidden');
+  document.getElementById('bioInput').value = document.getElementById('bioInput').defaultValue;
+  nickChecked = false;
+}
+
+// ── 자기소개 글자수 ─────────────────────────────────────────
+document.getElementById('bioInput').addEventListener('input', function() {
+  const len = this.value.length;
+  if (len > 200) this.value = this.value.slice(0, 200);
+  document.getElementById('bioCount').textContent = Math.min(len, 200);
+});
+
+// ════════════════════════════════════════════════════════════
+// 4. 비밀번호 변경
+// ════════════════════════════════════════════════════════════
+function togglePw(inputId, iconId) {
+  const inp = document.getElementById(inputId);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function checkPwStrength(val) {
+  const bars = ['pb1','pb2','pb3','pb4'];
+  const guides = ['guide-len','guide-upper','guide-num','guide-special'];
+  const checks = [val.length>=8, /[A-Z]/.test(val), /[0-9]/.test(val), /[^A-Za-z0-9]/.test(val)];
+  let score = checks.filter(Boolean).length;
+
+  guides.forEach((g,i) => {
+    const el = document.getElementById(g);
+    const icon = el.querySelector('span');
+    const text = el.querySelector('span:last-child');
+    if (checks[i]) {
+      icon.style.background='#1055e8'; icon.style.borderColor='#1055e8'; icon.style.color='white';
+      el.querySelector('span:last-child').style.color='#1e293b';
+    } else {
+      icon.style.background=''; icon.style.borderColor='#cbd5e1'; icon.style.color='transparent';
+      el.querySelector('span:last-child').style.color='#94a3b8';
+    }
+  });
+
+  const colors = ['#e2e8f0','#e11d48','#f59e0b','#3b82f6','#16a34a'];
+  const msgs   = ['','매우 약함','보통','강함','매우 강함'];
+  bars.forEach((b,i) => {
+    document.getElementById(b).style.background = i < score ? colors[score] : '#e2e8f0';
+  });
+  const msg = document.getElementById('pwStrengthMsg');
+  msg.textContent = val ? msgs[score] : '비밀번호를 입력하세요.';
+  msg.style.color = val ? colors[score] : '#94a3b8';
+  checkPwMatch();
+}
+
+function checkPwMatch() {
+  const n = document.getElementById('newPw').value;
+  const c = document.getElementById('confirmPw').value;
+  const msg = document.getElementById('pwMatchMsg');
+  if (!c) { msg.textContent=''; return; }
+  if (n === c) {
+    msg.textContent = '✓ 비밀번호가 일치합니다.';
+    msg.className = 'text-xs mt-1 text-emerald-500';
+  } else {
+    msg.textContent = '✗ 비밀번호가 일치하지 않습니다.';
+    msg.className = 'text-xs mt-1 text-rose-500';
+  }
+}
+
+async function changePassword() {
+  const cur = document.getElementById('currentPw').value;
+  const nw  = document.getElementById('newPw').value;
+  const cf  = document.getElementById('confirmPw').value;
+  if (!cur) { Swal.fire({ icon:'warning', title:'현재 비밀번호 입력', text:'현재 비밀번호를 입력해 주세요.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'}}); return; }
+  if (nw.length < 8) { Swal.fire({ icon:'warning', title:'비밀번호 길이', text:'새 비밀번호는 8자 이상이어야 합니다.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'}}); return; }
+  if (nw !== cf) { Swal.fire({ icon:'warning', title:'비밀번호 불일치', text:'새 비밀번호와 확인 비밀번호가 일치하지 않습니다.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'}}); return; }
+
+  try {
+    const btn = document.getElementById('changePwBtn');
+    btn.textContent = '변경 중...'; btn.disabled = true;
+    await axios.post('/accounts/api/change-password/', { current_password:cur, new_password:nw });
+    Swal.fire({ icon:'success', title:'비밀번호 변경 완료', text:'다음 로그인부터 새 비밀번호를 사용해 주세요.', timer:2000, showConfirmButton:false });
+    clearPasswordForm();
+  } catch (e) {
+    Swal.fire({ icon:'error', title:'변경 실패', text:e.response?.data?.message||'현재 비밀번호가 올바르지 않습니다.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+  } finally {
+    const btn = document.getElementById('changePwBtn');
+    btn.textContent = '비밀번호 변경'; btn.disabled = false;
+  }
+}
+
+function clearPasswordForm() {
+  ['currentPw','newPw','confirmPw'].forEach(id => document.getElementById(id).value='');
+  ['pb1','pb2','pb3','pb4'].forEach(id => document.getElementById(id).style.background='#e2e8f0');
+  document.getElementById('pwStrengthMsg').textContent='비밀번호를 입력하세요.';
+  document.getElementById('pwStrengthMsg').style.color='#94a3b8';
+  document.getElementById('pwMatchMsg').textContent='';
+}
+
+// ════════════════════════════════════════════════════════════
+// 활동 통계 차트 (지연 초기화)
+// ════════════════════════════════════════════════════════════
+function initActivityCharts() {
+  activityChartsInit = true;
+  loadPenaltyHistory();
+  loadRecentUploads();
+
+  // 월별 출석 바 차트
+  new Chart(document.getElementById('monthlyAttendanceChart'), {
+    type: 'bar',
+    data: {
+      labels: ['1월','2월','3월','4월','5월','6월'],
+      datasets: [
+        { label:'출석', data:[8,10,12,9,14,13], backgroundColor:'#1055e8', borderRadius:6, borderSkipped:false },
+        { label:'결석', data:[2,1,1,3,1,1],     backgroundColor:'#fecdd3', borderRadius:6, borderSkipped:false },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12 } } },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ font:{size:11}, color:'#94a3b8' } },
+        y:{ grid:{color:'#f1f5f9'}, ticks:{ font:{size:11}, color:'#94a3b8' }, beginAtZero:true },
+      }
+    }
+  });
+
+  // 레이더 차트
+  new Chart(document.getElementById('activityRadarChart'), {
+    type: 'radar',
+    data: {
+      labels: ['출석률','자료 공유','벌금 납부','공지 확인','스터디 기여'],
+      datasets: [{ data:[87,70,75,90,65], backgroundColor:'rgba(16,85,232,.1)', borderColor:'#1055e8', borderWidth:2, pointBackgroundColor:'#1055e8', pointRadius:4 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{ r:{ beginAtZero:true, max:100, ticks:{ stepSize:25, font:{size:10}, color:'#94a3b8' }, grid:{color:'#f1f5f9'}, pointLabels:{ font:{size:11}, color:'#64748b' } } }
+    }
+  });
+}
+
+async function loadPenaltyHistory() {
+  try {
+    const { data } = await axios.get('/penalty/api/my-history/');
+    const total  = data.reduce((s,i)=>s+i.amount, 0);
+    const paid   = data.filter(i=>i.is_paid).reduce((s,i)=>s+i.amount, 0);
+    const unpaid = total - paid;
+    document.getElementById('penaltySummary').textContent = `전체 ₩${total.toLocaleString()} · 납부 ₩${paid.toLocaleString()} · 미납 ₩${unpaid.toLocaleString()}`;
+    if (!data.length) {
+      document.getElementById('penaltyTableBody').innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-xs text-slate-400">벌금 이력이 없습니다.</td></tr>';
+      return;
+    }
+    document.getElementById('penaltyTableBody').innerHTML = data.map(item => `
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3 text-xs text-slate-500">${item.date}</td>
+        <td class="px-4 py-3 text-xs font-medium text-slate-700">${item.group_name}</td>
+        <td class="px-4 py-3 text-xs text-slate-500">${item.reason}</td>
+        <td class="px-4 py-3 text-xs font-bold text-right ${item.is_paid?'text-slate-700':'text-rose-500'}">₩${item.amount.toLocaleString()}</td>
+        <td class="px-4 py-3 text-center">
+          <span class="badge ${item.is_paid?'badge-green':'badge-rose'}" style="font-size:11px;">${item.is_paid?'납부':'미납'}</span>
+        </td>
+      </tr>`).join('');
+  } catch {
+    document.getElementById('penaltyTableBody').innerHTML = `
+      <tr class="hover:bg-slate-50"><td class="px-4 py-3 text-xs text-slate-500">2025.06.10</td><td class="px-4 py-3 text-xs font-medium text-slate-700">Web Developer</td><td class="px-4 py-3 text-xs text-slate-500">결석</td><td class="px-4 py-3 text-xs font-bold text-right text-rose-500">₩5,000</td><td class="px-4 py-3 text-center"><span class="badge badge-rose" style="font-size:11px;">미납</span></td></tr>
+      <tr class="hover:bg-slate-50"><td class="px-4 py-3 text-xs text-slate-500">2025.05.28</td><td class="px-4 py-3 text-xs font-medium text-slate-700">Python 스터디</td><td class="px-4 py-3 text-xs text-slate-500">지각</td><td class="px-4 py-3 text-xs font-bold text-right text-slate-700">₩2,000</td><td class="px-4 py-3 text-center"><span class="badge badge-green" style="font-size:11px;">납부</span></td></tr>`;
+  }
+}
+
+async function loadRecentUploads() {
+  try {
+    const { data } = await axios.get('/accounts/api/my-uploads/');
+    if (!data.length) {
+      document.getElementById('recentUploads').innerHTML = '<p class="text-xs text-slate-400">업로드 내역이 없습니다.</p>';
+      return;
+    }
+    document.getElementById('recentUploads').innerHTML = data.slice(0,5).map(f => `
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#dce6fd;">
+          <svg class="w-4 h-4" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-semibold text-slate-700 truncate">${f.filename}</p>
+          <p class="text-xs text-slate-400">${f.group_name} · ${f.size}</p>
+          <p class="text-xs font-medium" style="color:#1055e8;">${f.date}</p>
+        </div>
+      </div>`).join('');
+  } catch {
+    document.getElementById('recentUploads').innerHTML = `
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#dce6fd;">
+          <svg class="w-4 h-4" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-700">정렬 알고리즘 정리.pdf</p>
+          <p class="text-xs text-slate-400">Python 스터디 · 2.3MB</p>
+          <p class="text-xs font-medium" style="color:#1055e8;">6월 16일</p>
+        </div>
+      </div>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// 5. 회원 탈퇴 - SweetAlert2 2단계 확인
+// ════════════════════════════════════════════════════════════
+async function deleteAccount() {
+  // 1단계: 경고 안내
+  const step1 = await Swal.fire({
+    title: '⚠️ 회원 탈퇴 주의사항',
+    icon: 'warning',
+    width: 480,
+    html: `
+      <div class="text-left space-y-3 text-sm text-slate-600">
+        <div class="p-3 rounded-xl" style="background:#fff1f2; border:1px solid #fecdd3;">
+          <p class="font-bold text-rose-600 mb-2">탈퇴 전 반드시 확인하세요</p>
+          <ul class="space-y-1 text-rose-700 text-xs">
+            <li>• 리더인 그룹이 있다면 먼저 위임 후 탈퇴 가능합니다.</li>
+            <li>• 모든 출석 기록, 벌금 이력이 영구 삭제됩니다.</li>
+            <li>• 업로드한 자료 파일도 모두 삭제됩니다.</li>
+            <li>• 삭제된 데이터는 복구할 수 없습니다.</li>
+          </ul>
+        </div>
+        <p>그래도 탈퇴를 진행하시겠습니까?</p>
+      </div>`,
+    showCancelButton: true,
+    confirmButtonText: '탈퇴 계속 진행',
+    cancelButtonText: '취소',
+    customClass: { confirmButton:'swal2-deny', cancelButton:'swal2-cancel' },
+  });
+  if (!step1.isConfirmed) return;
+
+  // 2단계: 비밀번호 확인
+  const step2 = await Swal.fire({
+    title: '본인 확인',
+    icon: 'question',
+    width: 420,
+    html: `
+      <div class="text-left space-y-3">
+        <p class="text-sm text-slate-500">계정 삭제를 위해 현재 비밀번호를 입력해 주세요.</p>
+        <div>
+          <label class="swal-lbl">현재 비밀번호 <span class="text-rose-500">*</span></label>
+          <input id="deleteConfirmPw" type="password" class="swal-inp" placeholder="비밀번호 입력">
+        </div>
+        <div>
+          <label class="swal-lbl">확인 문구 입력 <span class="text-rose-500">*</span></label>
+          <input id="deleteConfirmText" class="swal-inp" placeholder="'계정삭제'를 입력해 주세요.">
+          <p class="text-xs text-slate-400 mt-1">정확히 <strong>계정삭제</strong> 를 입력해야 합니다.</p>
+        </div>
+      </div>`,
+    showCancelButton: true,
+    confirmButtonText: '최종 탈퇴',
+    cancelButtonText: '취소',
+    customClass: { confirmButton:'swal2-deny', cancelButton:'swal2-cancel' },
+    preConfirm: () => {
+      const pw   = document.getElementById('deleteConfirmPw').value;
+      const text = document.getElementById('deleteConfirmText').value;
+      if (!pw) { Swal.showValidationMessage('비밀번호를 입력해 주세요.'); return false; }
+      if (text !== '계정삭제') { Swal.showValidationMessage("'계정삭제'를 정확히 입력해 주세요."); return false; }
+      return { password: pw };
+    }
+  });
+  if (!step2.isConfirmed) return;
+
+  try {
+    Swal.fire({ title:'처리 중...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+    await axios.post('/accounts/api/delete/', { password: step2.value.password });
+    await Swal.fire({ icon:'success', title:'탈퇴 완료', text:'계정이 삭제되었습니다. 이용해 주셔서 감사합니다.', timer:2500, showConfirmButton:false });
+    window.location.href = '/accounts/login/';
+  } catch (e) {
+    Swal.fire({ icon:'error', title:'탈퇴 실패', text:e.response?.data?.message||'비밀번호가 올바르지 않거나 탈퇴 처리 중 오류가 발생했습니다.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+  }
+}
+
+// 계정 비활성화
+async function deactivateAccount() {
+  const result = await Swal.fire({
+    title: '계정 비활성화',
+    text: '계정을 일시적으로 비활성화하시겠습니까? 재로그인 시 자동으로 복구됩니다.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: '비활성화',
+    cancelButtonText: '취소',
+    customClass: { confirmButton:'swal2-confirm', cancelButton:'swal2-cancel' },
+  });
+  if (!result.isConfirmed) return;
+  try {
+    await axios.post('/accounts/api/deactivate/');
+    window.location.href = '/accounts/login/';
+  } catch {
+    Swal.fire({ icon:'error', title:'오류', text:'처리 중 오류가 발생했습니다.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+  }
+}
+
+// 데이터 내보내기
+async function exportMyData() {
+  try {
+    Swal.fire({ title:'데이터 준비 중...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+    const resp = await axios.get('/accounts/api/export/', { responseType:'blob' });
+    const url  = URL.createObjectURL(new Blob([resp.data]));
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'my_study_data.json'; a.click();
+    URL.revokeObjectURL(url);
+    Swal.fire({ icon:'success', title:'내보내기 완료', text:'데이터 파일이 다운로드되었습니다.', timer:1800, showConfirmButton:false });
+  } catch {
+    Swal.fire({ icon:'error', title:'내보내기 실패', text:'데이터 내보내기 중 오류가 발생했습니다.', confirmButtonText:'확인', customClass:{confirmButton:'swal2-confirm'} });
+  }
+}
+
+// 모든 기기 로그아웃
+async function logoutAllDevices() {
+  const result = await Swal.fire({
+    title: '모든 기기 로그아웃',
+    text: '현재 기기를 포함한 모든 기기에서 로그아웃합니다.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: '로그아웃',
+    cancelButtonText: '취소',
+    customClass: { confirmButton:'swal2-confirm', cancelButton:'swal2-cancel' },
+  });
+  if (!result.isConfirmed) return;
+  try {
+    await axios.post('/accounts/api/logout-all/');
+  } catch (_) {}
+  // 로그아웃 후 세션 종료
+  window.location.href = '/accounts/logout/';
+}
+
+// handleLogout → inc_common_scripts.html 에서 공통 정의
+
+// ════════════════════════════════════════════════════════════
+// 초기 로딩
+// ════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadProfileData();
+  loadMyGroups();
+});
+</script>
+{% include 'inc_common_scripts.html' %}
+</body>
+</html>
