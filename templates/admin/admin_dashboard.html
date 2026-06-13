@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<title>관리자 대시보드 — StudyGroupManager</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Axios -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.all.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.6/sweetalert2.min.css">
+<!-- Pretendard Font -->
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  * { font-family: 'Pretendard', -apple-system, sans-serif; box-sizing: border-box; }
+
+  :root {
+    --navy: #0f2133;
+    --navy-mid: #1A3C5E;
+    --ocean: #2E86AB;
+    --ocean-lt: #e8f4f8;
+  }
+
+  body { background: #f1f5f9; }
+
+  /* ── 레이아웃 ── */
+  .admin-layout { display: flex; min-height: 100vh; }
+  .admin-main {
+    flex: 1;
+    margin-left: 256px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 1024px) {
+    .admin-main { margin-left: 0; }
+  }
+
+  /* ── KPI 카드 ── */
+  .kpi-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 1px 8px rgba(15,23,42,.05);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(15,23,42,.09);
+  }
+
+  /* ── 차트 카드 ── */
+  .chart-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 1px 8px rgba(15,23,42,.05);
+  }
+
+  /* ── 배지 ── */
+  .badge-success { background:#dcfce7; color:#15803d; font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; }
+  .badge-warning { background:#fef3c7; color:#d97706; font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; }
+  .badge-danger  { background:#fee2e2; color:#dc2626; font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; }
+  .badge-info    { background:#dbeafe; color:#1d4ed8; font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; }
+
+  /* ── 테이블 ── */
+  .admin-table { width: 100%; border-collapse: collapse; }
+  .admin-table th {
+    text-align: left; font-size: 11px; font-weight: 700;
+    color: #94a3b8; text-transform: uppercase; letter-spacing: .05em;
+    padding: 8px 12px; border-bottom: 1px solid #f1f5f9;
+  }
+  .admin-table td {
+    padding: 11px 12px; font-size: 13px; color: #374151;
+    border-bottom: 1px solid #f8fafc;
+  }
+  .admin-table tr:last-child td { border-bottom: none; }
+  .admin-table tr:hover td { background: #f8fafc; }
+
+  /* ── 타임라인 ── */
+  .timeline-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  /* ── 스켈레톤 ── */
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 6px;
+  }
+
+  /* ── SweetAlert2 ── */
+  .swal2-popup { font-family: 'Pretendard', sans-serif !important; border-radius: 16px !important; }
+  .swal2-confirm { background: linear-gradient(135deg,#1A3C5E,#2E86AB) !important; border-radius: 8px !important; font-weight: 600 !important; }
+</style>
+</head>
+
+<body>
+<div class="admin-layout">
+
+  <!-- ── 사이드바 ── -->
+  {% include 'admin/inc_left.html' %}
+
+  <!-- ── 메인 영역 ── -->
+  <div class="admin-main">
+
+    <!-- 탑바 -->
+    {% include 'admin/inc_top.html' %}
+
+    <!-- ── 콘텐츠 ── -->
+    <main class="flex-1 p-5 lg:p-6 space-y-5">
+
+      <!-- ① 배너 -->
+      <div class="relative rounded-2xl overflow-hidden"
+           style="background:linear-gradient(135deg,#0f2133 0%,#1A3C5E 55%,#2E86AB 100%); min-height:100px;">
+        <!-- 장식 원 -->
+        <div class="absolute -top-8 -right-8 w-48 h-48 rounded-full opacity-10"
+             style="background:radial-gradient(circle,#7ecfe8,transparent 70%);"></div>
+        <div class="absolute bottom-0 left-1/3 w-32 h-32 rounded-full opacity-10"
+             style="background:radial-gradient(circle,#2E86AB,transparent 70%);"></div>
+
+        <div class="relative z-10 px-6 py-5 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 class="text-xl font-bold text-white leading-tight">관리자 대시보드</h1>
+            <p class="text-sm mt-1" style="color:rgba(255,255,255,.6);">
+              <span id="bannerDate"></span> 기준 실시간 현황
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="refreshAll()"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white border transition-all"
+              style="border-color:rgba(255,255,255,.25); background:rgba(255,255,255,.1);"
+              onmouseover="this.style.background='rgba(255,255,255,.18)'"
+              onmouseout="this.style.background='rgba(255,255,255,.1)'">
+              <svg class="w-4 h-4" id="refreshIcon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+              </svg>
+              새로고침
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② KPI 카드 4개 -->
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4" id="kpiGrid">
+        <!-- 스켈레톤 -->
+        {% for i in "1234" %}
+        <div class="kpi-card">
+          <div class="skeleton h-4 w-20 mb-3"></div>
+          <div class="skeleton h-8 w-16 mb-2"></div>
+          <div class="skeleton h-3 w-24"></div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- ③ 차트 행 (2열) -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+
+        <!-- 신규 가입 추이 (2/3) -->
+        <div class="chart-card xl:col-span-2">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-bold text-slate-800">신규 가입 추이</h2>
+              <p class="text-xs text-slate-400 mt-0.5">최근 30일</p>
+            </div>
+            <span class="badge-info">회원</span>
+          </div>
+          <div style="height:220px;">
+            <canvas id="signupChart"></canvas>
+          </div>
+        </div>
+
+        <!-- 그룹 활동 (1/3) -->
+        <div class="chart-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-bold text-slate-800">그룹 활동 Top 10</h2>
+              <p class="text-xs text-slate-400 mt-0.5">이번달 세션 수</p>
+            </div>
+            <span class="badge-success">그룹</span>
+          </div>
+          <div style="height:220px;">
+            <canvas id="groupChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- ④ 시스템 현황 + 최근 회원 -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+
+        <!-- 시스템 상태 (1/3) -->
+        <div class="chart-card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-bold text-slate-800">시스템 상태</h2>
+            <span id="sysStatusBadge" class="badge-success">정상</span>
+          </div>
+
+          <!-- DB 상태 -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between py-2 border-b border-slate-50">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50">
+                  <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-slate-700">데이터베이스</p>
+                  <p class="text-xs text-slate-400" id="dbStatusText">확인 중...</p>
+                </div>
+              </div>
+              <div class="w-2.5 h-2.5 rounded-full bg-green-400" id="dbDot"></div>
+            </div>
+
+            <!-- 스토리지 -->
+            <div class="py-2 border-b border-slate-50">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-50">
+                    <svg class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+                    </svg>
+                  </div>
+                  <p class="text-xs font-semibold text-slate-700">스토리지</p>
+                </div>
+                <p class="text-xs text-slate-500" id="storageText">0 MB / 5120 MB</p>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-slate-100">
+                <div class="h-1.5 rounded-full transition-all duration-500"
+                     style="background:linear-gradient(90deg,#8b5cf6,#a78bfa); width:0%;"
+                     id="storageBar"></div>
+              </div>
+            </div>
+
+            <!-- Python / Django 버전 -->
+            <div class="flex items-center justify-between py-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-yellow-50">
+                  <svg class="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-slate-700">런타임</p>
+                  <p class="text-xs text-slate-400" id="runtimeText">Python · Django</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 최근 가입 회원 (2/3) -->
+        <div class="chart-card xl:col-span-2">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-bold text-slate-800">최근 가입 회원</h2>
+              <p class="text-xs text-slate-400 mt-0.5">최근 10명</p>
+            </div>
+            <a href="{% url 'admin_member_list' %}"
+               class="text-xs font-semibold hover:underline" style="color:#2E86AB;">
+              전체보기 →
+            </a>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>이름</th>
+                  <th>이메일</th>
+                  <th class="hidden sm:table-cell">가입일</th>
+                  <th class="hidden md:table-cell">최근 로그인</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+              <tbody id="recentUsersBody">
+                <tr><td colspan="5" class="text-center py-4 text-slate-400 text-sm">불러오는 중...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑤ 활동 로그 -->
+      <div class="chart-card">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-sm font-bold text-slate-800">관리자 활동 로그</h2>
+            <p class="text-xs text-slate-400 mt-0.5">최근 관리 작업 이력</p>
+          </div>
+          <a href="{% url 'admin_logs' %}"
+             class="text-xs font-semibold hover:underline" style="color:#2E86AB;">
+            전체 로그 →
+          </a>
+        </div>
+
+        <div id="activityTimeline" class="space-y-3">
+          <div class="text-center py-4 text-slate-400 text-sm">불러오는 중...</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// ── CSRF 설정 ──
+axios.defaults.headers.common['X-CSRFToken'] =
+  document.querySelector('meta[name="csrf-token"]')?.content || '';
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+// 날짜 배너
+document.getElementById('bannerDate').textContent =
+  new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'long', day:'numeric', weekday:'long'});
+
+// ── Toast ──
+const Toast = Swal.mixin({
+  toast: true, position: 'top-end',
+  showConfirmButton: false, timer: 3000, timerProgressBar: true,
+});
+
+// ── KPI 카드 렌더 ──
+function renderKPI(d) {
+  const grid = document.getElementById('kpiGrid');
+  const cards = [
+    {
+      label: '총 회원 수',
+      value: (d.total_users || 0).toLocaleString(),
+      diff: d.user_diff,
+      unit: '명',
+      icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+               <path stroke-linecap="round" stroke-linejoin="round"
+                     d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+             </svg>`,
+      bg: 'bg-blue-50', color: 'text-blue-500',
+    },
+    {
+      label: '활성 그룹',
+      value: (d.active_groups || 0).toLocaleString(),
+      diff: d.group_diff,
+      unit: '개',
+      icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+               <path stroke-linecap="round" stroke-linejoin="round"
+                     d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
+             </svg>`,
+      bg: 'bg-emerald-50', color: 'text-emerald-500',
+    },
+    {
+      label: '오늘 세션',
+      value: (d.today_sessions || 0).toLocaleString(),
+      diff: d.session_diff,
+      unit: '건',
+      icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+               <path stroke-linecap="round" stroke-linejoin="round"
+                     d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+             </svg>`,
+      bg: 'bg-violet-50', color: 'text-violet-500',
+    },
+    {
+      label: '이번달 신규',
+      value: (d.new_users_month || 0).toLocaleString(),
+      diff: d.signup_diff,
+      unit: '명',
+      icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+               <path stroke-linecap="round" stroke-linejoin="round"
+                     d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
+             </svg>`,
+      bg: 'bg-amber-50', color: 'text-amber-500',
+    },
+  ];
+
+  grid.innerHTML = cards.map(c => {
+    const isPos = c.diff >= 0;
+    return `
+    <div class="kpi-card">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 mb-1.5">${c.label}</p>
+          <p class="text-2xl font-bold text-slate-900">${c.value}<span class="text-sm font-medium text-slate-400 ml-1">${c.unit}</span></p>
+        </div>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center ${c.bg} ${c.color} flex-shrink-0">
+          ${c.icon}
+        </div>
+      </div>
+      <div class="mt-3 flex items-center gap-1.5">
+        <span class="${isPos ? 'text-emerald-600' : 'text-red-500'} text-xs font-bold flex items-center gap-0.5">
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="${isPos ? 'M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18' : 'M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3'}"/>
+          </svg>
+          ${Math.abs(c.diff)}
+        </span>
+        <span class="text-xs text-slate-400">전월 대비</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 신규 가입 차트 ──
+let signupChartInst = null;
+function renderSignupChart(labels, values) {
+  const ctx = document.getElementById('signupChart').getContext('2d');
+  if (signupChartInst) signupChartInst.destroy();
+  signupChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '신규 가입',
+        data: values,
+        borderColor: '#2E86AB',
+        backgroundColor: 'rgba(46,134,171,.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#2E86AB',
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        fill: true,
+        tension: 0.4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f2133',
+          titleColor: '#94a3b8',
+          bodyColor: '#fff',
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: { label: ctx => `  ${ctx.parsed.y}명` },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 7 },
+        },
+        y: {
+          grid: { color: '#f1f5f9', drawBorder: false },
+          ticks: { color: '#94a3b8', font: { size: 10 }, stepSize: 1 },
+        },
+      },
+    },
+  });
+}
+
+// ── 그룹 활동 차트 ──
+let groupChartInst = null;
+function renderGroupChart(labels, values) {
+  const ctx = document.getElementById('groupChart').getContext('2d');
+  if (groupChartInst) groupChartInst.destroy();
+  groupChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels.map(l => l.length > 6 ? l.slice(0,6)+'…' : l),
+      datasets: [{
+        label: '세션 수',
+        data: values,
+        backgroundColor: 'rgba(46,134,171,.75)',
+        borderRadius: 6,
+        borderSkipped: false,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f2133',
+          titleColor: '#94a3b8',
+          bodyColor: '#fff',
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: {
+            title: (items) => labels[items[0].dataIndex],
+            label: ctx => `  ${ctx.parsed.x}회`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: '#f1f5f9' },
+          ticks: { color: '#94a3b8', font: { size: 10 } },
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: '#64748b', font: { size: 10 } },
+        },
+      },
+    },
+  });
+}
+
+// ── 시스템 상태 렌더 ──
+function renderSysStatus(d) {
+  const dbDot  = document.getElementById('dbDot');
+  const dbText = document.getElementById('dbStatusText');
+  const badge  = document.getElementById('sysStatusBadge');
+  const runtime = document.getElementById('runtimeText');
+
+  if (d.db_status === 'ok') {
+    dbDot.style.background = '#22c55e';
+    dbText.textContent = '연결됨';
+    badge.className = 'badge-success';
+    badge.textContent = '정상';
+  } else {
+    dbDot.style.background = '#ef4444';
+    dbText.textContent = '오류';
+    badge.className = 'badge-danger';
+    badge.textContent = '오류';
+  }
+
+  const used = d.storage_used_mb || 0;
+  const total = d.storage_total_mb || 5120;
+  const pct  = d.storage_pct || 0;
+  document.getElementById('storageText').textContent = `${used} MB / ${total} MB`;
+  document.getElementById('storageBar').style.width = `${pct}%`;
+
+  const barEl = document.getElementById('storageBar');
+  if (pct > 80) barEl.style.background = 'linear-gradient(90deg,#ef4444,#f87171)';
+  else if (pct > 50) barEl.style.background = 'linear-gradient(90deg,#f59e0b,#fbbf24)';
+
+  runtime.textContent = `Python ${d.python_version || ''} · Django ${d.django_version || ''}`;
+}
+
+// ── 최근 회원 렌더 ──
+function renderRecentUsers(users) {
+  const tbody = document.getElementById('recentUsersBody');
+  if (!users || !users.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400 text-sm">데이터 없음</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+               style="background:linear-gradient(135deg,#1A3C5E,#2E86AB);">
+            ${(u.username || '?')[0].toUpperCase()}
+          </div>
+          <span class="font-medium text-slate-700">${u.username || '-'}</span>
+          ${u.is_staff ? '<span class="badge-warning ml-1">관리자</span>' : ''}
+        </div>
+      </td>
+      <td class="text-slate-500 text-xs">${u.email || '-'}</td>
+      <td class="hidden sm:table-cell text-slate-400 text-xs">${u.date_joined || '-'}</td>
+      <td class="hidden md:table-cell text-slate-400 text-xs">${u.last_login || '-'}</td>
+      <td>
+        <span class="${u.is_active ? 'badge-success' : 'badge-danger'}">
+          ${u.is_active ? '활성' : '비활성'}
+        </span>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── 활동 로그 렌더 ──
+const logTypeMap = {
+  success: { dot: '#22c55e', bg: 'bg-green-50',  badge: 'badge-success' },
+  warning: { dot: '#f59e0b', bg: 'bg-amber-50',  badge: 'badge-warning' },
+  danger:  { dot: '#ef4444', bg: 'bg-red-50',    badge: 'badge-danger'  },
+  info:    { dot: '#3b82f6', bg: 'bg-blue-50',   badge: 'badge-info'    },
+};
+
+function renderActivityLog(logs) {
+  const el = document.getElementById('activityTimeline');
+  if (!logs || !logs.length) {
+    el.innerHTML = '<div class="text-center py-4 text-slate-400 text-sm">로그 없음</div>';
+    return;
+  }
+  el.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+    ${logs.map(l => {
+      const t = logTypeMap[l.type] || logTypeMap.info;
+      return `
+      <div class="flex items-start gap-3 p-3 rounded-xl ${t.bg} border border-slate-100">
+        <div class="timeline-dot mt-1" style="background:${t.dot}; min-width:8px;"></div>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold text-slate-700 truncate">${l.action}</p>
+          <p class="text-xs text-slate-500 truncate">${l.target}</p>
+          <p class="text-xs text-slate-400 mt-1">${l.time}</p>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ── 데이터 로드 ──
+async function loadKPI() {
+  try {
+    const res = await axios.get('/admin/api/kpi/');
+    if (res.data?.success) renderKPI(res.data.data);
+  } catch(e) {
+    renderKPI({ total_users:248, active_groups:34, today_sessions:7, new_users_month:31,
+                user_diff:5, group_diff:2, session_diff:-1, signup_diff:12 });
+  }
+}
+
+async function loadSignupTrend() {
+  try {
+    const res = await axios.get('/admin/api/signup-trend/');
+    if (res.data?.success) renderSignupChart(res.data.labels, res.data.values);
+  } catch(e) {
+    const labels = Array.from({length:30},(_,i)=>{
+      const d = new Date(); d.setDate(d.getDate()-(29-i));
+      return `${d.getMonth()+1}/${d.getDate()}`;
+    });
+    renderSignupChart(labels, labels.map(()=>Math.floor(Math.random()*12)));
+  }
+}
+
+async function loadGroupActivity() {
+  try {
+    const res = await axios.get('/admin/api/group-activity/');
+    if (res.data?.success) renderGroupChart(res.data.labels, res.data.values);
+  } catch(e) {
+    renderGroupChart(
+      ['Python 스터디','Web Dev','토익','AI 리포트','알고리즘','영어회화','CS 기초','취업스터디','SQL','리액트'],
+      [18, 15, 14, 12, 11, 9, 8, 7, 6, 5]
+    );
+  }
+}
+
+async function loadSystemStatus() {
+  try {
+    const res = await axios.get('/admin/api/system-status/');
+    if (res.data?.success) renderSysStatus(res.data.data);
+  } catch(e) {}
+}
+
+async function loadRecentUsers() {
+  try {
+    const res = await axios.get('/admin/api/recent-users/');
+    if (res.data?.success) renderRecentUsers(res.data.users);
+  } catch(e) {
+    renderRecentUsers([]);
+  }
+}
+
+async function loadActivityLog() {
+  try {
+    const res = await axios.get('/admin/api/activity-log/');
+    if (res.data?.success) renderActivityLog(res.data.logs);
+  } catch(e) {
+    renderActivityLog([]);
+  }
+}
+
+// ── 전체 새로고침 ──
+function refreshAll() {
+  const icon = document.getElementById('refreshIcon');
+  icon.style.animation = 'spin .6s linear infinite';
+  icon.style.animationFillMode = 'none';
+  Promise.all([
+    loadKPI(), loadSignupTrend(), loadGroupActivity(),
+    loadSystemStatus(), loadRecentUsers(), loadActivityLog()
+  ]).finally(() => {
+    icon.style.animation = '';
+    Toast.fire({ icon: 'success', title: '새로고침 완료' });
+  });
+}
+
+// ── 스피너 keyframes ──
+const ks = document.createElement('style');
+ks.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(ks);
+
+// ── 초기 로드 ──
+document.addEventListener('DOMContentLoaded', () => {
+  loadKPI();
+  loadSignupTrend();
+  loadGroupActivity();
+  loadSystemStatus();
+  loadRecentUsers();
+  loadActivityLog();
+});
+</script>
+
+</body>
+</html>

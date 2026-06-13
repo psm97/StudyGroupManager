@@ -13,7 +13,8 @@ urlpatterns = [
 
 
     # -- 백업 -- #
-    path("admin/", admin.site.urls),
+    path("admin/", include('admin.urls')),
+    path("django-admin/", admin.site.urls),
     path('', root_redirect),                          # localhost/ 처리
     path("accounts/", include('accounts.urls')),
     path('dashboard/', include('dashboard.urls')),

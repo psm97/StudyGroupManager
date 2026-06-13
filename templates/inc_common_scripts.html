@@ -145,9 +145,26 @@ html[data-theme="dark"] .swal2-select {
 // ═══════════════════════════════════════════════════
 
 // 로그아웃
+function _getCsrf() {
+  return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+}
+function _doLogout() {
+  // Django 5.x: 로그아웃은 POST + CSRF 필요
+  const form  = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/accounts/logout/';
+  const inp   = document.createElement('input');
+  inp.type    = 'hidden';
+  inp.name    = 'csrfmiddlewaretoken';
+  inp.value   = _getCsrf();
+  form.appendChild(inp);
+  document.body.appendChild(form);
+  form.submit();
+}
+
 window.handleLogout = window.handleLogout || function() {
   if (typeof Swal === 'undefined') {
-    if (confirm('로그아웃 하시겠습니까?')) window.location.href = '/accounts/logout/';
+    if (confirm('로그아웃 하시겠습니까?')) _doLogout();
     return;
   }
   Swal.fire({
@@ -158,10 +175,8 @@ window.handleLogout = window.handleLogout || function() {
     confirmButtonText: '로그아웃',
     cancelButtonText: '취소',
     confirmButtonColor: '#1055e8',
-  }).then(async r => {
-    if (!r.isConfirmed) return;
-    try { await axios.get('/accounts/logout/'); } catch (_) {}
-    window.location.href = '/accounts/login/';
+  }).then(r => {
+    if (r.isConfirmed) _doLogout();
   });
 };
 

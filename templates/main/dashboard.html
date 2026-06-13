@@ -1054,25 +1054,7 @@ function openJoinGroupModal() {
 // ════════════════════════════════════════════════════════════
 // 9. 로그아웃 (SweetAlert2)
 // ════════════════════════════════════════════════════════════
-function handleLogout() {
-  Swal.fire({
-    title: '로그아웃',
-    text: '정말 로그아웃 하시겠습니까?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: '로그아웃',
-    cancelButtonText: '취소',
-    customClass: { confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel' },
-  }).then(async result => {
-    if (!result.isConfirmed) return;
-    try {
-      await axios.get('/accounts/logout/');
-      window.location.href = '/accounts/login/';
-    } catch {
-      window.location.href = '/accounts/logout/';
-    }
-  });
-}
+// handleLogout → inc_common_scripts.html 에서 공통 정의
 
 // ════════════════════════════════════════════════════════════
 // 10. 사이드바 (모바일 햄버거)

@@ -7,3 +7,6 @@ def notice_view(request):
 def resource_room_view(request):
     return render(request,'support/resource_room.html')
 
+def calendar_view(request):
+    return render(request, 'support/calendar.html')
+

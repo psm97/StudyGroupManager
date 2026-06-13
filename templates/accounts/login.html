@@ -279,17 +279,18 @@
           </div>
 
           <form id="adminLoginForm" novalidate class="space-y-3">
-            <!-- 이메일 -->
+            {% csrf_token %}
+            <!-- 아이디 -->
             <div>
-              <label for="adminEmail" class="block text-xs font-semibold text-mid mb-1">관리자 이메일</label>
+              <label for="adminId" class="block text-xs font-semibold text-mid mb-1">관리자 아이디</label>
               <div class="input-wrap">
                 <span class="ico">
                   <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
                   </svg>
                 </span>
-                <input id="adminEmail" name="email" type="email"
-                  placeholder="admin@studymgr.com" autocomplete="email"
+                <input id="adminId" name="id" type="id"
+                  placeholder="관리자 아이디를 입력하세요" autocomplete="admin-id"
                   class="input-field w-full rounded-xl border border-border bg-white
                          text-dark text-sm font-medium py-2.5 pr-4 shadow-inset
                          placeholder:text-muted/60"/>
@@ -345,7 +346,8 @@
 
   <script>
     function getCsrfToken() {
-      return document.querySelector('[name=csrfmiddlewaretoken]').value;
+      const el = document.querySelector('[name=csrfmiddlewaretoken]');
+      return el ? el.value : '{{ csrf_token }}';
     }
     axios.defaults.headers.common['X-CSRFToken'] = getCsrfToken();
     axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -383,13 +385,12 @@
     document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const email    = document.getElementById('adminEmail').value.trim();
+      const username = document.getElementById('adminId').value.trim();
       const password = document.getElementById('adminPassword').value;
-      const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      if (!email || !emailReg.test(email)) {
-        Toast.fire({ icon: 'warning', title: '올바른 이메일을 입력해주세요.' });
-        document.getElementById('adminEmail').focus(); return;
+      if (!username) {
+        Toast.fire({ icon: 'warning', title: '아이디를 입력해주세요.' });
+        document.getElementById('adminId').focus(); return;
       }
       if (!password) {
         Toast.fire({ icon: 'warning', title: '비밀번호를 입력해주세요.' });
@@ -404,12 +405,12 @@
       spinner.classList.remove('hidden');
 
       try {
-        const res = await axios.post('{% url "admin_dashboard" %}', { email, password });
+        const res = await axios.post('{% url "admin_login" %}', { username, password });
 
         if (res.data.success) {
           Toast.fire({ icon: 'success', title: '관리자 로그인 성공!' });
           setTimeout(() => {
-            window.location.href = res.data.redirect_url || '/admin-console/';
+            window.location.href = res.data.redirect_url || '/admin/';
           }, 800);
         } else {
           Swal.fire({
@@ -434,7 +435,7 @@
     // ── Enter 키 지원 ──
     document.querySelectorAll('#adminLoginForm input').forEach(input => {
       input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') document.getElementById('adminLoginForm').dispatchEvent(new Event('submit'));
+        if (e.key === 'Enter') document.getElementById('adminLoginForm').dispatchEvent(new Event('submit', {cancelable: true}));
       });
     });
 
