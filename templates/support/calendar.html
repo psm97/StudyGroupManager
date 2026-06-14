@@ -31,7 +31,7 @@
   --text-muted:     #94a3b8;
   --text-heading:   #0f172a;
   --text-nav:       #475569;
-  --text-nav-hover: #1055e8;
+  --text-nav-hover: #1258fc;
   --border-default: #f1f5f9;
   --border-card:    #f1f5f9;
   --border-input:   #e2e8f0;
@@ -70,16 +70,9 @@ html[data-theme="dark"] {
 
 body                        { background: var(--bg-body) !important; }
 #mainContainer              { background: var(--bg-container) !important; }
-#sidebar                    { background: var(--bg-sidebar) !important; border-color: var(--border-sidebar) !important; }
 header                      { background: var(--bg-header) !important; border-color: var(--border-default) !important; }
 .flex-1.overflow-y-auto     { background: var(--bg-content) !important; }
 
-#sidebar p.font-bold,
-#sidebar p.text-sm.leading-tight { color: var(--text-heading) !important; }
-#sidebar p.text-xs.text-slate-400 { color: var(--text-muted) !important; }
-
-.nav-link:not(.active)       { color: var(--text-nav) !important; }
-.nav-link:not(.active):hover { background: var(--bg-nav-hover) !important; color: var(--text-nav-hover) !important; }
 
 .bg-white, [class*="bg-white"]               { background: var(--bg-card) !important; }
 .border-slate-100, [class*="border-slate-100"]{ border-color: var(--border-card) !important; }
@@ -94,27 +87,14 @@ header                      { background: var(--bg-header) !important; border-co
 .bg-slate-50,  [class*="bg-slate-50"]  { background: var(--bg-input) !important; }
 .bg-slate-100, [class*="bg-slate-100"] { background: var(--bg-skeleton) !important; }
 
-#sidebar { transition: transform 0.3s ease; }
-#sidebarOverlay { transition: opacity 0.3s ease; }
-
-.nav-link { transition: all 0.2s ease; }
-.nav-link.active { background: #1055e8; color: white; }
-.nav-link:not(.active):hover { background: #dce6fd; color: #1055e8; }
-
-.toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
-.toggle-wrap input { opacity: 0; width: 0; height: 0; }
-.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
-.toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-input:checked + .toggle-slider { background: #1055e8; }
-input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 /* ── Mini Calendar ── */
 .mini-cal-day { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
                 border-radius: 50%; font-size: 11px; cursor: pointer; transition: all 0.15s; }
-.mini-cal-day:hover:not(.today):not(.other):not(.mini-header) { background: #dce6fd; color: #1055e8; }
-.mini-cal-day.today  { background: #1055e8; color: white; font-weight: 700; }
+.mini-cal-day:hover:not(.today):not(.other):not(.mini-header) { background: #dce6fd; color: #1258fc; }
+.mini-cal-day.today  { background: #1258fc; color: white; font-weight: 700; }
 .mini-cal-day.other  { color: var(--cal-other); cursor: default; pointer-events: none; }
-.mini-cal-day.selected:not(.today) { background: #dce6fd; color: #1055e8; font-weight: 600; }
+.mini-cal-day.selected:not(.today) { background: #dce6fd; color: #1258fc; font-weight: 600; }
 .mini-cal-day.has-event { position: relative; }
 .mini-cal-day.has-event::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
                                    width: 3px; height: 3px; background: #2E86AB; border-radius: 50%; }
@@ -159,8 +139,8 @@ html[data-theme="dark"] .week-day-cell { border-color: #334155 !important; }
 .swal-input-label { display: block; text-align: left; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
 .swal-custom-input { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px;
                      font-size: 14px; outline: none; transition: border-color .2s; font-family: Pretendard, sans-serif; }
-.swal-custom-input:focus { border-color: #1055e8; box-shadow: 0 0 0 3px rgba(16,85,232,.12); }
-.swal2-confirm { background: #1055e8 !important; border-radius: 10px !important; }
+.swal-custom-input:focus { border-color: #1258fc; box-shadow: 0 0 0 3px rgba(16,85,232,.12); }
+.swal2-confirm { background: #1258fc !important; border-radius: 10px !important; }
 .swal2-cancel  { background: #f1f5f9 !important; color: #64748b !important; border-radius: 10px !important; }
 
 html[data-theme="dark"] .swal2-popup        { background: var(--swal-bg) !important; color: var(--swal-text) !important; }
@@ -178,10 +158,6 @@ html[data-theme="dark"] .divide-y > * + * { border-color: #334155 !important; }
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
-  #sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 50; transform: translateX(-100%); }
-  #sidebar.open { transform: translateX(0); }
-  #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; }
-  #sidebarOverlay.open { display: block; }
   #mainContainer { flex-direction: column; }
   #calLeftPanel  { display: none !important; }
   #calRightPanel { display: none !important; }
@@ -212,7 +188,7 @@ html[data-theme="dark"] .divide-y > * + * { border-color: #334155 !important; }
 
       <!-- ① Ocean Blue Banner -->
       <div class="px-4 lg:px-6 pt-4">
-      <div class="relative rounded-2xl overflow-hidden shadow-md" style="background:linear-gradient(135deg,#1a6d8e 0%,#2E86AB 55%,#3da0c8 100%);">
+      <div class="relative rounded-2xl overflow-hidden shadow-md" style="background:linear-gradient(135deg,#1258fc 0%,#286af8 55%,#3a74ef 100%);">
         <div class="absolute top-0 right-0 w-56 h-56 bg-white opacity-5 rounded-full translate-x-20 -translate-y-20"></div>
         <div class="absolute bottom-0 left-1/3 w-36 h-36 bg-white opacity-5 rounded-full translate-y-14"></div>
         <div class="relative z-10 px-5 lg:px-7 py-5">
@@ -238,7 +214,7 @@ html[data-theme="dark"] .divide-y > * + * { border-color: #334155 !important; }
                   style="color:rgba(255,255,255,0.7);">주</button>
                 <button id="viewTab-month" onclick="setView('month')"
                   class="text-xs font-semibold px-3 py-1.5 rounded-md transition-all"
-                  style="background:#fff;color:#1055e8;box-shadow:0 1px 3px rgba(0,0,0,0.15);">월</button>
+                  style="background:#fff;color:#1258fc;box-shadow:0 1px 3px rgba(0,0,0,0.15);">월</button>
               </div>
               <!-- Nav -->
               <div class="flex items-center gap-1">
@@ -452,10 +428,10 @@ const CAL = {
   miniMonth: new Date().getMonth(),
 };
 
-const GROUP_COLORS = ['#1055e8','#7c3aed','#059669','#d97706','#e11d48','#0891b2','#9333ea','#dc2626'];
+const GROUP_COLORS = ['#1258fc','#7c3aed','#059669','#d97706','#e11d48','#0891b2','#9333ea','#dc2626'];
 const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const DAYS_KR = ['일','월','화','수','목','금','토'];
-const MEMO_COLORS = ['#2E86AB','#1055e8','#7c3aed','#059669','#d97706','#e11d48','#0891b2','#9333ea'];
+const MEMO_COLORS = ['#2E86AB','#1258fc','#7c3aed','#059669','#d97706','#e11d48','#0891b2','#9333ea'];
 
 // ── Utility ──────────────────────────────────────────────
 function dStr(d) {
@@ -472,7 +448,7 @@ function setView(view) {
     if (!btn) return;
     if (v === view) {
       btn.style.background = '#fff';
-      btn.style.color = '#1055e8';
+      btn.style.color = '#1258fc';
       btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
     } else {
       btn.style.background = 'transparent';
@@ -586,12 +562,12 @@ function renderMonthView() {
     html += `<div class="month-cell p-1 cursor-pointer" onclick="handleDateClick('${ds}')">
       <div class="flex justify-end p-0.5 mb-0.5">
         ${isToday
-          ? `<span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-xs font-bold text-white" style="background:#1055e8;">${day}</span>`
+          ? `<span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-xs font-bold text-white" style="background:#1258fc;">${day}</span>`
           : `<span class="text-xs font-medium text-slate-600">${day}</span>`}
       </div>
       <div class="space-y-0.5">
         ${shown.map(e => {
-          const color = e.color || e.group_color || '#1055e8';
+          const color = e.color || e.group_color || '#1258fc';
           CAL.eventMap[e.id] = e;
           return `<div class="event-chip" style="background:${color}1a;color:${color};border-left-color:${color};"
                        onclick="event.stopPropagation();handleEventClick(${e.id})" title="${escH(e.title)}">
@@ -637,7 +613,7 @@ function renderWeekView() {
     html += `<th class="week-header-cell py-2 px-1 text-center" style="background:var(--bg-input);border-bottom:1px solid var(--border-card);">
       <span class="block text-xs font-bold ${i===0?'text-rose-500':i===6?'text-blue-500':'text-slate-500'}">${DAYS_KR[i]}</span>
       <span class="mx-auto mt-0.5 w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold ${isToday?'text-white':'text-slate-700'}"
-        style="${isToday?'background:#1055e8;':''}">${day.getDate()}</span>
+        style="${isToday?'background:#1258fc;':''}">${day.getDate()}</span>
       <span class="block text-xs text-slate-400">${day.getMonth()+1}/${day.getDate()}</span>
     </th>`;
   });
@@ -651,7 +627,7 @@ function renderWeekView() {
     const allDay = (byDate[ds]||[]).filter(e => !e.start_time);
     html += `<td class="week-day-cell" style="height:auto;min-height:30px;vertical-align:top;padding:3px;">
       ${allDay.map(e => {
-        const color = e.color||e.group_color||'#1055e8'; CAL.eventMap[e.id]=e;
+        const color = e.color||e.group_color||'#1258fc'; CAL.eventMap[e.id]=e;
         return `<div class="event-chip mb-0.5" style="background:${color}1a;color:${color};border-left-color:${color};"
                      onclick="handleEventClick(${e.id})">${e.status==='unchecked'?'⚠ ':''}${escH(e.title)}</div>`;
       }).join('')}
@@ -667,7 +643,7 @@ function renderWeekView() {
       const slotEvts = (byDate[ds]||[]).filter(e => e.start_time && parseInt(e.start_time)===h);
       html += `<td class="week-day-cell" onclick="handleDateTimeClick('${ds}','${label}')">
         ${slotEvts.map(e => {
-          const color = e.color||e.group_color||'#1055e8'; CAL.eventMap[e.id]=e;
+          const color = e.color||e.group_color||'#1258fc'; CAL.eventMap[e.id]=e;
           return `<div class="day-event-block" style="border-color:${color};background:${color}15;color:${color};"
                        onclick="event.stopPropagation();handleEventClick(${e.id})">
             ${e.status==='unchecked'?'⚠ ':''}${escH(e.title)}</div>`;
@@ -698,7 +674,7 @@ function renderDayView() {
     html += `<div class="mb-4 p-3 rounded-xl border border-slate-100" style="background:var(--bg-input);">
       <p class="text-xs font-bold text-slate-500 mb-2">종일</p>
       ${allDay.map(e => {
-        const color = e.color||e.group_color||'#1055e8'; CAL.eventMap[e.id]=e;
+        const color = e.color||e.group_color||'#1258fc'; CAL.eventMap[e.id]=e;
         return `<div class="event-chip mb-1" style="background:${color}1a;color:${color};border-left-color:${color};"
                      onclick="handleEventClick(${e.id})">${e.status==='unchecked'?'⚠ ':''}${escH(e.title)}</div>`;
       }).join('')}
@@ -714,7 +690,7 @@ function renderDayView() {
       <div class="flex-1 min-h-[50px] py-1.5 cursor-pointer hover:bg-slate-50 rounded transition-colors"
            onclick="handleDateTimeClick('${ds}','${label}')">
         ${slotEvts.map(e => {
-          const color = e.color||e.group_color||'#1055e8'; CAL.eventMap[e.id]=e;
+          const color = e.color||e.group_color||'#1258fc'; CAL.eventMap[e.id]=e;
           return `<div class="day-event-block" style="border-color:${color};background:${color}15;color:${color};"
                        onclick="event.stopPropagation();handleEventClick(${e.id})">
             <div class="font-semibold">${e.status==='unchecked'?'⚠ ':''}${escH(e.title)}</div>
@@ -972,7 +948,7 @@ function renderUpcoming(events, containerId) {
     const diff = Math.ceil((ed - now) / 86400000);
     const dday = diff===0?'D-Day':diff>0?`D-${diff}`:`D+${Math.abs(diff)}`;
     const ddayColor = diff===0?'#e11d48':diff<=3?'#d97706':'#2E86AB';
-    const color = e.color||e.group_color||'#1055e8';
+    const color = e.color||e.group_color||'#1258fc';
     CAL.eventMap[e.id] = e;
     return `<div class="flex gap-3 cursor-pointer hover:bg-slate-50 rounded-xl p-2 -mx-2 transition-colors"
                  onclick="handleEventClick(${e.id})">
@@ -994,7 +970,7 @@ function renderUpcoming(events, containerId) {
 function handleEventClick(id) {
   const e = CAL.eventMap[id];
   if (!e) return;
-  const color = e.color||e.group_color||'#1055e8';
+  const color = e.color||e.group_color||'#1258fc';
   const statusMap = {
     completed: { label:'출석 완료', style:'background:#dcfce7;color:#16a34a;', icon:'✅' },
     unchecked: { label:'체크 미완료', style:'background:#fef3c7;color:#d97706;', icon:'⚠️' },
@@ -1069,7 +1045,7 @@ function handleDateClick(ds) {
         <button onclick="Swal.close();openSessionCreateModal('${ds}')"
           class="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50 transition-colors text-left">
           <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#dce6fd;">
-            <svg class="w-4.5 h-4.5" style="width:18px;height:18px;color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <svg class="w-4.5 h-4.5" style="width:18px;height:18px;color:#1258fc;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </div>
           <div>
             <p class="text-sm font-semibold text-slate-800">스터디 세션 생성</p>
@@ -1322,7 +1298,7 @@ function showMoreEvents(ds) {
     customClass: { confirmButton:'swal2-confirm' },
     html: `<div class="space-y-2 mt-2 text-left">
       ${evts.map(e => {
-        const color=e.color||e.group_color||'#1055e8';
+        const color=e.color||e.group_color||'#1258fc';
         return `<div class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors"
                      onclick="Swal.close();handleEventClick(${e.id})">
           <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${color};"></div>
@@ -1403,7 +1379,7 @@ function fallbackEvents() {
     { id:1, title:'Python 알고리즘 세션', date:`${y}-${m}-${p(td)}`, start_time:'14:00', end_time:'16:00',
       group_id:1, group_name:'Python 알고리즘', group_color:'#7c3aed', type:'session', status:'unchecked', topic:'정렬 알고리즘', location:'강남 스터디카페' },
     { id:2, title:'Web Dev 세션', date:`${y}-${m}-${p(Math.min(td+2,28))}`, start_time:'10:00', end_time:'12:00',
-      group_id:2, group_name:'Web Developer', group_color:'#1055e8', type:'session', status:'completed', topic:'React 컴포넌트' },
+      group_id:2, group_name:'Web Developer', group_color:'#1258fc', type:'session', status:'completed', topic:'React 컴포넌트' },
     { id:3, title:'토익 스터디', date:`${y}-${m}-${p(Math.min(td+4,28))}`, start_time:'09:00', end_time:'11:00',
       group_id:3, group_name:'토익 900점', group_color:'#059669', type:'session', status:'unchecked' },
     { id:4, title:'개인: 책 읽기', date:`${y}-${m}-${p(Math.min(td+1,28))}`,
@@ -1421,8 +1397,8 @@ function fallbackUpcoming() {
       title:['Python 세션','Web Dev','토익 스터디','개인 리뷰','AI 리포트'][i-1],
       date:dStr(d), start_time:['14:00','10:00','09:00','','15:00'][i-1],
       group_name:['Python 알고리즘','Web Developer','토익 900점','개인','AI 리포트'][i-1],
-      color:['#7c3aed','#1055e8','#059669','#2E86AB','#d97706'][i-1],
-      group_color:['#7c3aed','#1055e8','#059669','#2E86AB','#d97706'][i-1],
+      color:['#7c3aed','#1258fc','#059669','#2E86AB','#d97706'][i-1],
+      group_color:['#7c3aed','#1258fc','#059669','#2E86AB','#d97706'][i-1],
     });
   }
   return evts;

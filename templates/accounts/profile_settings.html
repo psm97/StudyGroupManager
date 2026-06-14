@@ -31,39 +31,39 @@
 
 /* ── 네비게이션 링크 ── */
 .nav-link { transition: all 0.2s ease; }
-.nav-link.active { background: #1055e8; color: #fff; }
-.nav-link:not(.active):hover { background: #dce6fd; color: #1055e8; }
+.nav-link.active { background: #1258fc; color: #fff; }
+.nav-link:not(.active):hover { background: #dce6fd; color: #1258fc; }
 
 /* ── 토글 스위치 ── */
 .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
 .toggle-wrap input { opacity: 0; width: 0; height: 0; }
 .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
 .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-input:checked + .toggle-slider { background: #1055e8; }
+input:checked + .toggle-slider { background: #1258fc; }
 input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 /* ── 탭 ── */
 .tab-btn { transition: all 0.2s; position: relative; border-bottom: 2px solid transparent; }
-.tab-btn.active { color: #1055e8; border-bottom-color: #1055e8; font-weight: 700; }
-.tab-btn:not(.active):hover { color: #1055e8; background: #f0f5fe; }
+.tab-btn.active { color: #1258fc; border-bottom-color: #1258fc; font-weight: 700; }
+.tab-btn:not(.active):hover { color: #1258fc; background: #f0f5fe; }
 
 /* ── 인풋 ── */
 .form-input { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px;
   font-size:14px; color:#1e293b; background:#f8fafc; outline:none;
   transition: border-color .15s, box-shadow .15s; }
-.form-input:focus { border-color:#1055e8; box-shadow:0 0 0 3px rgba(16,85,232,.1); background:#fff; }
+.form-input:focus { border-color:#1258fc; box-shadow:0 0 0 3px rgba(16,85,232,.1); background:#fff; }
 .form-input:disabled { background:#f1f5f9; color:#94a3b8; cursor:not-allowed; }
 textarea.form-input { resize: none; }
 select.form-input { cursor: pointer; }
 
 /* ── 배지 ── */
 .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
-.badge-blue   { background:#dce6fd; color:#1055e8; }
+.badge-blue   { background:#dce6fd; color:#1258fc; }
 .badge-green  { background:#dcfce7; color:#16a34a; }
 .badge-amber  { background:#fef3c7; color:#d97706; }
 .badge-rose   { background:#ffe4e6; color:#e11d48; }
 .badge-slate  { background:#f1f5f9; color:#64748b; }
-.badge-leader { background:#dce6fd; color:#1055e8; }
+.badge-leader { background:#dce6fd; color:#1258fc; }
 .badge-member { background:#f1f5f9; color:#64748b; }
 
 /* ── 아바타 업로드 ── */
@@ -86,8 +86,8 @@ select.form-input { cursor: pointer; }
 .swal-lbl  { display:block; text-align:left; font-size:13px; font-weight:600; color:#475569; margin-bottom:6px; }
 .swal-inp  { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px;
   font-size:14px; outline:none; transition:border-color .2s; }
-.swal-inp:focus { border-color:#1055e8; box-shadow:0 0 0 3px rgba(16,85,232,.12); }
-.swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+.swal-inp:focus { border-color:#1258fc; box-shadow:0 0 0 3px rgba(16,85,232,.12); }
+.swal2-confirm { background:#1258fc !important; border-radius:10px !important; }
 .swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
 .swal2-deny    { background:#e11d48 !important; border-radius:10px !important; }
 
@@ -179,7 +179,7 @@ select.form-input { cursor: pointer; }
               <div class="w-full mt-4 pt-4 border-t border-slate-100 space-y-2">
                 <button onclick="document.getElementById('avatarInput').click()"
                   class="w-full text-xs font-semibold py-2 rounded-lg border transition-colors"
-                  style="color:#1055e8; border-color:#c7d7fb; background:#f0f5fe;"
+                  style="color:#1258fc; border-color:#c7d7fb; background:#f0f5fe;"
                   onmouseover="this.style.background='#dce6fd'" onmouseout="this.style.background='#f0f5fe'">
                   📷 프로필 사진 변경
                 </button>
@@ -208,7 +208,7 @@ select.form-input { cursor: pointer; }
             <div class="section-card">
               <div class="flex items-center justify-between mb-3">
                 <p class="text-sm font-bold text-slate-700">참여 중인 그룹</p>
-                <a href="{% url 'group_list' %}" class="text-xs font-semibold hover:underline" style="color:#1055e8;">전체 →</a>
+                <a href="{% url 'group_list' %}" class="text-xs font-semibold hover:underline" style="color:#1258fc;">전체 →</a>
               </div>
               <div class="space-y-2" id="myGroupsSidebar">
                 <p class="text-xs text-slate-400">로딩 중...</p>
@@ -242,7 +242,7 @@ select.form-input { cursor: pointer; }
                     </div>
                     <button onclick="checkNickname()" id="nickCheckBtn"
                       class="flex-shrink-0 text-xs font-bold px-4 py-2 rounded-xl border transition-colors"
-                      style="color:#1055e8; border-color:#c7d7fb; background:#f0f5fe;"
+                      style="color:#1258fc; border-color:#c7d7fb; background:#f0f5fe;"
                       onmouseover="this.style.background='#dce6fd'" onmouseout="this.style.background='#f0f5fe'">
                       중복 확인
                     </button>
@@ -295,8 +295,8 @@ select.form-input { cursor: pointer; }
                 </button>
                 <button onclick="saveProfile()" id="saveProfileBtn"
                   class="text-sm font-bold px-6 py-2.5 rounded-xl text-white transition-colors"
-                  style="background:#1055e8;"
-                  onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1055e8'">
+                  style="background:#1258fc;"
+                  onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1258fc'">
                   변경사항 저장
                 </button>
               </div>
@@ -310,7 +310,7 @@ select.form-input { cursor: pointer; }
                   <p class="text-xs text-slate-400 mt-0.5" id="attendanceMonth"></p>
                 </div>
                 <div class="flex gap-4 text-center" id="attendanceStats">
-                  <div><p class="text-xl font-bold" style="color:#1055e8;" id="atRate">—</p><p class="text-xs text-slate-400">출석률</p></div>
+                  <div><p class="text-xl font-bold" style="color:#1258fc;" id="atRate">—</p><p class="text-xs text-slate-400">출석률</p></div>
                   <div class="w-px bg-slate-100"></div>
                   <div><p class="text-xl font-bold text-slate-800" id="atPresent">—</p><p class="text-xs text-slate-400">출석</p></div>
                   <div class="w-px bg-slate-100"></div>
@@ -333,7 +333,7 @@ select.form-input { cursor: pointer; }
                   <div class="w-3 h-3 rounded-sm" style="background:#f1f5f9;"></div>
                   <div class="w-3 h-3 rounded-sm" style="background:#c7d7fb;"></div>
                   <div class="w-3 h-3 rounded-sm" style="background:#6d98e8;"></div>
-                  <div class="w-3 h-3 rounded-sm" style="background:#1055e8;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background:#1258fc;"></div>
                 </div>
                 <span class="text-xs text-slate-400">많음</span>
               </div>
@@ -417,8 +417,8 @@ select.form-input { cursor: pointer; }
               </button>
               <button onclick="changePassword()" id="changePwBtn"
                 class="text-sm font-bold px-6 py-2.5 rounded-xl text-white transition-colors"
-                style="background:#1055e8;"
-                onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1055e8'">
+                style="background:#1258fc;"
+                onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1258fc'">
                 비밀번호 변경
               </button>
             </div>
@@ -591,7 +591,7 @@ select.form-input { cursor: pointer; }
           <div class="section-card">
             <div class="flex items-start gap-4">
               <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-1" style="background:#dce6fd;">
-                <svg class="w-5 h-5" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5" style="color:#1258fc;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
               </div>
@@ -600,7 +600,7 @@ select.form-input { cursor: pointer; }
                 <p class="text-sm text-slate-500 mb-4">출석 기록, 벌금 이력 등 내 모든 데이터를 JSON 형식으로 내보냅니다.</p>
                 <button onclick="exportMyData()"
                   class="text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
-                  style="color:#1055e8; border:1px solid #c7d7fb; background:#f0f5fe;"
+                  style="color:#1258fc; border:1px solid #c7d7fb; background:#f0f5fe;"
                   onmouseover="this.style.background='#dce6fd'" onmouseout="this.style.background='#f0f5fe'">
                   데이터 내보내기
                 </button>
@@ -615,7 +615,7 @@ select.form-input { cursor: pointer; }
               <div class="flex items-center justify-between p-3 rounded-xl" style="background:#f8fafc; border:1px solid #f1f5f9;">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:#dce6fd;">
-                    <svg class="w-4 h-4" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <svg class="w-4 h-4" style="color:#1258fc;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                   </div>
                   <div>
                     <p class="text-sm font-semibold text-slate-700">현재 기기</p>
@@ -625,7 +625,7 @@ select.form-input { cursor: pointer; }
                 <span class="badge badge-green" style="font-size:11px;">현재</span>
               </div>
             </div>
-            <button onclick="logoutAllDevices()" class="mt-3 text-xs font-semibold" style="color:#1055e8;">
+            <button onclick="logoutAllDevices()" class="mt-3 text-xs font-semibold" style="color:#1258fc;">
               + 모든 기기에서 로그아웃
             </button>
           </div>
@@ -690,7 +690,7 @@ async function loadProfileData() {
       <div class="flex items-center justify-between py-2 border-b border-slate-50">
         <div class="flex items-center gap-2">
           <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#dce6fd;">
-            <svg class="w-4 h-4" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg class="w-4 h-4" style="color:#1258fc;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
           <span class="text-sm text-slate-600">총 출석 횟수</span>
         </div>
@@ -769,7 +769,7 @@ async function loadMyGroups() {
     document.getElementById('myGroupsSidebar').innerHTML = data.slice(0,4).map(g => `
       <a href="/groups/${g.id}/" class="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 transition-colors group">
         <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-          style="background:${g.color||'#1055e8'};">${g.name.charAt(0)}</div>
+          style="background:${g.color||'#1258fc'};">${g.name.charAt(0)}</div>
         <div class="min-w-0">
           <p class="text-xs font-semibold text-slate-700 truncate">${g.name}</p>
           <p class="text-xs text-slate-400">${g.role==='leader'?'리더':'멤버'}</p>
@@ -779,7 +779,7 @@ async function loadMyGroups() {
   } catch {
     document.getElementById('myGroupsSidebar').innerHTML = `
       <div class="flex items-center gap-2 p-2 rounded-lg">
-        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs" style="background:#1055e8;">W</div>
+        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs" style="background:#1258fc;">W</div>
         <div><p class="text-xs font-semibold text-slate-700">Web Developer</p><p class="text-xs text-slate-400">리더</p></div>
       </div>`;
   }
@@ -788,7 +788,7 @@ async function loadMyGroups() {
 // ── 히트맵 ──────────────────────────────────────────────────
 function buildHeatmap(heatmapData) {
   const container = document.getElementById('heatmap');
-  const colors = ['#f1f5f9','#c7d7fb','#6d98e8','#1055e8'];
+  const colors = ['#f1f5f9','#c7d7fb','#6d98e8','#1258fc'];
   // 35칸 기준 (5주)
   for (let i = 0; i < 35; i++) {
     const lv = heatmapData[i] !== undefined ? Math.min(heatmapData[i], 3) : Math.floor(Math.random()*4);
@@ -1006,7 +1006,7 @@ function checkPwStrength(val) {
     const icon = el.querySelector('span');
     const text = el.querySelector('span:last-child');
     if (checks[i]) {
-      icon.style.background='#1055e8'; icon.style.borderColor='#1055e8'; icon.style.color='white';
+      icon.style.background='#1258fc'; icon.style.borderColor='#1258fc'; icon.style.color='white';
       el.querySelector('span:last-child').style.color='#1e293b';
     } else {
       icon.style.background=''; icon.style.borderColor='#cbd5e1'; icon.style.color='transparent';
@@ -1083,7 +1083,7 @@ function initActivityCharts() {
     data: {
       labels: ['1월','2월','3월','4월','5월','6월'],
       datasets: [
-        { label:'출석', data:[8,10,12,9,14,13], backgroundColor:'#1055e8', borderRadius:6, borderSkipped:false },
+        { label:'출석', data:[8,10,12,9,14,13], backgroundColor:'#1258fc', borderRadius:6, borderSkipped:false },
         { label:'결석', data:[2,1,1,3,1,1],     backgroundColor:'#fecdd3', borderRadius:6, borderSkipped:false },
       ]
     },
@@ -1102,7 +1102,7 @@ function initActivityCharts() {
     type: 'radar',
     data: {
       labels: ['출석률','자료 공유','벌금 납부','공지 확인','스터디 기여'],
-      datasets: [{ data:[87,70,75,90,65], backgroundColor:'rgba(16,85,232,.1)', borderColor:'#1055e8', borderWidth:2, pointBackgroundColor:'#1055e8', pointRadius:4 }]
+      datasets: [{ data:[87,70,75,90,65], backgroundColor:'rgba(16,85,232,.1)', borderColor:'#1258fc', borderWidth:2, pointBackgroundColor:'#1258fc', pointRadius:4 }]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
@@ -1150,26 +1150,26 @@ async function loadRecentUploads() {
     document.getElementById('recentUploads').innerHTML = data.slice(0,5).map(f => `
       <div class="flex items-start gap-3">
         <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#dce6fd;">
-          <svg class="w-4 h-4" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" style="color:#1258fc;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
         <div class="min-w-0 flex-1">
           <p class="text-xs font-semibold text-slate-700 truncate">${f.filename}</p>
           <p class="text-xs text-slate-400">${f.group_name} · ${f.size}</p>
-          <p class="text-xs font-medium" style="color:#1055e8;">${f.date}</p>
+          <p class="text-xs font-medium" style="color:#1258fc;">${f.date}</p>
         </div>
       </div>`).join('');
   } catch {
     document.getElementById('recentUploads').innerHTML = `
       <div class="flex items-start gap-3">
         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#dce6fd;">
-          <svg class="w-4 h-4" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <svg class="w-4 h-4" style="color:#1258fc;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         </div>
         <div>
           <p class="text-xs font-semibold text-slate-700">정렬 알고리즘 정리.pdf</p>
           <p class="text-xs text-slate-400">Python 스터디 · 2.3MB</p>
-          <p class="text-xs font-medium" style="color:#1055e8;">6월 16일</p>
+          <p class="text-xs font-medium" style="color:#1258fc;">6월 16일</p>
         </div>
       </div>`;
   }

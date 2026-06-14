@@ -54,15 +54,15 @@ html[data-theme="dark"] {
 #sidebar { transition: transform 0.3s ease; }
 #sidebarOverlay { transition: opacity 0.3s ease; }
 .nav-link { transition: all 0.2s ease; }
-.nav-link.active { background: #1055e8; color: #fff; }
-.nav-link:not(.active):hover { background: #dce6fd; color: #1055e8; }
+.nav-link.active { background: #1258fc; color: #fff; }
+.nav-link:not(.active):hover { background: #dce6fd; color: #1258fc; }
 
 /* ── 토글 스위치 ── */
 .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
 .toggle-wrap input { opacity: 0; width: 0; height: 0; }
 .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
 .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-input:checked + .toggle-slider { background: #1055e8; }
+input:checked + .toggle-slider { background: #1258fc; }
 input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 /* ════════════════════════════════════════
@@ -92,7 +92,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 ════════════════════════════════════════ */
 .member-row { transition: background 0.15s, box-shadow 0.15s; }
 .member-row:hover { background: #f8fafc; }
-.member-row.changed { box-shadow: inset 3px 0 0 #1055e8; background: #f0f5ff; }
+.member-row.changed { box-shadow: inset 3px 0 0 #1258fc; background: #f0f5ff; }
 
 /* 사유 입력 영역 슬라이드 */
 .note-area { overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.25s ease, opacity 0.25s ease; }
@@ -102,7 +102,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
    진행 바
 ════════════════════════════════════════ */
 .prog-track { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
-.prog-fill   { height: 100%; border-radius: 99px; transition: width 0.5s ease; background: linear-gradient(90deg,#1055e8,#3a74ef); }
+.prog-fill   { height: 100%; border-radius: 99px; transition: width 0.5s ease; background: linear-gradient(90deg,#1258fc,#3a74ef); }
 
 /* ════════════════════════════════════════
    저장 버튼 펄스
@@ -124,7 +124,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 /* ════════════════════════════════════════
    SweetAlert 커스텀
 ════════════════════════════════════════ */
-.swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+.swal2-confirm { background:#1258fc !important; border-radius:10px !important; }
 .swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
 .swal2-deny    { background:#e11d48 !important; border-radius:10px !important; }
 
@@ -164,7 +164,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 
       <!-- ① 세션 정보 배너 -->
       <div class="px-4 lg:px-8 pt-5">
-      <div class="rounded-2xl relative overflow-hidden" style="background:linear-gradient(135deg,#0d44c4 0%,#1055e8 55%,#3a74ef 100%);">
+      <div class="rounded-2xl relative overflow-hidden" style="background:linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%);">
         <div class="absolute top-0 right-0 w-56 h-56 bg-white opacity-5 rounded-full translate-x-16 -translate-y-16"></div>
         <div class="absolute bottom-0 left-1/3 w-32 h-32 bg-white opacity-5 rounded-full translate-y-12"></div>
         <div class="relative z-10 px-6 lg:px-10 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
@@ -266,7 +266,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
           <!-- 목록 헤더 -->
           <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-              <svg class="w-5 h-5 flex-shrink-0" style="color:#1055e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              <svg class="w-5 h-5 flex-shrink-0" style="color:#1258fc;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
               <h2 class="font-bold text-slate-800">멤버 출석 입력</h2>
               <span class="text-xs text-slate-400 font-normal">(총 {{ members|length }}명)</span>
             </div>
@@ -277,7 +277,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
                 oninput="searchMember(this.value)"
                 class="pl-8 pr-3 py-1.5 text-sm border border-slate-200 rounded-xl w-36 transition-all"
                 style="outline:none;"
-                onfocus="this.style.borderColor='#1055e8';this.style.boxShadow='0 0 0 3px rgba(16,85,232,.1)'"
+                onfocus="this.style.borderColor='#1258fc';this.style.boxShadow='0 0 0 3px rgba(16,85,232,.1)'"
                 onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
             </div>
           </div>
@@ -316,7 +316,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
                       <div class="flex items-center gap-2 flex-wrap">
                         <p class="font-semibold text-slate-800 text-sm">{{ membership.user.nickname }}</p>
                         {% if membership.role == 'leader' %}
-                        <span class="text-xs px-2 py-0.5 rounded-full font-bold" style="background:#dce6fd; color:#1055e8;">리더</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-bold" style="background:#dce6fd; color:#1258fc;">리더</span>
                         {% endif %}
                         {% if record %}
                         <span class="text-xs text-amber-600 font-medium">기존 기록 있음</span>
@@ -375,7 +375,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
                         placeholder="지각/결석 사유를 입력하세요 (예: 병원 방문, 업무 등)"
                         class="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-2 resize-none transition-all"
                         style="outline:none;"
-                        onfocus="this.style.borderColor='#1055e8'"
+                        onfocus="this.style.borderColor='#1258fc'"
                         onblur="this.style.borderColor='#e2e8f0'"
                         oninput="onNoteInput('{{ membership.user.id }}', this.value)">{{ record.note|default:"" }}</textarea>
                     </div>
@@ -480,8 +480,8 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
         </a>
         <button id="btn-save" onclick="confirmSave()"
           class="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white px-6 py-2.5 rounded-xl transition-colors shadow-sm"
-          style="background:#1055e8;"
-          onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1055e8'">
+          style="background:#1258fc;"
+          onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1258fc'">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
           <span id="btn-save-text">출석 저장</span>
         </button>
@@ -548,7 +548,7 @@ function initCharts() {
   donutChart = new Chart(donutCtx, {
     type: 'doughnut',
     data: {
-      datasets: [{ data: [0, 100], backgroundColor: ['#1055e8', '#e2e8f0'], borderWidth: 0, borderRadius: 4 }]
+      datasets: [{ data: [0, 100], backgroundColor: ['#1258fc', '#e2e8f0'], borderWidth: 0, borderRadius: 4 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '72%',
@@ -838,7 +838,7 @@ function confirmSave() {
             <p class="text-xs text-red-500 mt-0.5">결석</p>
           </div>
           <div class="rounded-xl p-3" style="background:#dce6fd;">
-            <p class="text-xl font-bold" style="color:#1055e8;">${rate}%</p>
+            <p class="text-xl font-bold" style="color:#1258fc;">${rate}%</p>
             <p class="text-xs mt-0.5" style="color:#3a74ef;">출석률</p>
           </div>
         </div>

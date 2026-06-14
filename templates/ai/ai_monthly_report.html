@@ -31,7 +31,7 @@
       --text-muted:     #94a3b8;
       --text-heading:   #0f172a;
       --text-nav:       #475569;
-      --text-nav-hover: #1055e8;
+      --text-nav-hover: #1258fc;
       --border-default: #f1f5f9;
       --border-card:    #f1f5f9;
       --border-input:   #e2e8f0;
@@ -68,16 +68,9 @@
 
     body                    { background: var(--bg-body) !important; }
     #mainContainer          { background: var(--bg-container) !important; }
-    #sidebar                { background: var(--bg-sidebar) !important; border-color: var(--border-sidebar) !important; }
     header                  { background: var(--bg-header) !important; border-color: var(--border-default) !important; }
     .flex-1.overflow-y-auto { background: var(--bg-content) !important; }
 
-    #sidebar p.font-bold,
-    #sidebar p.text-sm.leading-tight { color: var(--text-heading) !important; }
-    #sidebar p.text-xs.text-slate-400 { color: var(--text-muted) !important; }
-
-    .nav-link:not(.active)       { color: var(--text-nav) !important; }
-    .nav-link:not(.active):hover { background: var(--bg-nav-hover) !important; color: var(--text-nav-hover) !important; }
 
     .bg-white, .bg-card, [class*="bg-white"] { background: var(--bg-card) !important; }
     .border-slate-100, [class*="border-slate-100"] { border-color: var(--border-card) !important; }
@@ -101,26 +94,11 @@
     ::-webkit-scrollbar-track { background: var(--scrollbar-track, #f1f5f9); }
     ::-webkit-scrollbar-thumb { background: #c7d7fb; border-radius: 4px; }
 
-    #sidebar { transition: transform 0.3s ease; }
-    #sidebarOverlay { transition: opacity 0.3s ease; }
-    .nav-link { transition: all 0.2s ease; }
-    .nav-link.active { background: #1055e8; color: white; }
 
-    .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
-    .toggle-wrap input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
-    .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-    input:checked + .toggle-slider { background: #1055e8; }
-    input:checked + .toggle-slider::before { transform: translateX(18px); }
-
-    .swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+    .swal2-confirm { background:#1258fc !important; border-radius:10px !important; }
     .swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
 
     @media (max-width: 1024px) {
-      #sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 50; transform: translateX(-100%); }
-      #sidebar.open { transform: translateX(0); }
-      #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; }
-      #sidebarOverlay.open { display: block; }
       #mainContainer { flex-direction: column; }
     }
 
@@ -139,7 +117,7 @@
       cursor:pointer;
     }
     .report-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(16,85,232,0.08); border-color:#93aeee; }
-    .report-card.active { border-color:#1055e8; box-shadow:0 0 0 2px rgba(16,85,232,0.2); }
+    .report-card.active { border-color:#1258fc; box-shadow:0 0 0 2px rgba(16,85,232,0.2); }
 
     /* ── Meter bar ── */
     .mbar { height:6px; border-radius:99px; background:#e2e8f0; overflow:hidden; }
@@ -157,7 +135,7 @@
 
     /* ── AI insight box ── */
     .insight-box {
-      background:linear-gradient(135deg,#0d44c4,#1055e8);
+      background:linear-gradient(135deg,#0d44c4,#1258fc);
       border-radius:16px; color:#fff; padding:20px 24px;
     }
 
@@ -166,7 +144,7 @@
 
     .sticky-head th { position:sticky; top:0; z-index:10; background: var(--bg-input); }
 
-    .badge-done    { background:#dce6fd; color:#1055e8; }
+    .badge-done    { background:#dce6fd; color:#1258fc; }
     .badge-pending { background:#fef3c7; color:#b45309; }
     .badge-gen     { background:#f0fdf4; color:#15803d; }
 
@@ -174,13 +152,13 @@
     .spin { animation:spin 1s linear infinite; }
 
     .rtab { transition:all .15s ease; }
-    .rtab.active { color:#1055e8; border-bottom:2.5px solid #1055e8; font-weight:700; }
+    .rtab.active { color:#1258fc; border-bottom:2.5px solid #1258fc; font-weight:700; }
 
     .schedule-chip {
       display:inline-flex; align-items:center; gap:6px;
       background:#f0f5fe; border:1px solid #93aeee;
       border-radius:99px; padding:5px 14px;
-      font-size:12px; font-weight:600; color:#1055e8;
+      font-size:12px; font-weight:600; color:#1258fc;
     }
   </style>
 </head>
@@ -202,7 +180,7 @@
     <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6">
 
       <!-- ── 페이지 헤더 배너 ── -->
-      <div class="rounded-2xl p-5 sm:p-6 text-white mb-5" style="background: linear-gradient(135deg,#0d44c4 0%,#1055e8 50%,#3a74ef 100%);">
+      <div class="rounded-2xl p-5 sm:p-6 text-white mb-5" style="background: linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%);">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 mb-2">
@@ -224,7 +202,7 @@
             </div>
             {% if is_leader %}
             <button onclick="generateReport()"
-              class="flex items-center gap-2 bg-white text-[#1055e8] text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-blue-50 transition-all">
+              class="flex items-center gap-2 bg-white text-[#1258fc] text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-blue-50 transition-all">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
@@ -282,7 +260,7 @@
 
               <div class="flex gap-1.5" onclick="event.stopPropagation()">
                 <button onclick="downloadPDF({{ report.id }}, '{{ report.year }}년_{{ report.month }}월_리포트')"
-                  class="flex-1 flex items-center justify-center gap-1 text-xs font-semibold text-[#1055e8] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg py-1.5 transition-colors"
+                  class="flex-1 flex items-center justify-center gap-1 text-xs font-semibold text-[#1258fc] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg py-1.5 transition-colors"
                   {% if report.status != 'done' %}disabled style="opacity:.4;cursor:not-allowed"{% endif %}>
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -328,7 +306,7 @@
                 </div>
                 <div class="flex gap-2">
                   <button onclick="downloadPDF({{ reports.0.id }}, '{{ reports.0.year }}년_{{ reports.0.month }}월_리포트')"
-                    class="flex items-center gap-1.5 text-xs font-bold text-[#1055e8] bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors">
+                    class="flex items-center gap-1.5 text-xs font-bold text-[#1258fc] bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
@@ -347,16 +325,16 @@
               </div>
 
               <div class="flex gap-0 mt-4 border-b border-slate-100 overflow-x-auto">
-                <button onclick="switchRTab('attendance',this)" class="rtab active flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-[#1055e8] transition-colors border-b-2 border-transparent">
+                <button onclick="switchRTab('attendance',this)" class="rtab active flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-[#1258fc] transition-colors border-b-2 border-transparent">
                   📋 출석 통계
                 </button>
-                <button onclick="switchRTab('penalty',this)" class="rtab flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-[#1055e8] transition-colors border-b-2 border-transparent">
+                <button onclick="switchRTab('penalty',this)" class="rtab flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-[#1258fc] transition-colors border-b-2 border-transparent">
                   💰 벌금 정산
                 </button>
-                <button onclick="switchRTab('insight',this)" class="rtab flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-[#1055e8] transition-colors border-b-2 border-transparent">
+                <button onclick="switchRTab('insight',this)" class="rtab flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-[#1258fc] transition-colors border-b-2 border-transparent">
                   🤖 AI 인사이트
                 </button>
-                <button onclick="switchRTab('member',this)" class="rtab flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-[#1055e8] transition-colors border-b-2 border-transparent">
+                <button onclick="switchRTab('member',this)" class="rtab flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-[#1258fc] transition-colors border-b-2 border-transparent">
                   👥 멤버 성과
                 </button>
               </div>
@@ -367,7 +345,7 @@
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                 <div class="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
                   <p class="text-xs text-blue-400 font-semibold mb-1">평균 출석률</p>
-                  <p class="text-2xl font-bold text-[#1055e8]" id="stat-attendance">{{ current_report.avg_attendance|default:"—" }}%</p>
+                  <p class="text-2xl font-bold text-[#1258fc]" id="stat-attendance">{{ current_report.avg_attendance|default:"—" }}%</p>
                 </div>
                 <div class="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
                   <p class="text-xs text-slate-400 font-semibold mb-1">총 세션</p>
@@ -439,8 +417,8 @@
                       <td class="px-4 py-3 text-right text-red-500 font-semibold">{{ member.unpaid|floatformat:0 }}원</td>
                       <td class="px-4 py-3">
                         <div class="flex items-center gap-2">
-                          <div class="flex-1 mbar"><div class="mbar-fill bg-[#1055e8]" style="width:{{ member.paid_rate }}%"></div></div>
-                          <span class="text-xs font-bold text-[#1055e8] w-8 text-right">{{ member.paid_rate }}%</span>
+                          <div class="flex-1 mbar"><div class="mbar-fill bg-[#1258fc]" style="width:{{ member.paid_rate }}%"></div></div>
+                          <span class="text-xs font-bold text-[#1258fc] w-8 text-right">{{ member.paid_rate }}%</span>
                         </div>
                       </td>
                     </tr>
@@ -564,7 +542,7 @@
             <p class="text-slate-400 text-sm mb-6">매월 말일 Celery Beat 스케줄에 의해 자동으로 생성되거나,<br>직접 생성 버튼을 눌러 즉시 만들 수 있습니다.</p>
             {% if is_leader %}
             <button onclick="generateReport()"
-              class="inline-flex items-center gap-2 bg-[#1055e8] hover:bg-blue-700 text-white text-sm font-bold px-6 py-3 rounded-xl transition-colors shadow-sm">
+              class="inline-flex items-center gap-2 bg-[#1258fc] hover:bg-blue-700 text-white text-sm font-bold px-6 py-3 rounded-xl transition-colors shadow-sm">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
@@ -666,7 +644,7 @@ async function selectReport(id, card) {
       btn.setAttribute('onclick', `sendEmail(${id})`);
     });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:'리포트를 불러오는 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'오류', text:'리포트를 불러오는 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   } finally {
     panel.style.opacity = '1';
     panel.style.pointerEvents = 'auto';
@@ -689,8 +667,8 @@ function renderPenaltyTable(members) {
       <td class="px-4 py-3 text-right text-red-500 font-semibold">${Number(m.unpaid||0).toLocaleString()}원</td>
       <td class="px-4 py-3">
         <div class="flex items-center gap-2">
-          <div class="flex-1 mbar"><div class="mbar-fill bg-[#1055e8]" style="width:${m.paid_rate||0}%"></div></div>
-          <span class="text-xs font-bold text-[#1055e8] w-8 text-right">${m.paid_rate||0}%</span>
+          <div class="flex-1 mbar"><div class="mbar-fill bg-[#1258fc]" style="width:${m.paid_rate||0}%"></div></div>
+          <span class="text-xs font-bold text-[#1258fc] w-8 text-right">${m.paid_rate||0}%</span>
         </div>
       </td>
     </tr>`).join('');
@@ -746,7 +724,7 @@ async function generateReport() {
     html:`현재 달 데이터를 기반으로 AI 리포트를 생성합니다.<br>
           <span style="font-size:12px;color:#94a3b8;">출석·벌금 데이터를 수집하고 GPT-4o가 인사이트를 작성합니다.<br>약 30초~1분 소요됩니다.</span>`,
     showCancelButton:true, confirmButtonText:'생성 시작', cancelButtonText:'취소',
-    confirmButtonColor:'#1055e8',
+    confirmButtonColor:'#1258fc',
     input:'month', inputLabel:'리포트 대상 월',
     inputValue: new Date().toISOString().slice(0,7),
     inputAttributes:{ max: new Date().toISOString().slice(0,7) },
@@ -759,10 +737,10 @@ async function generateReport() {
   Swal.fire({
     title:'리포트 생성 중',
     html:`<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0">
-            <div class="spin" style="width:44px;height:44px;border:4px solid #dce6fd;border-top-color:#1055e8;border-radius:50%;"></div>
+            <div class="spin" style="width:44px;height:44px;border:4px solid #dce6fd;border-top-color:#1258fc;border-radius:50%;"></div>
             <p style="font-size:13px;color:#64748b;" id="gen-status">${steps[0]}</p>
             <div style="width:100%;background:#e2e8f0;border-radius:99px;height:4px;overflow:hidden">
-              <div id="gen-bar" style="height:100%;background:#1055e8;border-radius:99px;transition:width .4s ease;width:0%"></div>
+              <div id="gen-bar" style="height:100%;background:#1258fc;border-radius:99px;transition:width .4s ease;width:0%"></div>
             </div>
           </div>`,
     allowOutsideClick:false, showConfirmButton:false,
@@ -781,18 +759,18 @@ async function generateReport() {
     const [year, month] = (result.value||'').split('-');
     await axios.post('/ai/monthly-report/generate/', { group_id:GROUP_ID, year, month });
     clearInterval(interval);
-    Swal.fire({ icon:'success', title:'리포트 생성 완료', text:'월간 리포트가 성공적으로 생성되었습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'success', title:'리포트 생성 완료', text:'월간 리포트가 성공적으로 생성되었습니다.', confirmButtonColor:'#1258fc' });
     setTimeout(() => location.reload(), 2000);
   } catch(e) {
     clearInterval(interval);
-    Swal.fire({ icon:'error', title:'생성 실패', text:e.response?.data?.message||'리포트 생성 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'생성 실패', text:e.response?.data?.message||'리포트 생성 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
 async function downloadPDF(id, filename) {
   try {
     Swal.fire({ title:'PDF 다운로드 중...', allowOutsideClick:false, showConfirmButton:false,
-      html:'<div class="spin" style="width:36px;height:36px;border:4px solid #dce6fd;border-top-color:#1055e8;border-radius:50%;margin:0 auto;"></div>' });
+      html:'<div class="spin" style="width:36px;height:36px;border:4px solid #dce6fd;border-top-color:#1258fc;border-radius:50%;margin:0 auto;"></div>' });
     const res = await axios.get(`/ai/monthly-report/${id}/pdf/`, { responseType:'blob' });
     const url = URL.createObjectURL(new Blob([res.data], { type:'application/pdf' }));
     const a   = document.createElement('a');
@@ -800,7 +778,7 @@ async function downloadPDF(id, filename) {
     URL.revokeObjectURL(url);
     Swal.fire({ icon:'success', title:'다운로드 완료', timer:1200, showConfirmButton:false, toast:true, position:'top-end' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'다운로드 실패', text:'PDF 생성 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'다운로드 실패', text:'PDF 생성 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
@@ -810,14 +788,14 @@ async function sendEmail(id) {
     html:`그룹 멤버 전원에게 이번 달 리포트를 이메일로 발송합니다.<br>
           <span style="font-size:12px;color:#94a3b8;">PDF 파일이 첨부되어 발송됩니다.</span>`,
     showCancelButton:true, confirmButtonText:'발송', cancelButtonText:'취소',
-    confirmButtonColor:'#1055e8',
+    confirmButtonColor:'#1258fc',
   });
   if (!result.isConfirmed) return;
   try {
     await axios.post(`/ai/monthly-report/${id}/send-email/`, { group_id:GROUP_ID });
-    Swal.fire({ icon:'success', title:'발송 완료', text:'멤버 전원에게 리포트가 발송되었습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'success', title:'발송 완료', text:'멤버 전원에게 리포트가 발송되었습니다.', confirmButtonColor:'#1258fc' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'발송 실패', text:e.response?.data?.message||'이메일 발송 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'발송 실패', text:e.response?.data?.message||'이메일 발송 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 

@@ -24,7 +24,7 @@
             200: '#bacefc',
             300: '#88a8f8',
             400: '#5580f4',
-            500: '#1055e8',
+            500: '#1258fc',
             600: '#0d44c4',
             700: '#0a36a0',
           },
@@ -50,7 +50,7 @@
 
 <style>
   :root {
-    --brand-500: #1055e8;
+    --brand-500: #1258fc;
     --brand-600: #0d44c4;
   }
 
@@ -58,8 +58,8 @@
 
   /* Tab active style */
   .tab-btn.active {
-    color: #1055e8;
-    border-bottom: 2.5px solid #1055e8;
+    color: #1258fc;
+    border-bottom: 2.5px solid #1258fc;
     font-weight: 600;
   }
 
@@ -78,7 +78,7 @@
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
   .group-header-bg {
-    background: linear-gradient(135deg, #0d44c4 0%, #1055e8 60%, #3a74ef 100%);
+    background: linear-gradient(135deg, #0d44c4 0%, #1258fc 60%, #3a74ef 100%);
   }
 
   .tab-panel { display: none; }
@@ -131,7 +131,7 @@
   .progress-fill {
     height: 100%;
     border-radius: 99px;
-    background: linear-gradient(90deg, #1055e8, #3a74ef);
+    background: linear-gradient(90deg, #1258fc, #3a74ef);
     transition: width 0.6s ease;
   }
 </style>
@@ -680,7 +680,7 @@ function delegateLeader(userId, nickname) {
     showCancelButton: true,
     confirmButtonText: '위임하기',
     cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
   }).then(async result => {
     if (!result.isConfirmed) return;
     try {
@@ -758,7 +758,7 @@ function openSessionCreate() {
     showCancelButton: true,
     confirmButtonText: '생성',
     cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
     preConfirm: () => {
       const date = document.getElementById('swal-date').value;
       const topic = document.getElementById('swal-topic').value.trim();
@@ -842,7 +842,7 @@ function openNoticeCreate() {
     showCancelButton: true,
     confirmButtonText: '공지 작성',
     cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
     width: '500px',
     preConfirm: () => {
       const title = document.getElementById('swal-notice-title').value.trim();
@@ -873,7 +873,7 @@ function viewNotice(id, title, content, date, isPinned) {
     html: `<div class="text-left text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto">${content}</div>
            <p class="text-xs text-gray-400 mt-4 text-right">${date}</p>`,
     confirmButtonText: '닫기',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
     width: '500px',
   });
 }
@@ -933,7 +933,7 @@ async function editNotice(id) {
     showCancelButton: true,
     confirmButtonText: '수정 완료',
     cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
     width: '500px',
     preConfirm: () => {
       const title = document.getElementById('swal-edit-title').value.trim();
@@ -979,7 +979,7 @@ function openFileUpload() {
     showCancelButton: true,
     confirmButtonText: '업로드',
     cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
     preConfirm: () => {
       const file = document.getElementById('swal-file').files[0];
       const category = document.getElementById('swal-category').value;
@@ -1009,7 +1009,7 @@ function filterResource(category, btn) {
   document.querySelectorAll('.resource-filter-btn').forEach(b => {
     b.className = 'resource-filter-btn text-xs px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium transition-all';
   });
-  btn.className = 'resource-filter-btn text-xs px-3 py-1.5 rounded-full text-white font-medium transition-all'; btn.style.background = '#1055e8';
+  btn.className = 'resource-filter-btn text-xs px-3 py-1.5 rounded-full text-white font-medium transition-all'; btn.style.background = '#1258fc';
 
   document.querySelectorAll('.resource-row').forEach(row => {
     if (category === 'all' || row.dataset.category === category) {

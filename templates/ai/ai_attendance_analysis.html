@@ -31,7 +31,7 @@
       --text-muted:     #94a3b8;
       --text-heading:   #0f172a;
       --text-nav:       #475569;
-      --text-nav-hover: #1055e8;
+      --text-nav-hover: #1258fc;
       --border-default: #f1f5f9;
       --border-card:    #f1f5f9;
       --border-input:   #e2e8f0;
@@ -68,16 +68,9 @@
 
     body                    { background: var(--bg-body) !important; }
     #mainContainer          { background: var(--bg-container) !important; }
-    #sidebar                { background: var(--bg-sidebar) !important; border-color: var(--border-sidebar) !important; }
     header                  { background: var(--bg-header) !important; border-color: var(--border-default) !important; }
     .flex-1.overflow-y-auto { background: var(--bg-content) !important; }
 
-    #sidebar p.font-bold,
-    #sidebar p.text-sm.leading-tight { color: var(--text-heading) !important; }
-    #sidebar p.text-xs.text-slate-400 { color: var(--text-muted) !important; }
-
-    .nav-link:not(.active)       { color: var(--text-nav) !important; }
-    .nav-link:not(.active):hover { background: var(--bg-nav-hover) !important; color: var(--text-nav-hover) !important; }
 
     .bg-white, .bg-card, [class*="bg-white"] { background: var(--bg-card) !important; }
     .border-slate-100, [class*="border-slate-100"] { border-color: var(--border-card) !important; }
@@ -101,26 +94,11 @@
     ::-webkit-scrollbar-track { background: var(--scrollbar-track, #f1f5f9); }
     ::-webkit-scrollbar-thumb { background: #c7d7fb; border-radius: 4px; }
 
-    #sidebar { transition: transform 0.3s ease; }
-    #sidebarOverlay { transition: opacity 0.3s ease; }
-    .nav-link { transition: all 0.2s ease; }
-    .nav-link.active { background: #1055e8; color: white; }
 
-    .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
-    .toggle-wrap input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
-    .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-    input:checked + .toggle-slider { background: #1055e8; }
-    input:checked + .toggle-slider::before { transform: translateX(18px); }
-
-    .swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+    .swal2-confirm { background:#1258fc !important; border-radius:10px !important; }
     .swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
 
     @media (max-width: 1024px) {
-      #sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 50; transform: translateX(-100%); }
-      #sidebar.open { transform: translateX(0); }
-      #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; }
-      #sidebarOverlay.open { display: block; }
       #mainContainer { flex-direction: column; }
     }
 
@@ -151,7 +129,7 @@
     /* ── Member select tab ── */
     .member-tab { transition:all .15s ease; white-space:nowrap; flex-shrink:0; }
     .member-tab.active {
-      background: #1055e8; color:#fff;
+      background: #1258fc; color:#fff;
       box-shadow:0 2px 8px rgba(16,85,232,.3);
     }
 
@@ -170,7 +148,7 @@
 
     /* ── Model info card ── */
     .model-card {
-      background:linear-gradient(135deg,#0d44c4,#1055e8);
+      background:linear-gradient(135deg,#0d44c4,#1258fc);
       border-radius:18px; color:#fff;
     }
 
@@ -205,7 +183,7 @@
     <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
       <!-- ── 페이지 헤더 배너 ── -->
-      <div class="rounded-2xl p-5 sm:p-6 text-white" style="background: linear-gradient(135deg,#0d44c4 0%,#1055e8 50%,#3a74ef 100%);">
+      <div class="rounded-2xl p-5 sm:p-6 text-white" style="background: linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%);">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 mb-2">
@@ -229,7 +207,7 @@
             </div>
             {% if is_leader %}
             <button onclick="runAnalysis()"
-              class="flex items-center gap-2 bg-white text-[#1055e8] text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-blue-50 transition-all">
+              class="flex items-center gap-2 bg-white text-[#1258fc] text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-blue-50 transition-all">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
               </svg>
@@ -407,7 +385,7 @@
                 <span class="text-slate-600">{{ factor.label }}</span>
                 <div class="flex items-center gap-2">
                   <div class="w-20 meter-bar">
-                    <div class="meter-fill bg-[#1055e8]" style="width:{{ factor.weight }}%"></div>
+                    <div class="meter-fill bg-[#1258fc]" style="width:{{ factor.weight }}%"></div>
                   </div>
                   <span class="text-slate-400 w-8 text-right">{{ factor.weight }}%</span>
                 </div>
@@ -638,13 +616,13 @@ function initChart(uid, nickname) {
         {
           label:'출석률 (%)',
           data: d.attendance,
-          borderColor:'#1055e8',
+          borderColor:'#1258fc',
           backgroundColor: ctx2 => {
             const g = ctx2.chart.ctx.createLinearGradient(0,0,0,200);
             g.addColorStop(0,'rgba(16,85,232,0.15)'); g.addColorStop(1,'rgba(16,85,232,0)');
             return g;
           },
-          borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#1055e8',
+          borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#1258fc',
           fill:true, tension:0.4, yAxisID:'y',
         },
         {
@@ -725,7 +703,7 @@ async function showMemberDetail(uid, nickname) {
           </div>
           <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:14px;padding:16px;text-align:center">
             <p style="font-size:11px;color:#94a3b8;margin-bottom:6px;font-weight:600;">탈퇴 확률</p>
-            <p style="font-size:28px;font-weight:800;color:#1055e8;letter-spacing:-0.02em">${d.churn_probability}%</p>
+            <p style="font-size:28px;font-weight:800;color:#1258fc;letter-spacing:-0.02em">${d.churn_probability}%</p>
             <p style="font-size:12px;color:#94a3b8;margin-top:4px">이탈 가능성</p>
           </div>
         </div>
@@ -739,14 +717,14 @@ async function showMemberDetail(uid, nickname) {
           </div>
         </div>
         <div style="background:#eff6ff;border:1px solid #bae0fd;border-radius:12px;padding:12px 14px;">
-          <p style="font-size:11px;font-weight:700;color:#1055e8;margin-bottom:4px;">🔍 주요 위험 원인</p>
+          <p style="font-size:11px;font-weight:700;color:#1258fc;margin-bottom:4px;">🔍 주요 위험 원인</p>
           <p style="font-size:13px;color:#1e40af;">${d.main_factor}</p>
         </div>
       </div>`,
     showCancelButton: IS_LEADER,
     confirmButtonText: '닫기',
     cancelButtonText: IS_LEADER ? '📧 알림 발송' : null,
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
     cancelButtonColor: '#f59e0b',
     width: '440px',
     reverseButtons: true,
@@ -763,14 +741,14 @@ async function sendAlert(uid, nickname) {
     html: `<strong>${nickname}</strong> 님에게 출석 독려 알림을 발송하시겠습니까?<br>
            <span style="font-size:12px;color:#94a3b8;">이메일로 발송됩니다.</span>`,
     showCancelButton: true, confirmButtonText: '발송', cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
   });
   if (!result.isConfirmed) return;
   try {
     await axios.post(`/ai/attendance-analysis/alert/`, { member_id: uid });
     Swal.fire({ icon:'success', title:'알림 발송 완료', timer:1400, showConfirmButton:false, toast:true, position:'top-end' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'발송 실패', text:e.response?.data?.message||'발송 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'발송 실패', text:e.response?.data?.message||'발송 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
@@ -780,14 +758,14 @@ async function runAnalysis() {
     html: `출석 패턴 분석 및 탈퇴 예측 모델을 실행합니다.<br>
            <span style="font-size:12px;color:#94a3b8;">약 10~30초 소요될 수 있습니다.</span>`,
     showCancelButton: true, confirmButtonText: '실행', cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
   });
   if (!result.isConfirmed) return;
 
   Swal.fire({
     title: '분석 중...',
     html: `<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0">
-             <div style="width:48px;height:48px;border:4px solid #dce6fd;border-top-color:#1055e8;border-radius:50%;animation:spin 1s linear infinite"></div>
+             <div style="width:48px;height:48px;border:4px solid #dce6fd;border-top-color:#1258fc;border-radius:50%;animation:spin 1s linear infinite"></div>
              <p style="font-size:13px;color:#64748b;" id="analysis-status">데이터 수집 중...</p>
            </div>
            <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`,
@@ -804,11 +782,11 @@ async function runAnalysis() {
   try {
     await axios.post(`/ai/attendance-analysis/run/`, { group_id: GROUP_ID });
     clearInterval(interval);
-    Swal.fire({ icon:'success', title:'분석 완료', text:'위험도 및 탈퇴 예측이 업데이트되었습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'success', title:'분석 완료', text:'위험도 및 탈퇴 예측이 업데이트되었습니다.', confirmButtonColor:'#1258fc' });
     setTimeout(() => location.reload(), 2000);
   } catch(e) {
     clearInterval(interval);
-    Swal.fire({ icon:'error', title:'분석 실패', text:e.response?.data?.message||'분석 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'분석 실패', text:e.response?.data?.message||'분석 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
@@ -818,19 +796,19 @@ async function retrainModel() {
     html: `RandomForestClassifier 모델을 재학습합니다.<br>
            <span style="font-size:12px;color:#94a3b8;">3개월 이상 데이터가 필요합니다. 약 1~2분 소요됩니다.</span>`,
     showCancelButton: true, confirmButtonText: '재학습', cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
   });
   if (!result.isConfirmed) return;
 
   Swal.fire({ title:'모델 학습 중...', allowOutsideClick:false, showConfirmButton:false,
-    html:'<div style="width:40px;height:40px;border:4px solid #dce6fd;border-top-color:#1055e8;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>' });
+    html:'<div style="width:40px;height:40px;border:4px solid #dce6fd;border-top-color:#1258fc;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>' });
 
   try {
     await axios.post(`/ai/attendance-analysis/retrain/`, { group_id: GROUP_ID });
-    Swal.fire({ icon:'success', title:'학습 완료', text:'모델이 성공적으로 재학습되었습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'success', title:'학습 완료', text:'모델이 성공적으로 재학습되었습니다.', confirmButtonColor:'#1258fc' });
     setTimeout(() => location.reload(), 1800);
   } catch(e) {
-    Swal.fire({ icon:'error', title:'학습 실패', text:e.response?.data?.message||'재학습 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'학습 실패', text:e.response?.data?.message||'재학습 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 

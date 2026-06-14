@@ -174,7 +174,7 @@ window.handleLogout = window.handleLogout || function() {
     showCancelButton: true,
     confirmButtonText: '로그아웃',
     cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
   }).then(r => {
     if (r.isConfirmed) _doLogout();
   });
@@ -185,7 +185,7 @@ window.openNotifications = window.openNotifications || function() {
   if (typeof Swal === 'undefined') return;
   Swal.fire({
     title: '알림', width: 400,
-    confirmButtonText: '확인', confirmButtonColor: '#1055e8',
+    confirmButtonText: '확인', confirmButtonColor: '#1258fc',
     html: `<div class="text-sm text-slate-400 py-4 text-center">새 알림이 없습니다.</div>`,
   });
   document.getElementById('notiBadge')?.classList.add('hidden');
@@ -205,7 +205,7 @@ window.openCreateGroupModal = window.openCreateGroupModal || function() {
     showCancelButton: true,
     confirmButtonText: '그룹 생성',
     cancelButtonText: '취소',
-    confirmButtonColor: '#1055e8',
+    confirmButtonColor: '#1258fc',
     html: `
       <div class="space-y-4 text-left" style="margin-top:8px;">
         <div>
@@ -272,11 +272,11 @@ window.openCreateGroupModal = window.openCreateGroupModal || function() {
         text: `"${result.value.name}" 그룹이 생성되었습니다.`,
         confirmButtonText: '그룹으로 이동',
         showCancelButton: true, cancelButtonText: '계속 머물기',
-        confirmButtonColor: '#1055e8',
+        confirmButtonColor: '#1258fc',
       });
       if (r2.isConfirmed) window.location.href = `/groups/${data.id}/`;
     } catch (e) {
-      Swal.fire({ icon: 'error', title: '오류 발생', text: e.response?.data?.message || '그룹 생성에 실패했습니다.', confirmButtonColor: '#1055e8' });
+      Swal.fire({ icon: 'error', title: '오류 발생', text: e.response?.data?.message || '그룹 생성에 실패했습니다.', confirmButtonColor: '#1258fc' });
     }
   });
 };

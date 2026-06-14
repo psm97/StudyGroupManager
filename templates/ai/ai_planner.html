@@ -23,7 +23,7 @@
           colors: {
             brand: {
               50:'#eef3ff',100:'#dce6fd',200:'#bacefc',300:'#88a8f8',
-              400:'#5580f4',500:'#1055e8',600:'#0d44c4',700:'#0a36a0',
+              400:'#5580f4',500:'#1258fc',600:'#0d44c4',700:'#0a36a0',
             },
           },
         }
@@ -33,7 +33,7 @@
 
   <style>
     :root {
-      --bg-body: #eff6ff;
+      --bg-body: #dbeafe;
       --bg-main: #f8fafc;
       --bg-card: #ffffff;
       --border-card: #e2e8f0;
@@ -43,7 +43,7 @@
       --scrollbar-thumb: #c7d7fb;
     }
     html[data-theme="dark"] {
-      --bg-body: #0f172a;
+      --bg-body: #0c1120;
       --bg-main: #1e293b;
       --bg-card: #1e293b;
       --border-card: #334155;
@@ -52,35 +52,12 @@
       --text-muted: #64748b;
       --scrollbar-thumb: #334155;
     }
-    * { box-sizing: border-box; }
-    body { font-family:'Pretendard',sans-serif; background: var(--bg-body); color: var(--text-primary); }
+    *, *::before, *::after { box-sizing:border-box; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif; }
+    body { background: var(--bg-body); color: var(--text-primary); }
 
     ::-webkit-scrollbar { width:5px; height:5px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius:99px; }
-
-    /* ── Sidebar overlay ── */
-    #sidebarOverlay {
-      display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:40;
-    }
-    #sidebarOverlay.show { display:block; }
-
-    /* ── Nav link active ── */
-    .nav-link.active { background:#1055e8; color:#fff; }
-
-    /* ── Toggle ── */
-    .toggle-wrap { position:relative; display:inline-block; width:36px; height:20px; }
-    .toggle-wrap input { opacity:0; width:0; height:0; }
-    .toggle-slider {
-      position:absolute; cursor:pointer; inset:0; background:#cbd5e1;
-      border-radius:99px; transition:.3s;
-    }
-    .toggle-slider:before {
-      content:""; position:absolute; width:14px; height:14px; left:3px; bottom:3px;
-      background:#fff; border-radius:50%; transition:.3s;
-    }
-    .toggle-wrap input:checked + .toggle-slider { background:#1055e8; }
-    .toggle-wrap input:checked + .toggle-slider:before { transform:translateX(16px); }
 
     /* ── Progress arc ── */
     .arc-svg { transform:rotate(-90deg); }
@@ -105,7 +82,7 @@
 
     /* ── Chat bubble ── */
     .bubble-user {
-      background:#1055e8; color:#fff; border-radius:18px 18px 4px 18px;
+      background:#1258fc; color:#fff; border-radius:18px 18px 4px 18px;
       padding:10px 16px; max-width:80%; align-self:flex-end; font-size:14px;
     }
     .bubble-ai {
@@ -130,11 +107,11 @@
       transition:border-color .2s;
       background: var(--bg-card); color: var(--text-primary);
     }
-    .chat-input:focus { border-color:#1055e8; }
+    .chat-input:focus { border-color:#1258fc; }
 
     /* ── Model card ── */
     .model-card {
-      background:linear-gradient(135deg, #0d44c4, #1055e8);
+      background:linear-gradient(135deg, #0d44c4, #1258fc);
       border-radius:18px; color:#fff;
     }
 
@@ -159,13 +136,13 @@
     /* ── Tab ── */
     .tab-btn { transition:all .15s ease; color: var(--text-secondary); }
     .tab-btn.active {
-      color:#1055e8; border-bottom:2.5px solid #1055e8; font-weight:700;
+      color:#1258fc; border-bottom:2.5px solid #1258fc; font-weight:700;
     }
 
     /* ── Suggest chip ── */
     .suggest-chip {
       display:inline-flex; align-items:center; gap:4px;
-      background:#eef3ff; border:1px solid #bacefc; color:#1055e8;
+      background:#eef3ff; border:1px solid #bacefc; color:#1258fc;
       border-radius:99px; padding:5px 12px; font-size:12px; font-weight:600;
       cursor:pointer; transition:all .15s;
     }
@@ -195,7 +172,7 @@
     <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
       <!-- ── Blue gradient banner ── -->
-      <div class="rounded-2xl p-5 sm:p-6 text-white fade-up" style="background:linear-gradient(135deg,#0d44c4 0%,#1055e8 50%,#3a74ef 100%);animation-delay:0ms">
+      <div class="rounded-2xl p-5 sm:p-6 text-white fade-up" style="background:linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%);animation-delay:0ms">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 mb-2">
@@ -220,7 +197,7 @@
             </div>
             {% if is_leader %}
             <button onclick="runPrediction()"
-              class="flex items-center gap-2 bg-white text-[#1055e8] text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-blue-50 transition-all">
+              class="flex items-center gap-2 bg-white text-[#1258fc] text-sm font-bold px-4 py-2.5 rounded-xl shadow hover:bg-blue-50 transition-all">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
@@ -242,13 +219,13 @@
           <div class="relative mb-4">
             <svg class="arc-svg w-36 h-36">
               <circle class="arc-track" cx="72" cy="72" r="58"/>
-              <circle class="arc-fill" stroke="#1055e8" cx="72" cy="72" r="58"
+              <circle class="arc-fill" stroke="#1258fc" cx="72" cy="72" r="58"
                 stroke-dasharray="0 364"
                 id="arc-fill"
                 style="stroke-dasharray: calc({{ achievement_prob|default:0 }} * 3.64) 364;"/>
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <span class="text-3xl font-bold text-[#1055e8]" id="prob-num">{{ achievement_prob|default:0 }}%</span>
+              <span class="text-3xl font-bold text-[#1258fc]" id="prob-num">{{ achievement_prob|default:0 }}%</span>
               <span class="text-xs text-slate-400 mt-0.5">달성 가능성</span>
             </div>
           </div>
@@ -276,7 +253,7 @@
             </div>
             <div class="flex justify-between text-xs text-slate-500">
               <span>현재 진행률</span>
-              <span class="font-bold text-[#1055e8]">{{ progress_rate|default:0 }}%</span>
+              <span class="font-bold text-[#1258fc]">{{ progress_rate|default:0 }}%</span>
             </div>
           </div>
         </div>
@@ -294,7 +271,7 @@
             <div class="space-y-2" id="suggestion-list">
               {% for suggestion in ai_suggestions %}
               <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                <span class="text-[#1055e8] mt-0.5 flex-shrink-0">
+                <span class="text-[#1258fc] mt-0.5 flex-shrink-0">
                   {% if forloop.counter == 1 %}🎯{% elif forloop.counter == 2 %}📅{% elif forloop.counter == 3 %}👥{% else %}📈{% endif %}
                 </span>
                 <p class="text-sm text-slate-700 leading-relaxed">{{ suggestion }}</p>
@@ -308,7 +285,7 @@
             </div>
             {% if is_leader %}
             <button onclick="generateSuggestions()"
-              class="mt-3 w-full text-xs font-semibold text-[#1055e8] hover:text-[#0d44c4] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl py-2 transition-colors flex items-center justify-center gap-1.5">
+              class="mt-3 w-full text-xs font-semibold text-[#1258fc] hover:text-[#0d44c4] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl py-2 transition-colors flex items-center justify-center gap-1.5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
               </svg>
@@ -326,7 +303,7 @@
               </h2>
               <div class="flex items-center gap-3 text-xs text-slate-500">
                 <span class="flex items-center gap-1.5">
-                  <span class="w-3 h-0.5 bg-[#1055e8] inline-block rounded"></span>실제 달성률
+                  <span class="w-3 h-0.5 bg-[#1258fc] inline-block rounded"></span>실제 달성률
                 </span>
                 <span class="flex items-center gap-1.5">
                   <span class="w-3 h-0.5 bg-slate-300 inline-block rounded" style="border-top:2px dashed #94a3b8;height:0"></span>목표
@@ -374,7 +351,7 @@
               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
               oninput="autoResize(this)"></textarea>
             <button onclick="sendChat()" id="send-btn"
-              class="flex-shrink-0 w-10 h-10 bg-[#1055e8] hover:bg-[#0d44c4] text-white rounded-xl flex items-center justify-center transition-colors shadow-sm self-end">
+              class="flex-shrink-0 w-10 h-10 bg-[#1258fc] hover:bg-[#0d44c4] text-white rounded-xl flex items-center justify-center transition-colors shadow-sm self-end">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
               </svg>
@@ -390,10 +367,10 @@
         <!-- Tab menu -->
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div class="border-b border-slate-100 flex">
-            <button onclick="switchTab('schedule', this)" class="tab-btn active flex-shrink-0 px-5 sm:px-6 py-4 text-sm hover:text-[#1055e8] transition-colors border-b-2 border-transparent">
+            <button onclick="switchTab('schedule', this)" class="tab-btn active flex-shrink-0 px-5 sm:px-6 py-4 text-sm hover:text-[#1258fc] transition-colors border-b-2 border-transparent">
               📅 생성된 일정
             </button>
-            <button onclick="switchTab('resources', this)" class="tab-btn flex-shrink-0 px-5 sm:px-6 py-4 text-sm hover:text-[#1055e8] transition-colors border-b-2 border-transparent">
+            <button onclick="switchTab('resources', this)" class="tab-btn flex-shrink-0 px-5 sm:px-6 py-4 text-sm hover:text-[#1258fc] transition-colors border-b-2 border-transparent">
               📚 학습 자료 추천
             </button>
           </div>
@@ -407,7 +384,7 @@
               </div>
               {% if is_leader %}
               <button onclick="applySchedule()"
-                class="flex items-center gap-2 text-sm font-bold text-white bg-[#1055e8] hover:bg-[#0d44c4] px-4 py-2 rounded-xl transition-colors shadow-sm">
+                class="flex items-center gap-2 text-sm font-bold text-white bg-[#1258fc] hover:bg-[#0d44c4] px-4 py-2 rounded-xl transition-colors shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
@@ -420,7 +397,7 @@
               {% for week in generated_schedule %}
               <div class="week-card p-4">
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-xs font-bold text-[#1055e8] bg-blue-50 px-2.5 py-1 rounded-full">
+                  <span class="text-xs font-bold text-[#1258fc] bg-blue-50 px-2.5 py-1 rounded-full">
                     {{ week.week_label }}
                   </span>
                   <span class="text-xs font-semibold px-2 py-0.5 rounded-full
@@ -437,7 +414,7 @@
                   <span>📎 {{ week.materials_count }}개 자료</span>
                 </div>
                 <div class="mt-3 mbar">
-                  <div class="mbar-fill bg-[#1055e8]" style="width:{{ week.completion_rate|default:0 }}%"></div>
+                  <div class="mbar-fill bg-[#1258fc]" style="width:{{ week.completion_rate|default:0 }}%"></div>
                 </div>
                 <p class="text-right text-xs text-slate-400 mt-1">달성 {{ week.completion_rate|default:0 }}%</p>
               </div>
@@ -481,13 +458,13 @@
                   <p class="text-xs text-slate-500 mb-2">{{ item.description }}</p>
                   <div class="flex flex-wrap gap-1.5">
                     {% for keyword in item.keywords %}
-                    <span class="text-xs bg-blue-50 text-[#1055e8] border border-blue-100 px-2 py-0.5 rounded-full">#{{ keyword }}</span>
+                    <span class="text-xs bg-blue-50 text-[#1258fc] border border-blue-100 px-2 py-0.5 rounded-full">#{{ keyword }}</span>
                     {% endfor %}
                   </div>
                 </div>
                 {% if item.url %}
                 <a href="{{ item.url }}" target="_blank"
-                  class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#1055e8] hover:bg-blue-50 transition-colors">
+                  class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#1258fc] hover:bg-blue-50 transition-colors">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                   </svg>
@@ -533,13 +510,13 @@
                 <td class="px-4 py-3 text-center text-slate-600">{{ hist.session_count }}개</td>
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2">
-                    <div class="flex-1 mbar"><div class="mbar-fill bg-[#1055e8]" style="width:{{ hist.progress }}%"></div></div>
-                    <span class="text-xs font-bold text-[#1055e8] w-8 text-right">{{ hist.progress }}%</span>
+                    <div class="flex-1 mbar"><div class="mbar-fill bg-[#1258fc]" style="width:{{ hist.progress }}%"></div></div>
+                    <span class="text-xs font-bold text-[#1258fc] w-8 text-right">{{ hist.progress }}%</span>
                   </div>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <span class="text-xs font-semibold px-2.5 py-1 rounded-full
-                    {% if hist.is_active %}bg-blue-50 text-[#1055e8]{% else %}bg-slate-100 text-slate-500{% endif %}">
+                    {% if hist.is_active %}bg-blue-50 text-[#1258fc]{% else %}bg-slate-100 text-slate-500{% endif %}">
                     {% if hist.is_active %}진행 중{% else %}완료{% endif %}
                   </span>
                 </td>
@@ -578,13 +555,13 @@ new Chart(achCtx, {
       {
         label: '실제 달성률',
         data: achActual,
-        borderColor: '#1055e8',
+        borderColor: '#1258fc',
         backgroundColor: ctx => {
           const g = ctx.chart.ctx.createLinearGradient(0,0,0,160);
           g.addColorStop(0,'rgba(16,85,232,0.15)'); g.addColorStop(1,'rgba(16,85,232,0)');
           return g;
         },
-        borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#1055e8',
+        borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#1258fc',
         fill:true, tension:0.4,
       },
       {
@@ -710,7 +687,7 @@ function renderSchedule(schedule, meta) {
   grid.innerHTML = schedule.map(w => `
     <div class="week-card p-4">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-bold text-[#1055e8] bg-blue-50 px-2.5 py-1 rounded-full">${w.week_label}</span>
+        <span class="text-xs font-bold text-[#1258fc] bg-blue-50 px-2.5 py-1 rounded-full">${w.week_label}</span>
         <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${diffClass(w.difficulty)}">난이도 ${w.difficulty}</span>
       </div>
       <p class="font-bold text-slate-800 text-sm mb-1.5">${escHtml(w.topic)}</p>
@@ -719,7 +696,7 @@ function renderSchedule(schedule, meta) {
         <span>⏱ ${w.hours}시간</span>
         <span>📎 ${w.materials_count||0}개 자료</span>
       </div>
-      <div class="mt-3 mbar"><div class="mbar-fill bg-[#1055e8]" style="width:0%"></div></div>
+      <div class="mt-3 mbar"><div class="mbar-fill bg-[#1258fc]" style="width:0%"></div></div>
       <p class="text-right text-xs text-slate-400 mt-1">달성 0%</p>
     </div>`).join('');
 }
@@ -733,7 +710,7 @@ function renderResources(items) {
   const list = document.getElementById('resource-recommend-list');
   list.innerHTML = items.map(item => {
     const typeIcon = {영상:'🎬',문서:'📄',사이트:'🌐',도서:'📚'}[item.type] || '🔗';
-    const keywords = (item.keywords||[]).map(k=>`<span class="text-xs bg-blue-50 text-[#1055e8] border border-blue-100 px-2 py-0.5 rounded-full">#${escHtml(k)}</span>`).join(' ');
+    const keywords = (item.keywords||[]).map(k=>`<span class="text-xs bg-blue-50 text-[#1258fc] border border-blue-100 px-2 py-0.5 rounded-full">#${escHtml(k)}</span>`).join(' ');
     return `
       <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
         <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg flex-shrink-0">${typeIcon}</div>
@@ -746,7 +723,7 @@ function renderResources(items) {
           <p class="text-xs text-slate-500 mb-2">${escHtml(item.description)}</p>
           <div class="flex flex-wrap gap-1.5">${keywords}</div>
         </div>
-        ${item.url ? `<a href="${escHtml(item.url)}" target="_blank" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#1055e8] hover:bg-blue-50 transition-colors">
+        ${item.url ? `<a href="${escHtml(item.url)}" target="_blank" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#1258fc] hover:bg-blue-50 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>` : ''}
       </div>`;
   }).join('');
@@ -759,14 +736,14 @@ async function runPrediction() {
     html:`최신 출석 데이터를 기반으로 목표 달성 확률을 다시 계산합니다.<br>
           <span style="font-size:12px;color:#94a3b8;">약 10~20초 소요됩니다.</span>`,
     showCancelButton:true, confirmButtonText:'실행', cancelButtonText:'취소',
-    confirmButtonColor:'#1055e8',
+    confirmButtonColor:'#1258fc',
   });
   if (!result.isConfirmed) return;
 
   Swal.fire({
     title:'예측 중...', allowOutsideClick:false, showConfirmButton:false,
     html:`<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px">
-            <div class="spin" style="width:40px;height:40px;border:4px solid #dce6fd;border-top-color:#1055e8;border-radius:50%;"></div>
+            <div class="spin" style="width:40px;height:40px;border:4px solid #dce6fd;border-top-color:#1258fc;border-radius:50%;"></div>
             <p style="font-size:13px;color:#64748b;">데이터 분석 중...</p>
           </div>`,
   });
@@ -776,15 +753,15 @@ async function runPrediction() {
     const d   = res.data;
     Swal.fire({
       icon:'success', title:'예측 완료',
-      html:`목표 달성 확률: <strong style="color:#1055e8;font-size:20px">${d.achievement_prob}%</strong><br>
+      html:`목표 달성 확률: <strong style="color:#1258fc;font-size:20px">${d.achievement_prob}%</strong><br>
             예상 완료일: <strong>${d.expected_date}</strong>`,
-      confirmButtonColor:'#1055e8',
+      confirmButtonColor:'#1258fc',
     });
     // Update DOM
     document.getElementById('prob-num').textContent = d.achievement_prob + '%';
     document.getElementById('arc-fill').style.strokeDasharray = `${d.achievement_prob * 3.64} 364`;
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'예측 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'예측 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
@@ -800,14 +777,14 @@ async function generateSuggestions() {
     const icons = ['🎯','📅','👥','📈','💪','🔥'];
     document.getElementById('suggestion-list').innerHTML = suggestions.map((s,i) => `
       <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
-        <span class="text-[#1055e8] mt-0.5 flex-shrink-0">${icons[i]||'💡'}</span>
+        <span class="text-[#1258fc] mt-0.5 flex-shrink-0">${icons[i]||'💡'}</span>
         <p class="text-sm text-slate-700 leading-relaxed">${escHtml(s)}</p>
       </div>`).join('');
 
     btn.disabled = false;
     btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> 제안 새로 생성';
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:'제안 생성 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'오류', text:'제안 생성 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
@@ -815,7 +792,7 @@ async function generateSuggestions() {
 async function applySchedule() {
   const weeks = document.querySelectorAll('#week-grid .week-card').length;
   if (!weeks) {
-    Swal.fire({ icon:'warning', title:'일정 없음', text:'먼저 챗봇으로 일정을 생성해 주세요.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'warning', title:'일정 없음', text:'먼저 챗봇으로 일정을 생성해 주세요.', confirmButtonColor:'#1258fc' });
     return;
   }
 
@@ -824,7 +801,7 @@ async function applySchedule() {
     html:`<strong>${weeks}주</strong> 스터디 일정을 그룹 세션에 등록합니다.<br>
           <span style="font-size:12px;color:#94a3b8;">AttendanceSession이 자동 생성됩니다.</span>`,
     showCancelButton:true, confirmButtonText:'적용', cancelButtonText:'취소',
-    confirmButtonColor:'#1055e8',
+    confirmButtonColor:'#1258fc',
     input:'date', inputLabel:'시작일', inputPlaceholder:'시작 날짜를 선택하세요',
     inputAttributes:{ min: new Date().toISOString().split('T')[0] },
   });
@@ -838,11 +815,11 @@ async function applySchedule() {
     Swal.fire({
       icon:'success', title:'적용 완료',
       text:`${weeks}주 일정이 그룹 세션으로 등록되었습니다.`,
-      confirmButtonColor:'#1055e8',
+      confirmButtonColor:'#1258fc',
     });
     setTimeout(() => location.reload(), 1800);
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'적용 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'오류', text:e.response?.data?.message||'적용 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
@@ -864,7 +841,7 @@ function escHtml(str) {
 // ── Sidebar helpers (for mobile) ──────────
 function closeSidebar() {
   document.querySelector('#mainContainer > aside')?.classList.remove('open');
-  document.getElementById('sidebarOverlay')?.classList.remove('show');
+  document.getElementById('sidebarOverlay')?.classList.remove('open');
 }
 </script>
 {% include 'inc_common_scripts.html' %}

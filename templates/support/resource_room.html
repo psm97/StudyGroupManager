@@ -23,7 +23,7 @@
   --bg-content: #f8fafc; --bg-card: #fff; --bg-input: #f8fafc; --bg-skeleton: #e2e8f0;
   --bg-nav-hover: #dce6fd;
   --text-primary: #1e293b; --text-secondary: #475569; --text-muted: #94a3b8;
-  --text-heading: #0f172a; --text-nav: #475569; --text-nav-hover: #1055e8;
+  --text-heading: #0f172a; --text-nav: #475569; --text-nav-hover: #1258fc;
   --border-card: #f1f5f9; --border-input: #e2e8f0; --border-sidebar: #f1f5f9;
   --scrollbar-track: #f1f5f9;
   --swal-bg: #fff; --swal-text: #1e293b;
@@ -69,7 +69,7 @@ html[data-theme="dark"] .sticky-head th { background: var(--bg-input) !important
 #sidebar { transition: transform .3s ease; }
 #sidebarOverlay { transition: opacity .3s ease; }
 .nav-link { transition: all .2s ease; }
-.nav-link.active { background: #1055e8; color: #fff; }
+.nav-link.active { background: #1258fc; color: #fff; }
 .nav-link:not(.active) { color: var(--text-nav); }
 .nav-link:not(.active):hover { background: var(--bg-nav-hover); color: var(--text-nav-hover); }
 
@@ -77,7 +77,7 @@ html[data-theme="dark"] .sticky-head th { background: var(--bg-input) !important
 .toggle-wrap input { opacity: 0; width: 0; height: 0; }
 .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
 .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
-input:checked + .toggle-slider { background: #1055e8; }
+input:checked + .toggle-slider { background: #1258fc; }
 input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 @media (max-width: 1024px) {
@@ -88,7 +88,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 }
 
 /* ── SweetAlert2 ── */
-.swal2-confirm { background: #1055e8 !important; border-radius: 10px !important; }
+.swal2-confirm { background: #1258fc !important; border-radius: 10px !important; }
 .swal2-cancel  { background: #f1f5f9 !important; color: #64748b !important; border-radius: 10px !important; }
 
 /* ── 카테고리 탭 ── */
@@ -142,12 +142,12 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
   background: #f0f5fe;
   transition: all .2s ease;
 }
-.drop-zone.drag-over { border-color: #1055e8; background: #dce6fd; }
-.drop-zone:hover { border-color: #1055e8; }
+.drop-zone.drag-over { border-color: #1258fc; background: #dce6fd; }
+.drop-zone:hover { border-color: #1258fc; }
 
 /* ── 업로드 진행바 ── */
 .upload-bar { height: 5px; border-radius: 99px; background: #e2e8f0; overflow: hidden; }
-.upload-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #1055e8, #3a74ef); transition: width .3s ease; }
+.upload-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #1258fc, #3a74ef); transition: width .3s ease; }
 
 /* ── 카테고리 배지 ── */
 .cat-badge-강의자료 { background: #eff6ff; color: #2563eb; }
@@ -169,7 +169,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 /* ── 검색 입력창 ── */
 .search-box { background: var(--bg-card); border: 1px solid var(--border-input); color: var(--text-primary); }
-.search-box:focus { outline: none; border-color: #1055e8; box-shadow: 0 0 0 3px rgba(16,85,232,.1); }
+.search-box:focus { outline: none; border-color: #1258fc; box-shadow: 0 0 0 3px rgba(16,85,232,.1); }
 .search-box::placeholder { color: var(--text-muted); }
 
 /* ── 애니메이션 ── */
@@ -195,7 +195,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 
       <!-- ══ 페이지 헤더 배너 ══ -->
       <div class="rounded-2xl p-5 sm:p-6 text-white fade-up"
-           style="background: linear-gradient(135deg, #0d44c4 0%, #1055e8 55%, #3a74ef 100%);">
+           style="background: linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%);">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <p class="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">Resource Room</p>
@@ -219,7 +219,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
               <p class="text-xs text-white/70 mt-0.5">총 용량</p>
             </div>
             <button onclick="openUpload()"
-              class="flex items-center gap-2 bg-white text-[#1055e8] text-sm font-bold px-4 py-2.5 rounded-xl shadow-md hover:bg-blue-50 hover:shadow-lg transition-all">
+              class="flex items-center gap-2 bg-white text-[#1258fc] text-sm font-bold px-4 py-2.5 rounded-xl shadow-md hover:bg-blue-50 hover:shadow-lg transition-all">
               <i class="fa-solid fa-cloud-arrow-up"></i>
               파일 업로드
             </button>
@@ -273,18 +273,18 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
             <thead class="sticky-head">
               <tr class="text-xs uppercase tracking-wide">
                 <th class="text-left px-5 py-3 min-w-[200px]">
-                  <button class="sort-btn font-semibold hover:text-[#1055e8] transition-colors" onclick="sortTable('name', this)">파일명</button>
+                  <button class="sort-btn font-semibold hover:text-[#1258fc] transition-colors" onclick="sortTable('name', this)">파일명</button>
                 </th>
                 <th class="text-left px-4 py-3">카테고리</th>
                 <th class="text-left px-4 py-3 hidden sm:table-cell">
-                  <button class="sort-btn font-semibold hover:text-[#1055e8] transition-colors" onclick="sortTable('uploader', this)">업로더</button>
+                  <button class="sort-btn font-semibold hover:text-[#1258fc] transition-colors" onclick="sortTable('uploader', this)">업로더</button>
                 </th>
                 <th class="text-left px-4 py-3 hidden md:table-cell">
-                  <button class="sort-btn font-semibold hover:text-[#1055e8] transition-colors" onclick="sortTable('date', this)">날짜</button>
+                  <button class="sort-btn font-semibold hover:text-[#1258fc] transition-colors" onclick="sortTable('date', this)">날짜</button>
                 </th>
                 <th class="text-left px-4 py-3 hidden sm:table-cell">크기</th>
                 <th class="text-center px-4 py-3">
-                  <button class="sort-btn font-semibold hover:text-[#1055e8] transition-colors" onclick="sortTable('downloads', this)">다운로드</button>
+                  <button class="sort-btn font-semibold hover:text-[#1258fc] transition-colors" onclick="sortTable('downloads', this)">다운로드</button>
                 </th>
                 <th class="text-center px-4 py-3">관리</th>
               </tr>
@@ -365,7 +365,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
                 <td class="px-4 py-3.5 text-center">
                   <a href="{{ resource.file.url }}" download
                     onclick="recordDownload({{ resource.id }})"
-                    class="inline-flex items-center gap-1.5 text-sm font-bold text-[#1055e8] hover:text-blue-700 transition-colors group">
+                    class="inline-flex items-center gap-1.5 text-sm font-bold text-[#1258fc] hover:text-blue-700 transition-colors group">
                     <i class="fa-solid fa-download group-hover:scale-110 transition-transform text-xs"></i>
                     <span id="dl-{{ resource.id }}">{{ resource.download_count }}</span>
                   </a>
@@ -395,7 +395,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
                   <p class="font-bold text-slate-500 mb-1">업로드된 파일이 없습니다</p>
                   <p class="text-xs text-slate-400 mb-5">파일을 업로드하면 멤버 모두와 공유됩니다.</p>
                   <button onclick="openUpload()"
-                    class="inline-flex items-center gap-2 bg-[#1055e8] hover:bg-blue-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm">
+                    class="inline-flex items-center gap-2 bg-[#1258fc] hover:bg-blue-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm">
                     <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
                     첫 파일 업로드
                   </button>
@@ -464,7 +464,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
             <div class="flex items-center gap-1.5">
               <a href="{{ resource.file.url }}" download
                 onclick="recordDownload({{ resource.id }})"
-                class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-[#1055e8] bg-blue-50 hover:bg-blue-100 rounded-lg py-1.5 transition-colors">
+                class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-[#1258fc] bg-blue-50 hover:bg-blue-100 rounded-lg py-1.5 transition-colors">
                 <i class="fa-solid fa-download text-xs"></i>
                 {{ resource.download_count }}
               </a>
@@ -491,7 +491,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 <!-- 모바일 FAB -->
 <button onclick="openUpload()"
-  class="fixed bottom-6 right-6 sm:hidden w-14 h-14 bg-[#1055e8] hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all hover:scale-105">
+  class="fixed bottom-6 right-6 sm:hidden w-14 h-14 bg-[#1258fc] hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all hover:scale-105">
   <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
 </button>
 
@@ -525,7 +525,7 @@ function openUpload() {
             accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
             onchange="onFileSelected(this)">
           <button type="button" onclick="document.getElementById('file-input').click()"
-            class="text-xs font-semibold text-[#1055e8] bg-blue-50 hover:bg-blue-100 border border-blue-200 px-4 py-2 rounded-lg transition-colors">
+            class="text-xs font-semibold text-[#1258fc] bg-blue-50 hover:bg-blue-100 border border-blue-200 px-4 py-2 rounded-lg transition-colors">
             파일 선택
           </button>
         </div>
@@ -566,7 +566,7 @@ function openUpload() {
     showCancelButton:  true,
     confirmButtonText: '업로드',
     cancelButtonText:  '취소',
-    confirmButtonColor:'#1055e8',
+    confirmButtonColor:'#1258fc',
     width:             '480px',
     preConfirm: () => {
       const file     = document.getElementById('file-input').files[0];
@@ -605,7 +605,7 @@ function openUpload() {
       await Swal.fire({ icon: 'success', title: '업로드 완료', timer: 1400, showConfirmButton: false });
       location.reload();
     } catch(e) {
-      Swal.fire({ icon: 'error', title: '업로드 실패', text: e.response?.data?.message || '업로드 중 오류가 발생했습니다.', confirmButtonColor: '#1055e8' });
+      Swal.fire({ icon: 'error', title: '업로드 실패', text: e.response?.data?.message || '업로드 중 오류가 발생했습니다.', confirmButtonColor: '#1258fc' });
     }
   });
 }
@@ -678,7 +678,7 @@ async function deleteResource(id, name) {
     });
     Swal.fire({ icon: 'success', title: '삭제 완료', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
   } catch(e) {
-    Swal.fire({ icon: 'error', title: '오류', text: e.response?.data?.message || '삭제 중 오류가 발생했습니다.', confirmButtonColor: '#1055e8' });
+    Swal.fire({ icon: 'error', title: '오류', text: e.response?.data?.message || '삭제 중 오류가 발생했습니다.', confirmButtonColor: '#1258fc' });
   }
 }
 

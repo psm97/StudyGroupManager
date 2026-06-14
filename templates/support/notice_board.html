@@ -23,7 +23,7 @@
   --bg-content: #f8fafc; --bg-card: #fff; --bg-input: #f8fafc; --bg-skeleton: #e2e8f0;
   --bg-nav-hover: #dce6fd;
   --text-primary: #1e293b; --text-secondary: #475569; --text-muted: #94a3b8;
-  --text-heading: #0f172a; --text-nav: #475569; --text-nav-hover: #1055e8;
+  --text-heading: #0f172a; --text-nav: #475569; --text-nav-hover: #1258fc;
   --border-card: #f1f5f9; --border-input: #e2e8f0; --border-sidebar: #f1f5f9;
   --scrollbar-track: #f1f5f9;
   --swal-bg: #fff; --swal-text: #1e293b;
@@ -68,7 +68,7 @@ html[data-theme="dark"] .divide-y > * + * { border-color: #334155 !important; }
 #sidebar { transition: transform .3s ease; }
 #sidebarOverlay { transition: opacity .3s ease; }
 .nav-link { transition: all .2s ease; }
-.nav-link.active { background: #1055e8; color: #fff; }
+.nav-link.active { background: #1258fc; color: #fff; }
 .nav-link:not(.active) { color: var(--text-nav); }
 .nav-link:not(.active):hover { background: var(--bg-nav-hover); color: var(--text-nav-hover); }
 
@@ -76,7 +76,7 @@ html[data-theme="dark"] .divide-y > * + * { border-color: #334155 !important; }
 .toggle-wrap input { opacity: 0; width: 0; height: 0; }
 .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
 .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
-input:checked + .toggle-slider { background: #1055e8; }
+input:checked + .toggle-slider { background: #1258fc; }
 input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 @media (max-width: 1024px) {
@@ -87,7 +87,7 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 }
 
 /* ── SweetAlert2 ── */
-.swal2-confirm { background: #1055e8 !important; border-radius: 10px !important; }
+.swal2-confirm { background: #1258fc !important; border-radius: 10px !important; }
 .swal2-cancel  { background: #f1f5f9 !important; color: #64748b !important; border-radius: 10px !important; }
 .swal2-deny    { background: #ef4444 !important; border-radius: 10px !important; }
 
@@ -102,10 +102,10 @@ input:checked + .toggle-slider::before { transform: translateX(18px); }
 }
 .notice-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,85,232,.08); border-color: #93aeee; }
 .notice-card.pinned  { border-left: 3px solid #f59e0b; }
-.notice-card.unread  { border-left: 3px solid #1055e8; }
+.notice-card.unread  { border-left: 3px solid #1258fc; }
 .notice-card.pinned.unread { border-left: 3px solid #f59e0b; }
 
-.unread-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #1055e8; flex-shrink: 0; margin-top: 3px; }
+.unread-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #1258fc; flex-shrink: 0; margin-top: 3px; }
 .row-num {
   width: 26px; height: 26px; border-radius: 50%;
   background: var(--bg-skeleton); display: flex; align-items: center; justify-content: center;
@@ -137,7 +137,7 @@ mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
 
 /* ── 검색 입력창 ── */
 .search-box { background: var(--bg-card); border: 1px solid var(--border-input); color: var(--text-primary); }
-.search-box:focus { outline: none; border-color: #1055e8; box-shadow: 0 0 0 3px rgba(16,85,232,.1); }
+.search-box:focus { outline: none; border-color: #1258fc; box-shadow: 0 0 0 3px rgba(16,85,232,.1); }
 .search-box::placeholder { color: var(--text-muted); }
 </style>
 </head>
@@ -159,7 +159,7 @@ mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
 
       <!-- ══ 페이지 헤더 배너 ══ -->
       <div class="rounded-2xl p-5 sm:p-6 text-white fade-up"
-           style="background: linear-gradient(135deg, #0d44c4 0%, #1055e8 55%, #3a74ef 100%);">
+           style="background: linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%);">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <p class="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">Notice Board</p>
@@ -184,7 +184,7 @@ mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
             </div>
             {% if is_leader %}
             <button onclick="openNoticeCreate()"
-              class="flex items-center gap-2 bg-white text-[#1055e8] text-sm font-bold px-4 py-2.5 rounded-xl shadow-md hover:bg-blue-50 hover:shadow-lg transition-all">
+              class="flex items-center gap-2 bg-white text-[#1258fc] text-sm font-bold px-4 py-2.5 rounded-xl shadow-md hover:bg-blue-50 hover:shadow-lg transition-all">
               <i class="fa-solid fa-plus"></i>
               공지 작성
             </button>
@@ -254,7 +254,7 @@ mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
                     <span class="text-amber-500 text-sm flex-shrink-0">📌</span>
                   {% endif %}
                   <span id="new-badge-{{ notice.id }}"
-                    class="{% if notice.is_read %}hidden{% endif %} text-xs font-bold text-[#1055e8] bg-blue-50 px-1.5 py-0.5 rounded flex-shrink-0">
+                    class="{% if notice.is_read %}hidden{% endif %} text-xs font-bold text-[#1258fc] bg-blue-50 px-1.5 py-0.5 rounded flex-shrink-0">
                     NEW
                   </span>
                   <h3 class="font-bold text-slate-800 text-sm sm:text-base leading-snug notice-title">
@@ -290,7 +290,7 @@ mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
               {% if is_leader %}
               <div class="action-btn flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
                 <button onclick="editNotice({{ notice.id }})"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#1055e8] hover:bg-blue-50 transition-colors"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-[#1258fc] hover:bg-blue-50 transition-colors"
                   data-tip="수정">
                   <i class="fa-solid fa-pen text-xs"></i>
                 </button>
@@ -315,7 +315,7 @@ mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
           <p class="text-sm text-slate-400 mb-5">그룹 리더가 공지를 작성하면 이곳에 표시됩니다.</p>
           {% if is_leader %}
           <button onclick="openNoticeCreate()"
-            class="inline-flex items-center gap-2 bg-[#1055e8] hover:bg-blue-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm">
+            class="inline-flex items-center gap-2 bg-[#1258fc] hover:bg-blue-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm">
             <i class="fa-solid fa-plus"></i>
             첫 공지 작성하기
           </button>
@@ -336,21 +336,21 @@ mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
       <div class="flex items-center justify-center gap-1 pt-2 fade-up">
         {% if notices.has_previous %}
         <a href="?page={{ notices.previous_page_number }}"
-          class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-[#1055e8] transition-colors">
+          class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-[#1258fc] transition-colors">
           <i class="fa-solid fa-chevron-left text-xs"></i>
         </a>
         {% endif %}
         {% for num in notices.paginator.page_range %}
           {% if notices.number == num %}
-          <span class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#1055e8] text-white text-sm font-bold shadow-sm">{{ num }}</span>
+          <span class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#1258fc] text-white text-sm font-bold shadow-sm">{{ num }}</span>
           {% elif num > notices.number|add:'-3' and num < notices.number|add:'3' %}
           <a href="?page={{ num }}"
-            class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-[#1055e8] transition-colors text-sm">{{ num }}</a>
+            class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-[#1258fc] transition-colors text-sm">{{ num }}</a>
           {% endif %}
         {% endfor %}
         {% if notices.has_next %}
         <a href="?page={{ notices.next_page_number }}"
-          class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-[#1055e8] transition-colors">
+          class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-[#1258fc] transition-colors">
           <i class="fa-solid fa-chevron-right text-xs"></i>
         </a>
         {% endif %}
@@ -364,7 +364,7 @@ mark { background: #fef08a; border-radius: 2px; padding: 0 2px; }
 <!-- 모바일 FAB (리더 전용) -->
 {% if is_leader %}
 <button onclick="openNoticeCreate()"
-  class="fixed bottom-6 right-6 sm:hidden w-14 h-14 bg-[#1055e8] hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all hover:scale-105">
+  class="fixed bottom-6 right-6 sm:hidden w-14 h-14 bg-[#1258fc] hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all hover:scale-105">
   <i class="fa-solid fa-plus text-xl"></i>
 </button>
 {% endif %}
@@ -428,7 +428,7 @@ async function viewNotice(id) {
     confirmButtonText:   IS_LEADER ? '수정' : '닫기',
     showDenyButton:      IS_LEADER,
     denyButtonText:      '삭제',
-    confirmButtonColor:  IS_LEADER ? '#1055e8' : '#64748b',
+    confirmButtonColor:  IS_LEADER ? '#1258fc' : '#64748b',
     denyButtonColor:     '#ef4444',
     width:               '520px',
   });
@@ -464,7 +464,7 @@ function openNoticeCreate() {
     showCancelButton:  true,
     confirmButtonText: '작성 완료',
     cancelButtonText:  '취소',
-    confirmButtonColor:'#1055e8',
+    confirmButtonColor:'#1258fc',
     width:             '520px',
     didOpen: () => {
       document.getElementById('sw-title').addEventListener('input', e => {
@@ -491,7 +491,7 @@ function openNoticeCreate() {
       });
       location.reload();
     } catch(e) {
-      Swal.fire({ icon: 'error', title: '오류', text: e.response?.data?.message || '작성 중 오류가 발생했습니다.', confirmButtonColor: '#1055e8' });
+      Swal.fire({ icon: 'error', title: '오류', text: e.response?.data?.message || '작성 중 오류가 발생했습니다.', confirmButtonColor: '#1258fc' });
     }
   });
 }
@@ -505,7 +505,7 @@ async function editNotice(id) {
     d = res.data;
     Swal.close();
   } catch(e) {
-    Swal.fire({ icon: 'error', title: '오류', text: '공지 정보를 불러올 수 없습니다.', confirmButtonColor: '#1055e8' });
+    Swal.fire({ icon: 'error', title: '오류', text: '공지 정보를 불러올 수 없습니다.', confirmButtonColor: '#1258fc' });
     return;
   }
 
@@ -534,7 +534,7 @@ async function editNotice(id) {
     showCancelButton:  true,
     confirmButtonText: '수정 완료',
     cancelButtonText:  '취소',
-    confirmButtonColor:'#1055e8',
+    confirmButtonColor:'#1258fc',
     width:             '520px',
     preConfirm: () => {
       const title    = document.getElementById('sw-edit-title').value.trim();
@@ -552,7 +552,7 @@ async function editNotice(id) {
       await Swal.fire({ icon: 'success', title: '수정 완료', timer: 1400, showConfirmButton: false });
       location.reload();
     } catch(e) {
-      Swal.fire({ icon: 'error', title: '오류', text: e.response?.data?.message || '수정 중 오류가 발생했습니다.', confirmButtonColor: '#1055e8' });
+      Swal.fire({ icon: 'error', title: '오류', text: e.response?.data?.message || '수정 중 오류가 발생했습니다.', confirmButtonColor: '#1258fc' });
     }
   });
 }
@@ -583,7 +583,7 @@ async function deleteNotice(id, title) {
     }
     Swal.fire({ icon: 'success', title: '삭제 완료', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
   } catch(e) {
-    Swal.fire({ icon: 'error', title: '오류', text: e.response?.data?.message || '삭제 중 오류가 발생했습니다.', confirmButtonColor: '#1055e8' });
+    Swal.fire({ icon: 'error', title: '오류', text: e.response?.data?.message || '삭제 중 오류가 발생했습니다.', confirmButtonColor: '#1258fc' });
   }
 }
 

@@ -38,7 +38,7 @@
       --text-muted:     #94a3b8;
       --text-heading:   #0f172a;
       --text-nav:       #475569;
-      --text-nav-hover: #1055e8;
+      --text-nav-hover: #1258fc;
       --border-default: #f1f5f9;
       --border-card:    #f1f5f9;
       --border-input:   #e2e8f0;
@@ -119,16 +119,16 @@
     #sidebarOverlay { transition: opacity 0.3s ease; }
 
     .nav-link { transition: all 0.2s ease; }
-    .nav-link.active { background: #1055e8; color: white; }
+    .nav-link.active { background: #1258fc; color: white; }
 
     .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
     .toggle-wrap input { opacity: 0; width: 0; height: 0; }
     .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
     .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-    input:checked + .toggle-slider { background: #1055e8; }
+    input:checked + .toggle-slider { background: #1258fc; }
     input:checked + .toggle-slider::before { transform: translateX(18px); }
 
-    .swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+    .swal2-confirm { background:#1258fc !important; border-radius:10px !important; }
     .swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
 
     @media (max-width: 1024px) {
@@ -142,7 +142,7 @@
     /* ── Filter Tab ── */
     .filter-tab { transition: all 0.18s ease; }
     .filter-tab.active {
-      background: #1055e8;
+      background: #1258fc;
       color: #fff;
       box-shadow: 0 2px 8px rgba(16,85,232,0.3);
     }
@@ -234,7 +234,7 @@
     <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
       <!-- ── 페이지 헤더 배너 ── -->
-      <div class="rounded-2xl p-5 sm:p-6 text-white" style="background: linear-gradient(135deg,#0d44c4 0%,#1055e8 50%,#3a74ef 100%);">
+      <div class="rounded-2xl p-5 sm:p-6 text-white" style="background: linear-gradient(135deg,#0d44c4 0%,#1258fc 50%,#3a74ef 100%);">
         <nav class="text-xs mb-3 opacity-80 flex items-center gap-1.5 flex-wrap">
           <a href="{% url 'dashboard' %}" class="hover:underline">홈</a>
           <span>/</span>
@@ -302,7 +302,7 @@
             <input type="date" id="date-to"
               class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-400">
             <button onclick="applyCustomFilter()"
-              class="text-xs bg-[#1055e8] text-white px-3 py-1.5 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+              class="text-xs bg-[#1258fc] text-white px-3 py-1.5 rounded-lg font-medium hover:bg-blue-700 transition-colors">
               적용
             </button>
           </div>
@@ -367,11 +367,11 @@
           <div class="flex items-start justify-between">
             <div>
               <p class="text-xs text-slate-400 font-medium mb-1">그룹 평균 출석률</p>
-              <p class="text-2xl font-bold text-[#1055e8]" id="card-rate">{{ group_avg_rate|floatformat:1 }}%</p>
+              <p class="text-2xl font-bold text-[#1258fc]" id="card-rate">{{ group_avg_rate|floatformat:1 }}%</p>
               <p class="text-xs text-slate-400 mt-1">전 세션 기준</p>
             </div>
             <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-[#1258fc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
             </div>
@@ -384,7 +384,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <div>
             <h2 class="font-bold text-slate-800 flex items-center gap-2">
-              <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-[#1258fc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
               </svg>
               월별 출석률 추이
@@ -393,7 +393,7 @@
           </div>
           <div class="flex items-center gap-4 text-xs text-slate-500">
             <span class="flex items-center gap-1.5">
-              <span class="w-3 h-0.5 bg-[#1055e8] inline-block rounded"></span>출석률
+              <span class="w-3 h-0.5 bg-[#1258fc] inline-block rounded"></span>출석률
             </span>
             <span class="flex items-center gap-1.5">
               <span class="w-3 h-0.5 bg-amber-400 inline-block rounded"></span>지각률
@@ -412,7 +412,7 @@
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style="animation-delay:360ms">
         <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 class="font-bold text-slate-800 flex items-center gap-2">
-            <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-[#1258fc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/>
             </svg>
             멤버별 출석 현황
@@ -529,7 +529,7 @@
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style="animation-delay:420ms">
         <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 class="font-bold text-slate-800 flex items-center gap-2">
-            <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-[#1258fc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
             세션별 출석 현황
@@ -630,10 +630,10 @@ const monthlyChart = new Chart(ctx, {
       {
         label: '출석률',
         data: monthlyPresent,
-        borderColor: '#1055e8',
+        borderColor: '#1258fc',
         backgroundColor: 'rgba(16,85,232,0.08)',
         borderWidth: 2.5,
-        pointBackgroundColor: '#1055e8',
+        pointBackgroundColor: '#1258fc',
         pointRadius: 4,
         pointHoverRadius: 6,
         fill: true,
@@ -715,11 +715,11 @@ function applyCustomFilter() {
   const from = document.getElementById('date-from').value;
   const to   = document.getElementById('date-to').value;
   if (!from || !to) {
-    Swal.fire({ icon: 'warning', title: '날짜 선택', text: '시작일과 종료일을 모두 선택해 주세요.', confirmButtonColor: '#1055e8' });
+    Swal.fire({ icon: 'warning', title: '날짜 선택', text: '시작일과 종료일을 모두 선택해 주세요.', confirmButtonColor: '#1258fc' });
     return;
   }
   if (from > to) {
-    Swal.fire({ icon: 'warning', title: '날짜 오류', text: '시작일은 종료일보다 이전이어야 합니다.', confirmButtonColor: '#1055e8' });
+    Swal.fire({ icon: 'warning', title: '날짜 오류', text: '시작일은 종료일보다 이전이어야 합니다.', confirmButtonColor: '#1258fc' });
     return;
   }
   fetchFilteredData('custom', from, to);
@@ -745,7 +745,7 @@ async function fetchFilteredData(filter, from, to) {
     updateMemberTable(d.member_stats);
     updateSessionTable(d.sessions, d.member_stats);
   } catch (err) {
-    Swal.fire({ icon: 'error', title: '데이터 로드 실패', text: err.response?.data?.message || '데이터를 불러오는 중 오류가 발생했습니다.', confirmButtonColor: '#1055e8' });
+    Swal.fire({ icon: 'error', title: '데이터 로드 실패', text: err.response?.data?.message || '데이터를 불러오는 중 오류가 발생했습니다.', confirmButtonColor: '#1258fc' });
   } finally {
     hideSkeleton();
   }

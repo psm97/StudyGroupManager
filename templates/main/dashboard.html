@@ -45,7 +45,7 @@
     --text-muted:     #94a3b8;
     --text-heading:   #0f172a;
     --text-nav:       #475569;
-    --text-nav-hover: #1055e8;
+    --text-nav-hover: #1258fc;
 
     --border-default: #f1f5f9;
     --border-card:    #f1f5f9;
@@ -99,18 +99,9 @@
   /* CSS 변수 적용 */
   body                        { background: var(--bg-body) !important; }
   #mainContainer              { background: var(--bg-container) !important; }
-  #sidebar                    { background: var(--bg-sidebar) !important; border-color: var(--border-sidebar) !important; }
   header                      { background: var(--bg-header) !important; border-color: var(--border-default) !important; }
   .flex-1.overflow-y-auto     { background: var(--bg-content) !important; }
 
-  /* 사이드바 텍스트 */
-  #sidebar p.font-bold,
-  #sidebar p.text-sm.leading-tight { color: var(--text-heading) !important; }
-  #sidebar p.text-xs.text-slate-400 { color: var(--text-muted) !important; }
-
-  /* 네비 링크 */
-  .nav-link:not(.active)      { color: var(--text-nav) !important; }
-  .nav-link:not(.active):hover{ background: var(--bg-nav-hover) !important; color: var(--text-nav-hover) !important; }
 
   /* 카드 */
   .bg-white, .bg-card,
@@ -187,22 +178,6 @@
   ::-webkit-scrollbar-track { background: var(--scrollbar-track, #f1f5f9); }
   ::-webkit-scrollbar-thumb { background: #c7d7fb; border-radius: 4px; }
 
-  /* ── 사이드바 애니메이션 ── */
-  #sidebar { transition: transform 0.3s ease; }
-  #sidebarOverlay { transition: opacity 0.3s ease; }
-
-  /* ── 네비게이션 ── */
-  .nav-link { transition: all 0.2s ease; }
-  .nav-link.active { background: #1055e8; color: white; }
-  .nav-link:not(.active):hover { background: #dce6fd; color: #1055e8; }
-
-  /* ── 토글 스위치 ── */
-  .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
-  .toggle-wrap input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
-  .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-  input:checked + .toggle-slider { background: #1055e8; }
-  input:checked + .toggle-slider::before { transform: translateX(18px); }
 
   /* ── 카드 ── */
   .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
@@ -217,11 +192,11 @@
   /* ── 캘린더 ── */
   .cal-day { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
              border-radius: 50%; font-size: 12px; cursor: pointer; transition: all 0.15s; }
-  .cal-day:hover:not(.today):not(.other) { background: #dce6fd; color: #1055e8; }
-  .cal-day.today { background: #1055e8; color: white; font-weight: 700; }
+  .cal-day:hover:not(.today):not(.other) { background: #dce6fd; color: #1258fc; }
+  .cal-day.today { background: #1258fc; color: white; font-weight: 700; }
   .cal-day.other { color: #cbd5e1; }
   .cal-day.has-session::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-                                 width: 4px; height: 4px; background: #1055e8; border-radius: 50%; }
+                                 width: 4px; height: 4px; background: #1258fc; border-radius: 50%; }
   .cal-day.has-session { position: relative; }
 
   /* ── 타임라인 ── */
@@ -231,23 +206,19 @@
   .badge-present  { background:#dcfce7; color:#16a34a; }
   .badge-late     { background:#fef3c7; color:#d97706; }
   .badge-absent   { background:#ffe4e6; color:#e11d48; }
-  .badge-role-leader { background:#dce6fd; color:#1055e8; }
+  .badge-role-leader { background:#dce6fd; color:#1258fc; }
   .badge-role-member { background:#f1f5f9; color:#64748b; }
 
   /* ── SweetAlert 커스텀 ── */
   .swal-input-label { display:block; text-align:left; font-size:13px; font-weight:600; color:#475569; margin-bottom:6px; }
   .swal-custom-input { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px;
                        font-size:14px; outline:none; transition:border-color .2s; }
-  .swal-custom-input:focus { border-color:#1055e8; box-shadow:0 0 0 3px rgba(16,85,232,.12); }
-  .swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+  .swal-custom-input:focus { border-color:#1258fc; box-shadow:0 0 0 3px rgba(16,85,232,.12); }
+  .swal2-confirm { background:#1258fc !important; border-radius:10px !important; }
   .swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
 
   /* ── 반응형 ── */
   @media (max-width: 1024px) {
-    #sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 50; transform: translateX(-100%); }
-    #sidebar.open { transform: translateX(0); }
-    #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; }
-    #sidebarOverlay.open { display: block; }
     #mainContainer { flex-direction: column; }
   }
   @media (max-width: 768px) {
@@ -280,7 +251,7 @@
     <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
       <!-- ① 웰컴 배너 -->
-      <div class="relative rounded-2xl overflow-hidden shadow-md" style="background:linear-gradient(135deg,#0d44c4 0%,#1055e8 50%,#3a74ef 100%);">
+      <div class="relative rounded-2xl overflow-hidden shadow-md" style="background:linear-gradient(135deg,#1258fc 0%,#286af8 55%,#3a74ef 100%)">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full translate-x-20 -translate-y-20"></div>
         <div class="absolute bottom-0 left-1/2 w-40 h-40 bg-white opacity-5 rounded-full translate-y-16"></div>
         <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 lg:p-8 gap-4">
@@ -293,11 +264,11 @@
             <div class="flex flex-wrap gap-3">
               <button onclick="openCreateGroupModal()"
                 class="bg-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-sm hover:bg-blue-50 transition-colors"
-                style="color:#1055e8;">
+                style="color:#1258fc;">
                 + 그룹 만들기
               </button>
               <button onclick="openJoinGroupModal()"
-                class="border border-white border-opacity-50 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-white hover:bg-opacity-10 transition-colors"style="color:#1055e8;">
+                class="border border-white border-opacity-50 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-white hover:bg-opacity-10 transition-colors"style="color:#1258fc;">
                 초대코드로 참여
               </button>
             </div>
@@ -347,7 +318,7 @@
               <div class="flex bg-slate-100 rounded-lg p-0.5 text-xs">
                 <button id="btnWeek" onclick="setChartPeriod('week')"
                   class="px-3 py-1.5 rounded-md font-medium transition-all text-white"
-                  style="background:#1055e8;">주간</button>
+                  style="background:#1258fc;">주간</button>
                 <button id="btnMonth" onclick="setChartPeriod('month')"
                   class="px-3 py-1.5 rounded-md font-medium text-slate-500 transition-all">월간</button>
               </div>
@@ -380,7 +351,7 @@
                 class="px-2.5 py-1 rounded-md text-slate-500 font-medium transition-all">주</button>
               <button onclick="setCalView('month')" id="calMonthBtn"
                 class="px-2.5 py-1 rounded-md font-medium text-white transition-all"
-                style="background:#1055e8;">월</button>
+                style="background:#1258fc;">월</button>
             </div>
           </div>
           <div class="flex items-center justify-between mb-2">
@@ -424,7 +395,7 @@
               <h2 class="font-bold text-slate-800">내 그룹 목록</h2>
               <p class="text-xs text-slate-400 mt-0.5">참여 중인 스터디 그룹</p>
             </div>
-            <a href="{% url 'group_list' %}" class="text-xs font-semibold hover:underline" style="color:#1055e8;">전체 보기 →</a>
+            <a href="{% url 'group_list' %}" class="text-xs font-semibold hover:underline" style="color:#1258fc;">전체 보기 →</a>
           </div>
           <div id="groupList" class="space-y-3">
             <div class="animate-pulse space-y-3">
@@ -454,7 +425,7 @@
           <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
             <div class="flex items-center justify-between mb-3">
               <h2 class="font-bold text-slate-800 text-sm">벌금 현황</h2>
-              <a href="{% url 'penalty_management' %}" class="text-xs font-semibold hover:underline" style="color:#1055e8;">상세 →</a>
+              <a href="{% url 'penalty_management' %}" class="text-xs font-semibold hover:underline" style="color:#1258fc;">상세 →</a>
             </div>
             <div id="penaltySection" class="space-y-3">
               <div class="animate-pulse space-y-2">
@@ -497,7 +468,7 @@ async function loadSummary() {
                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283
                -.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283
                .356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>`,
-        bg: '#dce6fd', color: '#1055e8',
+        bg: '#dce6fd', color: '#1258fc',
         sub: '활성 스터디 그룹', subColor: 'text-slate-400',
       },
       {
@@ -547,7 +518,7 @@ async function loadSummary() {
 
 function renderSummaryFallback() {
   const items = [
-    { label:'참여 그룹 수', value:'3개', sub:'활성 스터디 그룹', bg:'#dce6fd', color:'#1055e8', subCls:'text-slate-400' },
+    { label:'참여 그룹 수', value:'3개', sub:'활성 스터디 그룹', bg:'#dce6fd', color:'#1258fc', subCls:'text-slate-400' },
     { label:'이번달 출석률', value:'87%', sub:'↑ 5% 지난달 대비', bg:'#dcfce7', color:'#16a34a', subCls:'text-emerald-500' },
     { label:'미납 벌금', value:'₩5,000', sub:'납부 대기 중', bg:'#ffe4e6', color:'#e11d48', subCls:'text-rose-400' },
     { label:'이번달 세션 수', value:'12회', sub:'출석 세션 진행', bg:'#fef3c7', color:'#d97706', subCls:'text-slate-400' },
@@ -579,7 +550,7 @@ async function loadGroups() {
         <div class="text-center py-8">
           <p class="text-slate-400 text-sm mb-3">참여 중인 그룹이 없습니다.</p>
           <button onclick="openCreateGroupModal()" class="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-colors"
-            style="background:#1055e8;" onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1055e8'">
+            style="background:#1258fc;" onmouseover="this.style.background='#0d44c4'" onmouseout="this.style.background='#1258fc'">
             첫 그룹 만들기
           </button>
         </div>`;
@@ -592,7 +563,7 @@ async function loadGroups() {
       return `
         <a href="/groups/${g.id}/" class="group-card flex items-center gap-4 p-4 rounded-xl border border-slate-100 cursor-pointer block hover:no-underline">
           <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow"
-            style="background:${g.color || 'linear-gradient(135deg,#3a74ef,#1055e8)'};">
+            style="background:${g.color || 'linear-gradient(135deg,#3a74ef,#1258fc)'};">
             ${g.name.charAt(0)}
           </div>
           <div class="flex-1 min-w-0">
@@ -602,9 +573,9 @@ async function loadGroups() {
             </div>
             <div class="flex items-center gap-2">
               <div class="flex-1 bg-slate-100 rounded-full h-1.5">
-                <div class="progress-fill h-1.5 rounded-full" style="background:#1055e8; width:${pct}%;"></div>
+                <div class="progress-fill h-1.5 rounded-full" style="background:#1258fc; width:${pct}%;"></div>
               </div>
-              <span class="text-xs font-semibold flex-shrink-0" style="color:#1055e8;">${pct}%</span>
+              <span class="text-xs font-semibold flex-shrink-0" style="color:#1258fc;">${pct}%</span>
             </div>
             <div class="flex items-center gap-3 mt-1">
               <span class="text-xs text-slate-400">멤버 ${g.member_count}/${g.max_members}명</span>
@@ -623,7 +594,7 @@ async function loadGroups() {
 
 function renderGroupFallback() {
   const groups = [
-    { name:'Web Developer from Zero', role:'리더', pct:72, members:'6/8', unpaid:0, color:'linear-gradient(135deg,#3a74ef,#1055e8)' },
+    { name:'Web Developer from Zero', role:'리더', pct:72, members:'6/8', unpaid:0, color:'linear-gradient(135deg,#3a74ef,#1258fc)' },
     { name:'Python 알고리즘 스터디', role:'멤버', pct:55, members:'5/6', unpaid:2000, color:'linear-gradient(135deg,#a78bfa,#7c3aed)' },
     { name:'AI 월간 리포트 그룹', role:'멤버', pct:90, members:'8/8', unpaid:0, color:'linear-gradient(135deg,#34d399,#059669)' },
   ];
@@ -637,9 +608,9 @@ function renderGroupFallback() {
         </div>
         <div class="flex items-center gap-2">
           <div class="flex-1 bg-slate-100 rounded-full h-1.5">
-            <div class="progress-fill h-1.5 rounded-full" style="background:#1055e8; width:${g.pct}%;"></div>
+            <div class="progress-fill h-1.5 rounded-full" style="background:#1258fc; width:${g.pct}%;"></div>
           </div>
-          <span class="text-xs font-semibold" style="color:#1055e8;">${g.pct}%</span>
+          <span class="text-xs font-semibold" style="color:#1258fc;">${g.pct}%</span>
         </div>
         <div class="flex items-center gap-3 mt-1">
           <span class="text-xs text-slate-400">멤버 ${g.members}명</span>
@@ -672,7 +643,7 @@ function renderTimeline(sessions) {
     present: { cls: 'badge-present', label: '출석', bg: '#dcfce7', dot: '#16a34a' },
     late:    { cls: 'badge-late',    label: '지각', bg: '#fef3c7', dot: '#d97706' },
     absent:  { cls: 'badge-absent',  label: '결석', bg: '#ffe4e6', dot: '#e11d48' },
-    upload:  { cls: 'badge-role-leader', label: '업로드', bg: '#dce6fd', dot: '#1055e8' },
+    upload:  { cls: 'badge-role-leader', label: '업로드', bg: '#dce6fd', dot: '#1258fc' },
     notice:  { cls: '', label: '공지', bg: '#f0fdf4', dot: '#22c55e' },
   };
   document.getElementById('timelineList').innerHTML = `
@@ -699,7 +670,7 @@ function renderTimeline(sessions) {
 
 function renderTimelineFallback() {
   const items = [
-    { type:'upload', group:'Python 스터디', desc:'정렬 알고리즘 정리.pdf', date:'오후 3:24', bg:'#dce6fd', dot:'#1055e8' },
+    { type:'upload', group:'Python 스터디', desc:'정렬 알고리즘 정리.pdf', date:'오후 3:24', bg:'#dce6fd', dot:'#1258fc' },
     { type:'absent', group:'Web Developer', desc:'결석 — 벌금 ₩5,000 발생', date:'오전 11:10', bg:'#ffe4e6', dot:'#e11d48' },
     { type:'notice', group:'전체 공지', desc:'이번 주 세션 장소 변경', date:'오전 9:00', bg:'#f0fdf4', dot:'#22c55e' },
     { type:'present', group:'AI 리포트 그룹', desc:'5월 월간 세션 출석', date:'어제', bg:'#dcfce7', dot:'#16a34a' },
@@ -736,7 +707,7 @@ function initCharts() {
       datasets: [{
         label: '출석',
         data: [3, 4, 2, 5, 3, 4, 2],
-        backgroundColor: ctx => ctx.dataIndex === 3 ? '#1055e8' : '#c7d7fb',
+        backgroundColor: ctx => ctx.dataIndex === 3 ? '#1258fc' : '#c7d7fb',
         borderRadius: 6,
         borderSkipped: false,
       }]
@@ -755,7 +726,7 @@ function initCharts() {
   window.donutChart = new Chart(donutCtx, {
     type: 'doughnut',
     data: {
-      datasets: [{ data: [40, 60], backgroundColor: ['#1055e8', '#dce6fd'], borderWidth: 0, borderRadius: 4 }]
+      datasets: [{ data: [40, 60], backgroundColor: ['#1258fc', '#dce6fd'], borderWidth: 0, borderRadius: 4 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '75%',
@@ -772,7 +743,7 @@ async function loadAttendanceChart(groupId) {
     window.barChart.data.labels = data.labels;
     window.barChart.data.datasets[0].data = data.values;
     window.barChart.data.datasets[0].backgroundColor = data.values.map(
-      (_, i) => i === data.values.indexOf(Math.max(...data.values)) ? '#1055e8' : '#c7d7fb'
+      (_, i) => i === data.values.indexOf(Math.max(...data.values)) ? '#1258fc' : '#c7d7fb'
     );
     window.barChart.update();
     const pct = data.completion_rate || 0;
@@ -791,10 +762,10 @@ function setChartPeriod(period) {
     ? 'px-3 py-1.5 rounded-md font-medium text-white transition-all'
     : 'px-3 py-1.5 rounded-md font-medium text-slate-500 transition-all';
   if (period === 'week') {
-    document.getElementById('btnWeek').style.background = '#1055e8';
+    document.getElementById('btnWeek').style.background = '#1258fc';
     document.getElementById('btnMonth').style.background = '';
   } else {
-    document.getElementById('btnMonth').style.background = '#1055e8';
+    document.getElementById('btnMonth').style.background = '#1258fc';
     document.getElementById('btnWeek').style.background = '';
   }
   const sel = document.getElementById('chartGroupSelect');
@@ -857,7 +828,7 @@ async function loadUpcoming() {
     }
     document.getElementById('upcomingList').innerHTML = data.upcoming.map(s => `
       <div class="flex items-center gap-2">
-        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#1055e8;"></div>
+        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#1258fc;"></div>
         <p class="text-xs text-slate-600 truncate">${s.group_name} · ${s.topic}</p>
         <span class="text-xs text-slate-400 flex-shrink-0 ml-auto">${s.date_display}</span>
       </div>`).join('');
@@ -866,7 +837,7 @@ async function loadUpcoming() {
     renderCalendar();
     document.getElementById('upcomingList').innerHTML = `
       <div class="flex items-center gap-2">
-        <div class="w-1.5 h-1.5 rounded-full" style="background:#1055e8;"></div>
+        <div class="w-1.5 h-1.5 rounded-full" style="background:#1258fc;"></div>
         <span class="text-xs text-slate-600">토익 스터디 세션</span>
         <span class="text-xs text-slate-400 ml-auto">16일</span>
       </div>`;
@@ -907,10 +878,10 @@ function nextMonth() { if (calMonth === 11) { calMonth = 0; calYear++; } else ca
 function setCalView(v) {
   const w = document.getElementById('calWeekBtn'), m = document.getElementById('calMonthBtn');
   if (v === 'week') {
-    w.style.background = '#1055e8'; w.className = w.className.replace('text-slate-500','text-white');
+    w.style.background = '#1258fc'; w.className = w.className.replace('text-slate-500','text-white');
     m.style.background = ''; m.className = m.className.replace('text-white','text-slate-500');
   } else {
-    m.style.background = '#1055e8'; m.className = m.className.replace('text-slate-500','text-white');
+    m.style.background = '#1258fc'; m.className = m.className.replace('text-slate-500','text-white');
     w.style.background = ''; w.className = w.className.replace('text-white','text-slate-500');
   }
 }
@@ -1079,7 +1050,7 @@ function openNotifications() {
       <div class="space-y-3 text-left">
         <div class="p-3 rounded-xl border border-slate-100 flex gap-3">
           <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:#dce6fd;">
-            <div class="w-2 h-2 rounded-full" style="background:#1055e8;"></div>
+            <div class="w-2 h-2 rounded-full" style="background:#1258fc;"></div>
           </div>
           <div>
             <p class="text-sm font-semibold text-slate-800">출석 세션 생성됨</p>

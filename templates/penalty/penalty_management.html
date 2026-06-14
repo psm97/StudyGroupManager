@@ -33,7 +33,7 @@
       --text-muted:     #94a3b8;
       --text-heading:   #0f172a;
       --text-nav:       #475569;
-      --text-nav-hover: #1055e8;
+      --text-nav-hover: #1258fc;
       --border-default: #f1f5f9;
       --border-card:    #f1f5f9;
       --border-input:   #e2e8f0;
@@ -74,16 +74,9 @@
 
     body                    { background: var(--bg-body) !important; }
     #mainContainer          { background: var(--bg-container) !important; }
-    #sidebar                { background: var(--bg-sidebar) !important; border-color: var(--border-sidebar) !important; }
     header                  { background: var(--bg-header) !important; border-color: var(--border-default) !important; }
     .flex-1.overflow-y-auto { background: var(--bg-content) !important; }
 
-    #sidebar p.font-bold,
-    #sidebar p.text-sm.leading-tight { color: var(--text-heading) !important; }
-    #sidebar p.text-xs.text-slate-400 { color: var(--text-muted) !important; }
-
-    .nav-link:not(.active)       { color: var(--text-nav) !important; }
-    .nav-link:not(.active):hover { background: var(--bg-nav-hover) !important; color: var(--text-nav-hover) !important; }
 
     .bg-white, .bg-card,
     [class*="bg-white"]          { background: var(--bg-card) !important; }
@@ -110,27 +103,11 @@
     ::-webkit-scrollbar-track { background: var(--scrollbar-track, #f1f5f9); }
     ::-webkit-scrollbar-thumb { background: #c7d7fb; border-radius: 4px; }
 
-    #sidebar { transition: transform 0.3s ease; }
-    #sidebarOverlay { transition: opacity 0.3s ease; }
 
-    .nav-link { transition: all 0.2s ease; }
-    .nav-link.active { background: #1055e8; color: white; }
-
-    .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
-    .toggle-wrap input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
-    .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-    input:checked + .toggle-slider { background: #1055e8; }
-    input:checked + .toggle-slider::before { transform: translateX(18px); }
-
-    .swal2-confirm { background:#1055e8 !important; border-radius:10px !important; }
+    .swal2-confirm { background:#1258fc !important; border-radius:10px !important; }
     .swal2-cancel  { background:#f1f5f9 !important; color:#64748b !important; border-radius:10px !important; }
 
     @media (max-width: 1024px) {
-      #sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 50; transform: translateX(-100%); }
-      #sidebar.open { transform: translateX(0); }
-      #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; }
-      #sidebarOverlay.open { display: block; }
       #mainContainer { flex-direction: column; }
     }
 
@@ -143,7 +120,7 @@
       box-shadow: 0 10px 28px rgba(16,85,232,0.1);
     }
     .member-penalty-card.active-card {
-      box-shadow: 0 0 0 2px #1055e8, 0 6px 20px rgba(16,85,232,0.15);
+      box-shadow: 0 0 0 2px #1258fc, 0 6px 20px rgba(16,85,232,0.15);
     }
 
     .badge-paid   { background: #dcfce7; color: #15803d; }
@@ -218,7 +195,7 @@
     <div class="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
       <!-- ── 페이지 헤더 배너 ── -->
-      <div class="rounded-2xl p-5 sm:p-6 text-white" style="background: linear-gradient(135deg,#0d44c4 0%,#1055e8 50%,#3a74ef 100%);">
+      <div class="rounded-2xl p-5 sm:p-6 text-white" style="background: linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%);">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <h1 class="text-2xl sm:text-3xl font-bold">벌금 관리</h1>
@@ -315,7 +292,7 @@
       <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:80ms">
         <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 class="font-bold text-slate-800 flex items-center gap-2">
-            <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-[#1258fc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/>
             </svg>
             멤버별 벌금 현황
@@ -369,7 +346,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <div>
             <h2 class="font-bold text-slate-800 flex items-center gap-2">
-              <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-[#1258fc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
               </svg>
               월별 벌금 추이
@@ -391,7 +368,7 @@
       <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style="animation-delay:240ms">
         <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 class="font-bold text-slate-800 flex items-center gap-2">
-            <svg class="w-4 h-4 text-[#1055e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-[#1258fc]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
             벌금 내역
@@ -399,9 +376,9 @@
           </h2>
 
           <div class="flex items-center gap-3 flex-wrap">
-            <div id="filter-indicator" class="hidden items-center gap-1.5 text-xs bg-blue-50 text-[#1055e8] border border-blue-200 px-2.5 py-1 rounded-full font-medium">
+            <div id="filter-indicator" class="hidden items-center gap-1.5 text-xs bg-blue-50 text-[#1258fc] border border-blue-200 px-2.5 py-1 rounded-full font-medium">
               <span id="filter-name"></span>
-              <button onclick="clearMemberFilter()" class="text-blue-400 hover:text-[#1055e8] ml-0.5">✕</button>
+              <button onclick="clearMemberFilter()" class="text-blue-400 hover:text-[#1258fc] ml-0.5">✕</button>
             </div>
 
             <input type="checkbox" id="unpaid-toggle" class="toggle-input" onchange="toggleUnpaid(this)">
@@ -598,13 +575,13 @@ async function markPaid(id, nickname, amount) {
     updateCountLabel(); refreshSummaryCards();
     Swal.fire({ icon:'success', title:'납부 처리 완료', timer:1400, showConfirmButton:false, toast:true, position:'top-end' });
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'처리 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
 async function markAllPaid() {
   const rows = [...document.querySelectorAll('.penalty-row')].filter(r => r.dataset.paid==='false' && !r.classList.contains('row-hidden'));
-  if (!rows.length) { Swal.fire({ icon:'info', title:'미납 내역 없음', confirmButtonColor:'#1055e8' }); return; }
+  if (!rows.length) { Swal.fire({ icon:'info', title:'미납 내역 없음', confirmButtonColor:'#1258fc' }); return; }
   const r = await Swal.fire({
     icon:'warning', title:'미납 전체 납부 처리',
     html:`현재 표시된 미납 건수 <strong>${rows.length}건</strong>을 모두 납부 처리하시겠습니까?`,
@@ -617,7 +594,7 @@ async function markAllPaid() {
     Swal.fire({ icon:'success', title:'완료', timer:1400, showConfirmButton:false });
     setTimeout(() => location.reload(), 1400);
   } catch(e) {
-    Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+    Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
   }
 }
 
@@ -636,7 +613,7 @@ function openRuleEdit() {
             <p class="text-xs text-slate-400">변경 이후 생성되는 출석 기록부터 적용됩니다.</p>
           </div>`,
     showCancelButton:true, confirmButtonText:'저장', cancelButtonText:'취소',
-    confirmButtonColor:'#1055e8', width:'420px',
+    confirmButtonColor:'#1258fc', width:'420px',
     preConfirm: () => {
       const a = parseInt(document.getElementById('swal-absent-fee').value)||0;
       const l = parseInt(document.getElementById('swal-late-fee').value)||0;
@@ -650,7 +627,7 @@ function openRuleEdit() {
       Swal.fire({ icon:'success', title:'규칙 저장 완료', timer:2000, showConfirmButton:false });
       setTimeout(() => location.reload(), 2000);
     } catch(e) {
-      Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'저장 중 오류가 발생했습니다.', confirmButtonColor:'#1055e8' });
+      Swal.fire({ icon:'error', title:'오류', text: e.response?.data?.message||'저장 중 오류가 발생했습니다.', confirmButtonColor:'#1258fc' });
     }
   });
 }
