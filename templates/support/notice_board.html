@@ -596,9 +596,17 @@ function setFilter(filter, btn) {
 }
 
 function applyFilter() {
+  const allCards = document.querySelectorAll('.notice-card');
+
+  // 공지가 아예 없는 빈 상태 — 빈 상태 메시지가 이미 표시되므로 no-result는 숨김
+  if (allCards.length === 0) {
+    document.getElementById('no-result').classList.add('hidden');
+    return;
+  }
+
   const query = document.getElementById('search-input').value.toLowerCase().trim();
   let visible = 0;
-  document.querySelectorAll('.notice-card').forEach(card => {
+  allCards.forEach(card => {
     const mFilter =
       currentFilter === 'all'    ? true :
       currentFilter === 'pinned' ? card.dataset.pinned === 'true' :

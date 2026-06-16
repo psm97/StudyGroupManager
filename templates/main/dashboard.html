@@ -199,6 +199,26 @@
                                  width: 4px; height: 4px; background: #1258fc; border-radius: 50%; }
   .cal-day.has-session { position: relative; }
 
+  /* 주간 뷰 셀 */
+  .cal-week-cell { display: flex; flex-direction: column; align-items: center; padding: 6px 2px;
+                   border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+  .cal-week-cell:hover:not(.today-week) { background: #dce6fd; }
+  .cal-week-cell.today-week { background: #1258fc; }
+  .cal-week-label { font-size: 10px; font-weight: 600; color: #94a3b8; margin-bottom: 2px; }
+  .cal-week-cell.today-week .cal-week-label { color: rgba(255,255,255,0.8); }
+  .cal-week-num { font-size: 13px; font-weight: 700; color: #1e293b; }
+  .cal-week-cell.today-week .cal-week-num { color: white; }
+  .cal-week-dot { width: 4px; height: 4px; border-radius: 50%; background: #1258fc; margin-top: 3px; }
+  .cal-week-cell.today-week .cal-week-dot { background: rgba(255,255,255,0.8); }
+  .cal-week-spacer { width: 4px; height: 4px; margin-top: 3px; }
+  html[data-theme="dark"] .cal-week-cell:hover:not(.today-week) { background: #1a2d52 !important; }
+  html[data-theme="dark"] .cal-week-label { color: #64748b !important; }
+  html[data-theme="dark"] .cal-week-num { color: #e2e8f0 !important; }
+  html[data-theme="dark"] .cal-week-dot { background: #93c5fd !important; }
+  html[data-theme="dark"] .cal-week-cell.today-week .cal-week-num { color: white !important; }
+  html[data-theme="dark"] .cal-week-cell.today-week .cal-week-label { color: rgba(255,255,255,0.8) !important; }
+  html[data-theme="dark"] .cal-week-cell.today-week .cal-week-dot { background: rgba(255,255,255,0.8) !important; }
+
   /* ── 타임라인 ── */
   .timeline-line { position: absolute; left: 15px; top: 32px; bottom: 0; width: 2px; background: #f1f5f9; }
 
@@ -363,8 +383,8 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
-          <!-- 요일 헤더 -->
-          <div class="grid grid-cols-7 mb-1">
+          <!-- 요일 헤더 (월간 전용, 주간 뷰에서는 숨김) -->
+          <div class="grid grid-cols-7 mb-1" id="calDayHeader">
             <span class="cal-day text-xs text-slate-400 font-semibold">일</span>
             <span class="cal-day text-xs text-slate-400 font-semibold">월</span>
             <span class="cal-day text-xs text-slate-400 font-semibold">화</span>
@@ -454,6 +474,8 @@ let barChart = null, donutChart = null;
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
 let chartPeriod = 'week';
 let sessionDates = [];   // 세션 있는 날짜 (YYYY-MM-DD[])
+let calView = 'month';
+let calWeekStart = (() => { const d = new Date(); d.setDate(d.getDate() - d.getDay()); d.setHours(0,0,0,0); return d; })();
 
 // ════════════════════════════════════════════════════════════
 // 1. 요약 통계 카드
@@ -848,8 +870,16 @@ async function loadUpcoming() {
 // 캘린더 렌더링
 // ════════════════════════════════════════════════════════════
 const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const DAY_LABELS = ['일','월','화','수','목','금','토'];
 
 function renderCalendar() {
+  if (calView === 'week') renderWeekView();
+  else renderMonthView();
+}
+
+function renderMonthView() {
+  document.getElementById('calDayHeader').style.display = '';
+  document.getElementById('calGrid').className = 'grid grid-cols-7 gap-y-0.5 flex-1';
   const today = new Date();
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
@@ -873,17 +903,74 @@ function renderCalendar() {
   document.getElementById('calGrid').innerHTML = html;
 }
 
-function prevMonth() { if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--; renderCalendar(); }
-function nextMonth() { if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++; renderCalendar(); }
+function renderWeekView() {
+  document.getElementById('calDayHeader').style.display = 'none';
+  document.getElementById('calGrid').className = 'grid grid-cols-7 flex-1';
+  const today = new Date();
+  const ws = new Date(calWeekStart);
+  const we = new Date(ws); we.setDate(we.getDate() + 6);
+  if (ws.getMonth() === we.getMonth()) {
+    document.getElementById('calTitle').textContent =
+      `${ws.getFullYear()}년 ${MONTHS[ws.getMonth()]} ${getWeekOfMonth(ws)}주`;
+  } else {
+    document.getElementById('calTitle').textContent =
+      `${MONTHS[ws.getMonth()]} ~ ${MONTHS[we.getMonth()]}`;
+  }
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(d.getDate() + i);
+    const isToday = d.toDateString() === today.toDateString();
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const hasSession = sessionDates.includes(dateStr);
+    html += `
+      <div class="cal-week-cell${isToday ? ' today-week' : ''}">
+        <span class="cal-week-label">${DAY_LABELS[i]}</span>
+        <span class="cal-week-num">${d.getDate()}</span>
+        ${hasSession ? '<span class="cal-week-dot"></span>' : '<span class="cal-week-spacer"></span>'}
+      </div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function getWeekOfMonth(date) {
+  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  return Math.ceil((date.getDate() + firstDay) / 7);
+}
+
+function prevMonth() {
+  if (calView === 'week') {
+    calWeekStart = new Date(calWeekStart);
+    calWeekStart.setDate(calWeekStart.getDate() - 7);
+  } else {
+    if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
+  }
+  renderCalendar();
+}
+function nextMonth() {
+  if (calView === 'week') {
+    calWeekStart = new Date(calWeekStart);
+    calWeekStart.setDate(calWeekStart.getDate() + 7);
+  } else {
+    if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
+  }
+  renderCalendar();
+}
+
 function setCalView(v) {
+  calView = v;
   const w = document.getElementById('calWeekBtn'), m = document.getElementById('calMonthBtn');
   if (v === 'week') {
     w.style.background = '#1258fc'; w.className = w.className.replace('text-slate-500','text-white');
     m.style.background = ''; m.className = m.className.replace('text-white','text-slate-500');
+    // 주간 시작일을 현재 달력 기준으로 동기화
+    const ref = new Date(calYear, calMonth, 1);
+    calWeekStart = new Date(ref); calWeekStart.setDate(ref.getDate() - ref.getDay());
   } else {
     m.style.background = '#1258fc'; m.className = m.className.replace('text-slate-500','text-white');
     w.style.background = ''; w.className = w.className.replace('text-white','text-slate-500');
+    calYear = calWeekStart.getFullYear(); calMonth = calWeekStart.getMonth();
   }
+  renderCalendar();
 }
 
 // ════════════════════════════════════════════════════════════

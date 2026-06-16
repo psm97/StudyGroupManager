@@ -2,21 +2,25 @@ import json
 from functools import wraps
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
 
 User = get_user_model()
+
+_ADMIN_ID   = 'admin'
+_ADMIN_PW   = '1234'
+_COOKIE_KEY = 'admin_auth'
+_COOKIE_SALT = 'sgm-admin'
 
 
 # ── 관리자 접근 데코레이터 ──────────────────────────────────
 def admin_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if not request.user.is_authenticated:
+        try:
+            request.get_signed_cookie(_COOKIE_KEY, salt=_COOKIE_SALT)
+        except Exception:
             return redirect('login')
-        if not (request.user.is_staff or request.user.is_superuser):
-            return redirect('dashboard')
         return view_func(request, *args, **kwargs)
     return wrapper
 
@@ -26,36 +30,28 @@ def admin_required(view_func):
 def admin_login_view(request):
     try:
         data = json.loads(request.body)
-        # username 또는 email 필드 모두 수용
-        credential = (data.get('username') or data.get('email') or '').strip()
+        credential = (data.get('username') or '').strip()
         password   = data.get('password', '')
     except (json.JSONDecodeError, AttributeError):
-        credential = (request.POST.get('username') or request.POST.get('email') or '').strip()
+        credential = (request.POST.get('username') or '').strip()
         password   = request.POST.get('password', '')
 
     if not credential or not password:
         return JsonResponse({'success': False, 'message': '아이디와 비밀번호를 입력해주세요.'}, status=400)
 
-    # username 직접 시도 → 실패 시 email 로 username 조회 후 재시도
-    user = authenticate(request, username=credential, password=password)
-    if user is None:
-        try:
-            user_obj = User.objects.get(email=credential)
-            user = authenticate(request, username=user_obj.username, password=password)
-        except (User.DoesNotExist, AttributeError):
-            pass
+    if credential == _ADMIN_ID and password == _ADMIN_PW:
+        res = JsonResponse({'success': True, 'redirect_url': '/admin/'})
+        res.set_signed_cookie(_COOKIE_KEY, '1', salt=_COOKIE_SALT, max_age=28800, httponly=True)
+        return res
 
-    if user is not None and (user.is_staff or user.is_superuser):
-        login(request, user)
-        return JsonResponse({'success': True, 'redirect_url': '/admin/'})
-
-    return JsonResponse({'success': False, 'message': '이메일 또는 비밀번호를 확인하거나 관리자 권한이 없습니다.'}, status=401)
+    return JsonResponse({'success': False, 'message': '아이디 또는 비밀번호를 확인해주세요.'}, status=401)
 
 
 # ── 관리자 로그아웃 ───────────────────────────────────────
 def admin_logout_view(request):
-    logout(request)
-    return redirect('login')
+    res = redirect('login')
+    res.delete_cookie(_COOKIE_KEY)
+    return res
 
 
 # ── 대시보드 ─────────────────────────────────────────────

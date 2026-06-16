@@ -3,12 +3,12 @@
 
 <aside id="adminSidebar"
   class="fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300"
-  style="width:256px; background:#0f2133;">
+  style="width:256px; background:#111111;">
 
   <!-- ── 로고 영역 ── -->
   <div class="flex items-center gap-3 px-5 py-5 border-b" style="border-color:rgba(255,255,255,.08);">
     <div class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
-         style="background:linear-gradient(135deg,#2E86AB,#1A6D8E);">
+         style="background:linear-gradient(135deg,#333333,#555555);">
       <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
         <path stroke-linecap="round" stroke-linejoin="round"
               d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.966 8.966 0 0 0-6 2.292m0-14.25v14.25"/>
@@ -16,16 +16,16 @@
     </div>
     <div class="overflow-hidden">
       <p class="text-white font-bold text-sm leading-tight truncate">StudyGroup</p>
-      <p class="text-xs font-semibold leading-tight" style="color:#2E86AB;">Manager</p>
+      <p class="text-xs font-semibold leading-tight" style="color:#aaaaaa;">Manager</p>
     </div>
     <span class="ml-auto flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded-full"
-          style="background:rgba(46,134,171,.25); color:#7ecfe8;">Admin</span>
+          style="background:rgba(255,255,255,.12); color:#bbbbbb;">Admin</span>
   </div>
 
   <!-- ── 관리자 프로필 미니 ── -->
   <div class="px-5 py-3 flex items-center gap-3" style="background:rgba(0,0,0,.15);">
     <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-         style="background:linear-gradient(135deg,#1A3C5E,#2E86AB);">
+         style="background:linear-gradient(135deg,#2a2a2a,#555555);">
       {{ request.user.username|first|upper }}
     </div>
     <div class="overflow-hidden">
@@ -185,10 +185,10 @@
     color: rgba(255,255,255,.9);
   }
   .admin-nav-link.active {
-    background: linear-gradient(135deg,#1A6D8E,#2E86AB);
+    background: linear-gradient(135deg,#2a2a2a,#4a4a4a);
     color: #ffffff;
     font-weight: 600;
-    box-shadow: 0 4px 14px rgba(46,134,171,.3);
+    box-shadow: 0 4px 14px rgba(0,0,0,.35);
   }
   .admin-scrollbar::-webkit-scrollbar { width: 4px; }
   .admin-scrollbar::-webkit-scrollbar-track { background: transparent; }

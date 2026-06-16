@@ -712,29 +712,41 @@ function clearSearch() {
 }
 
 function applyFilters() {
-  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  const query    = document.getElementById('search-input').value.toLowerCase().trim();
+  const allRows  = document.querySelectorAll('.res-row');
+  const allCards = document.querySelectorAll('.grid-card');
 
   // 목록 뷰 필터
   let listVisible = 0;
-  document.querySelectorAll('.res-row').forEach(row => {
-    const mCat  = currentCategory === 'all' || row.dataset.category === currentCategory;
-    const mName = !query || row.dataset.name?.includes(query);
-    const show  = mCat && mName;
-    row.classList.toggle('row-hidden', !show);
-    if (show) listVisible++;
-  });
-  document.getElementById('no-result').classList.toggle('hidden', listVisible > 0);
+  if (allRows.length === 0) {
+    // 파일이 아예 없는 빈 상태 — 빈 상태 메시지가 이미 표시되므로 no-result는 숨김
+    document.getElementById('no-result').classList.add('hidden');
+  } else {
+    allRows.forEach(row => {
+      const mCat  = currentCategory === 'all' || row.dataset.category === currentCategory;
+      const mName = !query || row.dataset.name?.includes(query);
+      const show  = mCat && mName;
+      row.classList.toggle('row-hidden', !show);
+      if (show) listVisible++;
+    });
+    document.getElementById('no-result').classList.toggle('hidden', listVisible > 0);
+  }
 
   // 그리드 뷰 필터
   let gridVisible = 0;
-  document.querySelectorAll('.grid-card').forEach(card => {
-    const mCat  = currentCategory === 'all' || card.dataset.category === currentCategory;
-    const mName = !query || card.dataset.name?.includes(query);
-    const show  = mCat && mName;
-    card.style.display = show ? '' : 'none';
-    if (show) gridVisible++;
-  });
-  document.getElementById('grid-no-result').classList.toggle('hidden', gridVisible > 0);
+  if (allCards.length === 0) {
+    document.getElementById('grid-no-result').classList.add('hidden');
+  } else {
+    allCards.forEach(card => {
+      const mCat  = currentCategory === 'all' || card.dataset.category === currentCategory;
+      const mName = !query || card.dataset.name?.includes(query);
+      const show  = mCat && mName;
+      card.style.display = show ? '' : 'none';
+      if (show) gridVisible++;
+    });
+    document.getElementById('grid-no-result').classList.toggle('hidden', gridVisible > 0);
+  }
+
   updateVisibleCount(listVisible);
 }
 

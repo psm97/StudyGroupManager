@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>닉네임 설정 — StudyGroupManager</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:   '#2563EB',
+            primaryDk: '#1E40AF',
+            primaryLt: '#DBEAFE',
+            surface:   '#F8FAFC',
+            muted:     '#94A3B8',
+            border:    '#E2E8F0',
+            dark:      '#0F172A',
+            mid:       '#334155',
+          },
+          fontFamily: {
+            sans:    ['Pretendard', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          boxShadow: {
+            card: '0 4px 24px rgba(37,99,235,.10), 0 1px 4px rgba(15,23,42,.06)',
+            btn:  '0 2px 12px rgba(37,99,235,.30)',
+          },
+          animation: {
+            'fade-up':    'fadeUp .55s cubic-bezier(.22,1,.36,1) both',
+            'fade-in':    'fadeIn .4s ease both',
+            'pulse-slow': 'pulse 3s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeUp: { from:{opacity:0,transform:'translateY(20px)'}, to:{opacity:1,transform:'translateY(0)'} },
+            fadeIn: { from:{opacity:0}, to:{opacity:1} },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: 'Pretendard', sans-serif; }
+
+    .bg-mesh {
+      background-color: #EFF6FF;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 15% 10%,  rgba(37,99,235,.13) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 85%,  rgba(30,64,175,.10) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 50% 50%,  rgba(96,165,250,.07) 0%, transparent 70%);
+    }
+
+    .deco-circle {
+      position: absolute; border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    .glass-card {
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* ── 진행 단계 연결선 ── */
+    .step-line      { flex:1; height:2px; background:#E2E8F0; margin-top:18px; }
+    .step-line.done { background: linear-gradient(to right, #2563EB, #93C5FD); }
+
+    /* ── 닉네임 입력창 ── */
+    .nickname-input {
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .nickname-input:focus {
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+      background: #fff;
+      outline: none;
+    }
+    .nickname-input[data-state="error"] {
+      border-color: #EF4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+    }
+    .nickname-input[data-state="success"] {
+      border-color: #22C55E;
+      box-shadow: 0 0 0 3px rgba(34,197,94,.12);
+    }
+
+    /* ── 유효성 메시지 ── */
+    .val-msg                     { color: #94A3B8; }
+    .val-msg[data-type="error"]  { color: #EF4444; }
+    .val-msg[data-type="success"]{ color: #16A34A; }
+
+    /* ── 규칙 아이템 ── */
+    .rule-item { display:flex; align-items:center; gap:6px; font-size:12px; color:#64748B; transition:color .2s; }
+    .rule-item[data-state="valid"]   { color:#16A34A; }
+    .rule-item[data-state="invalid"] { color:#DC2626; }
+
+    /* ── 미리보기 카드 ── */
+    .preview-card {
+      background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+      border: 1.5px solid rgba(37,99,235,.18);
+    }
+
+    /* ── 제출 버튼 ── */
+    .submit-btn {
+      background: linear-gradient(135deg, #2563EB, #1E40AF);
+      transition: box-shadow .2s, transform .15s, filter .2s;
+    }
+    .submit-btn:hover:not(:disabled) {
+      box-shadow: 0 6px 22px rgba(37,99,235,.45);
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+    .submit-btn:active:not(:disabled) { transform: translateY(0); }
+    .submit-btn:disabled { opacity:.6; cursor:not-allowed; }
+
+    /* ── 스피너 ── */
+    .spinner {
+      width:18px; height:18px;
+      border:2.5px solid rgba(255,255,255,.4);
+      border-top-color:#fff; border-radius:50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .delay-100 { animation-delay:.10s; }
+    .delay-200 { animation-delay:.20s; }
+    .delay-300 { animation-delay:.30s; }
+    .delay-400 { animation-delay:.40s; }
+    .delay-500 { animation-delay:.50s; }
+
+    .swal2-popup          { font-family:'Pretendard',sans-serif !important; border-radius:16px !important; }
+    .swal2-title          { font-size:18px !important; color:#0F172A !important; }
+    .swal2-html-container { font-size:14px !important; color:#475569 !important; }
+    .swal2-confirm        { background:linear-gradient(135deg,#2563EB,#1E40AF) !important; border-radius:8px !important; font-weight:600 !important; }
+  </style>
+</head>
+
+<body class="bg-mesh min-h-screen flex items-center justify-center px-4 py-10 antialiased">
+
+  <!-- 장식 배경 원 -->
+  <div class="deco-circle w-96 h-96 -top-20 -left-24 animate-pulse-slow" style="position:fixed;"></div>
+  <div class="deco-circle w-72 h-72 bottom-0 right-0 animate-pulse-slow" style="position:fixed; animation-delay:.8s;"></div>
+  <div class="deco-circle w-52 h-52 top-1/2 left-1/4 animate-pulse-slow" style="position:fixed; animation-delay:1.4s; opacity:.4;"></div>
+
+  <!-- ── 닉네임 설정 카드 ── -->
+  <div class="glass-card shadow-card rounded-2xl w-full max-w-md p-8 sm:p-10 relative z-10 animate-fade-up">
+
+    <!-- ── 로고 ── -->
+    <div class="text-center mb-7 animate-fade-up">
+      <a href="{% url 'login' %}"
+         class="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4
+                bg-gradient-to-br from-primary to-primaryDk shadow-btn">
+        <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0118 18a8.966 8.966 0 00-6 2.292m0-14.25v14.25"/>
+        </svg>
+      </a>
+      <h1 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-dark leading-none">
+        StudyGroup<span class="text-primary">Manager</span>
+      </h1>
+      <p class="mt-2 text-sm text-muted">거의 다 왔어요! 닉네임만 설정하면 시작됩니다</p>
+    </div>
+
+    <!-- ── 진행 단계 ── -->
+    <div class="flex items-start mb-8 animate-fade-up delay-100">
+
+      <!-- Step 1 완료 -->
+      <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
+        <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-btn">
+          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+          </svg>
+        </div>
+        <span class="text-xs font-semibold text-primary whitespace-nowrap">계정 선택</span>
+      </div>
+
+      <div class="step-line done mx-2"></div>
+
+      <!-- Step 2 현재 -->
+      <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
+        <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center
+                    ring-4 ring-primaryLt shadow-btn">
+          <span class="text-white text-xs font-bold">2</span>
+        </div>
+        <span class="text-xs font-bold text-primary whitespace-nowrap">닉네임 설정</span>
+      </div>
+
+      <div class="step-line mx-2"></div>
+
+      <!-- Step 3 예정 -->
+      <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
+        <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center">
+          <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+          </svg>
+        </div>
+        <span class="text-xs font-medium text-muted whitespace-nowrap">시작!</span>
+      </div>
+
+    </div>
+
+    <!-- ── 닉네임 입력 ── -->
+    <div class="animate-fade-up delay-200">
+
+      <label for="nicknameInput" class="block text-sm font-bold text-dark mb-2">
+        닉네임 <span class="text-red-400 ml-0.5">*</span>
+      </label>
+
+      <div class="relative">
+        <input
+          id="nicknameInput"
+          type="text"
+          maxlength="20"
+          placeholder="스터디에서 사용할 닉네임을 입력하세요"
+          autocomplete="off"
+          spellcheck="false"
+          class="nickname-input w-full rounded-2xl border border-border bg-white
+                 text-dark text-sm font-medium py-4 px-5 pr-16 shadow-sm
+                 placeholder:text-muted/60"
+        />
+        <span id="charCount"
+              class="absolute right-4 top-1/2 -translate-y-1/2
+                     text-xs font-semibold text-muted tabular-nums pointer-events-none select-none">
+          0/20
+        </span>
+      </div>
+
+      <!-- 유효성 메시지 -->
+      <p id="validationMsg" class="val-msg mt-2 text-xs font-medium min-h-[1.25rem] transition-colors"></p>
+
+      <!-- 규칙 체크리스트 -->
+      <div class="mt-3 grid grid-cols-2 gap-y-2 gap-x-3">
+
+        <div class="rule-item" id="rule-length">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"/>
+          </svg>
+          <span>2~20자 이내</span>
+        </div>
+
+        <div class="rule-item" id="rule-chars">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"/>
+          </svg>
+          <span>한글·영문·숫자·_</span>
+        </div>
+
+        <div class="rule-item" id="rule-no-special">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"/>
+          </svg>
+          <span>특수문자 불가</span>
+        </div>
+
+        <div class="rule-item" id="rule-start">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"/>
+          </svg>
+          <span>숫자로 시작 불가</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 미리보기 ── -->
+    <div class="mt-6 animate-fade-up delay-300">
+      <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-2.5 text-center">미리보기</p>
+
+      <div class="preview-card rounded-2xl p-4">
+        <div class="flex items-center gap-3">
+
+          <!-- 아바타 -->
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primaryDk
+                      flex items-center justify-center flex-shrink-0 shadow-btn">
+            <span id="avatarInitial" class="text-white font-bold text-sm select-none">?</span>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-bold text-dark truncate">
+              <span id="previewNickname" class="text-primary">닉네임</span>님
+            </p>
+            <p class="text-xs text-muted mt-0.5">StudyGroupManager 멤버</p>
+          </div>
+
+          <div class="flex-shrink-0">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                         bg-green-50 text-green-700 border border-green-100 whitespace-nowrap">
+              신규 멤버
+            </span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 제출 버튼 ── -->
+    <div class="mt-6 animate-fade-up delay-400">
+      <button id="submitBtn" type="button" onclick="submitNickname()"
+              class="submit-btn w-full text-white font-bold text-sm rounded-2xl py-4
+                     flex items-center justify-center gap-2
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+        <svg id="btnIcon" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+        </svg>
+        <span id="btnText">닉네임 설정 완료</span>
+        <div id="btnSpinner" class="spinner hidden"></div>
+      </button>
+    </div>
+
+    <!-- ── 하단 안내 ── -->
+    <div class="mt-4 p-3.5 bg-amber-50 rounded-xl border border-amber-100 animate-fade-up delay-500">
+      <p class="text-xs text-amber-700 leading-relaxed text-center">
+        닉네임은 <strong>프로필 설정</strong>에서 언제든지 변경할 수 있습니다.
+      </p>
+    </div>
+
+  </div><!-- /card -->
+
+  <p class="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs text-muted/70 whitespace-nowrap animate-fade-in delay-500 z-10">
+    © 2025 StudyGroupManager. All rights reserved.
+  </p>
+
+  <script>
+    /* ── CSRF / axios 기본 설정 ── */
+    axios.defaults.headers.common['X-CSRFToken'] =
+      document.querySelector('[name=csrfmiddlewaretoken]').value;
+    axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+    const Toast = Swal.mixin({
+      toast: true, position: 'top-end',
+      showConfirmButton: false, timer: 3000, timerProgressBar: true,
+      didOpen: (t) => {
+        t.addEventListener('mouseenter', Swal.stopTimer);
+        t.addEventListener('mouseleave', Swal.resumeTimer);
+      }
+    });
+
+    /* ── 요소 참조 ── */
+    const nicknameInput   = document.getElementById('nicknameInput');
+    const charCountEl     = document.getElementById('charCount');
+    const validationMsg   = document.getElementById('validationMsg');
+    const previewNickname = document.getElementById('previewNickname');
+    const avatarInitial   = document.getElementById('avatarInitial');
+
+    const NICKNAME_RE  = /^[가-힣a-zA-Z0-9_]+$/;
+    const START_NUM_RE = /^[0-9]/;
+
+    /* ── 규칙 아이콘 SVG ── */
+    const ICONS = {
+      neutral: '<circle cx="12" cy="12" r="9"/>',
+      valid:   '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+      invalid: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+    };
+
+    function setRule(id, state) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.dataset.state = state;
+      el.querySelector('svg').innerHTML = ICONS[state] || ICONS.neutral;
+    }
+
+    function resetRules() {
+      ['rule-length', 'rule-chars', 'rule-no-special', 'rule-start'].forEach(id => setRule(id, 'neutral'));
+    }
+
+    function setMsg(type, text) {
+      validationMsg.dataset.type = type;
+      validationMsg.textContent  = text;
+    }
+
+    /* ── 미리보기 ── */
+    function updatePreview(val) {
+      previewNickname.textContent = val || '닉네임';
+      avatarInitial.textContent   = val
+        ? (val.match(/[가-힣]/) ? val[0] : val[0].toUpperCase())
+        : '?';
+    }
+
+    /* ── 글자수 카운터 색상 ── */
+    function updateCounter(len) {
+      charCountEl.textContent = `${len}/20`;
+      charCountEl.style.color =
+        len === 0 ? '#94A3B8' : len >= 18 ? '#F97316' : '#2563EB';
+    }
+
+    /* ── 로컬 유효성 검사 → {ok, msg} ── */
+    function validateLocal(val) {
+      const len = val.length;
+      if (!val)                            return { ok: false, msg: '' };
+      if (len < 2)                         return { ok: false, msg: '닉네임은 2자 이상 입력해주세요.' };
+      if (len > 20)                        return { ok: false, msg: '닉네임은 최대 20자까지 입력 가능합니다.' };
+      if (!NICKNAME_RE.test(val))          return { ok: false, msg: '한글, 영문, 숫자, 언더스코어(_)만 사용 가능합니다.' };
+      if (START_NUM_RE.test(val))          return { ok: false, msg: '닉네임은 숫자로 시작할 수 없습니다.' };
+      return { ok: true, msg: '사용 가능한 닉네임입니다 👍' };
+    }
+
+    /* ── 실시간 입력 처리 ── */
+    nicknameInput.addEventListener('input', () => {
+      const val = nicknameInput.value;
+      const len = val.length;
+
+      updateCounter(len);
+      updatePreview(val);
+
+      if (!val) {
+        nicknameInput.dataset.state = '';
+        setMsg('', '');
+        resetRules();
+        return;
+      }
+
+      const lengthOk    = len >= 2 && len <= 20;
+      const charsOk     = NICKNAME_RE.test(val);
+      const noSpecialOk = charsOk;
+      const startOk     = !START_NUM_RE.test(val);
+
+      setRule('rule-length',     lengthOk    ? 'valid' : 'invalid');
+      setRule('rule-chars',      charsOk     ? 'valid' : 'invalid');
+      setRule('rule-no-special', noSpecialOk ? 'valid' : 'invalid');
+      setRule('rule-start',      startOk     ? 'valid' : 'invalid');
+
+      const { ok, msg } = validateLocal(val);
+      nicknameInput.dataset.state = ok ? 'success' : 'error';
+      setMsg(ok ? 'success' : 'error', msg);
+    });
+
+    /* ── 제출 ── */
+    async function submitNickname() {
+      const nickname = nicknameInput.value.trim();
+      const { ok, msg } = validateLocal(nickname);
+
+      if (!nickname) {
+        Toast.fire({ icon: 'warning', title: '닉네임을 입력해주세요.' });
+        nicknameInput.focus();
+        return;
+      }
+      if (!ok) {
+        Toast.fire({ icon: 'warning', title: msg || '닉네임 조건을 확인해주세요.' });
+        nicknameInput.focus();
+        return;
+      }
+
+      /* 버튼 로딩 상태 */
+      const btn     = document.getElementById('submitBtn');
+      const btnIcon = document.getElementById('btnIcon');
+      const btnText = document.getElementById('btnText');
+      const spinner = document.getElementById('btnSpinner');
+
+      btn.disabled = true;
+      btnIcon.classList.add('hidden');
+      btnText.textContent = '저장 중...';
+      spinner.classList.remove('hidden');
+
+      try {
+        const res = await axios.post('{% url "nickname" %}', { nickname });
+
+        if (res.data.success) {
+          await Swal.fire({
+            icon: 'success',
+            title: '환영합니다! 🎉',
+            html: `<span style="color:#2563EB;font-weight:700;">${nickname}</span>님,<br>StudyGroupManager에 오신 걸 환영해요!`,
+            confirmButtonText: '스터디 시작하기',
+            allowOutsideClick: false,
+          });
+          window.location.href = res.data.redirect_url || '/dashboard/';
+
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: '설정 실패',
+            text: res.data.message || '닉네임 설정에 실패했습니다.',
+            confirmButtonText: '확인',
+          });
+        }
+
+      } catch (err) {
+        const errMsg = err.response?.data?.message || '서버 오류가 발생했습니다.';
+        Swal.fire({ icon: 'error', title: '오류', text: errMsg, confirmButtonText: '확인' });
+
+      } finally {
+        btn.disabled = false;
+        btnIcon.classList.remove('hidden');
+        btnText.textContent = '닉네임 설정 완료';
+        spinner.classList.add('hidden');
+      }
+    }
+
+    /* ── Enter 키 지원 ── */
+    nicknameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitNickname();
+    });
+
+    /* ── Django messages ── */
+    {% if messages %}
+      {% for message in messages %}
+        Toast.fire({
+          icon: '{{ message.tags }}' === 'error'   ? 'error'
+              : '{{ message.tags }}' === 'success' ? 'success' : 'info',
+          title: '{{ message|escapejs }}',
+        });
+      {% endfor %}
+    {% endif %}
+  </script>
+
+</body>
+</html>
