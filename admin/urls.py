@@ -12,6 +12,8 @@ urlpatterns = [
     path('logs/',        views.logs,               name='admin_logs'),
     path('config/',      views.config,             name='admin_config'),
 
+    path('profile/',       views.admin_profile,       name='admin_profile'),
+
     # ── 인증 ───────────────────────────────────────────────
     path('login/',       views.admin_login_view,   name='admin_login'),
     path('logout/',      views.admin_logout_view,  name='admin_logout'),

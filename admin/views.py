@@ -102,6 +102,23 @@ def config(request):
     return render(request, 'admin/config.html')
 
 
+# ── 관리자 정보 ───────────────────────────────────────────
+@admin_required
+def admin_profile(request):
+    import sys, django
+    from django.conf import settings as djset
+
+    ctx = {
+        'admin_id':       _ADMIN_ID,
+        'python_version': sys.version.split()[0],
+        'django_version': django.get_version(),
+        'debug_mode':     getattr(djset, 'DEBUG', False),
+        'allowed_hosts':  ', '.join(getattr(djset, 'ALLOWED_HOSTS', [])) or '*',
+        'time_zone':      getattr(djset, 'TIME_ZONE', 'UTC'),
+    }
+    return render(request, 'admin/admin_profile.html', ctx)
+
+
 # ════════════════════════════════════════════════════════
 # API 엔드포인트 (대시보드 데이터)
 # ════════════════════════════════════════════════════════
