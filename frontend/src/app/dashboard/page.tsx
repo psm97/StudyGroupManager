@@ -17,8 +17,99 @@ export default function DashboardPage() {
       .catch(() => setStats({groups:3, attendance:'87%', penalty:'₩5,000', rate:'92%'}));
   }, []);
 
-  const openCreateGroupModal = () => { /* TODO */ };
-  const openJoinGroupModal = () => { /* TODO */ };
+  const openCreateGroupModal = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const result = await Swal.fire({
+      title: '<span style="font-size:17px;font-weight:700">🏫 그룹 만들기</span>',
+      width: 500,
+      html: `<div style="text-align:left;padding:4px 0">
+        <div style="margin-bottom:12px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">그룹 이름 *</label>
+          <input id="swal-gname" type="text" placeholder="그룹 이름을 입력하세요" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box" />
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">설명</label>
+          <textarea id="swal-gdesc" rows="3" placeholder="그룹 소개를 입력하세요" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;resize:none;box-sizing:border-box;font-family:inherit"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">카테고리</label>
+            <select id="swal-gcat" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box">
+              <option value="study">📚 스터디</option>
+              <option value="language">🌏 어학</option>
+              <option value="algorithm">💻 알고리즘</option>
+              <option value="dev">🛠 개발</option>
+              <option value="etc">📌 기타</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">최대 인원</label>
+            <input id="swal-gmax" type="number" min="2" max="50" value="10" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box" />
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px">공개 설정</label>
+          <div style="display:flex;gap:16px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;color:#334155">
+              <input type="radio" name="swal-gvis" value="public" checked style="accent-color:#0077ff;width:15px;height:15px" /> 🌐 공개
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;color:#334155">
+              <input type="radio" name="swal-gvis" value="private" style="accent-color:#0077ff;width:15px;height:15px" /> 🔒 비공개
+            </label>
+          </div>
+        </div>
+      </div>`,
+      confirmButtonText: '그룹 만들기',
+      confirmButtonColor: '#0077ff',
+      showCancelButton: true,
+      cancelButtonText: '취소',
+      preConfirm: () => {
+        const name = ((document.getElementById('swal-gname') as HTMLInputElement)?.value || '').trim();
+        const desc = ((document.getElementById('swal-gdesc') as HTMLTextAreaElement)?.value || '').trim();
+        const category = (document.getElementById('swal-gcat') as HTMLSelectElement)?.value || 'study';
+        const maxMembers = parseInt((document.getElementById('swal-gmax') as HTMLInputElement)?.value || '10', 10);
+        const visEls = document.querySelectorAll<HTMLInputElement>('input[name="swal-gvis"]');
+        const visibility = Array.from(visEls).find(el => el.checked)?.value || 'public';
+        if (!name) { Swal.showValidationMessage('그룹 이름을 입력해 주세요.'); return false; }
+        if (isNaN(maxMembers) || maxMembers < 2 || maxMembers > 50) { Swal.showValidationMessage('최대 인원은 2~50명 사이여야 합니다.'); return false; }
+        return { name, desc, category, maxMembers, visibility };
+      },
+    });
+    if (!result.isConfirmed || !result.value) return;
+    const { name } = result.value as { name: string; desc: string; category: string; maxMembers: number; visibility: string };
+    await Swal.fire({ icon: 'success', title: '그룹이 생성되었습니다!', text: `"${name}" 그룹이 만들어졌습니다.`, timer: 2000, showConfirmButton: false, timerProgressBar: true });
+  };
+
+  const openJoinGroupModal = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const result = await Swal.fire({
+      title: '<span style="font-size:17px;font-weight:700">🔑 초대코드로 참여</span>',
+      width: 440,
+      html: `<div style="text-align:left;padding:4px 0">
+        <p style="font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.6">초대 코드를 입력하면 해당 스터디 그룹에 참여할 수 있습니다.</p>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px">초대 코드 *</label>
+          <input id="swal-invite" type="text" placeholder="예: ABC123" maxlength="20" style="width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:16px;outline:none;text-align:center;letter-spacing:3px;text-transform:uppercase;box-sizing:border-box;font-weight:700;color:#1e293b" />
+        </div>
+      </div>`,
+      confirmButtonText: '참여하기',
+      confirmButtonColor: '#0077ff',
+      showCancelButton: true,
+      cancelButtonText: '취소',
+      didOpen: () => {
+        const input = document.getElementById('swal-invite') as HTMLInputElement;
+        input?.addEventListener('input', () => { input.value = input.value.toUpperCase(); });
+      },
+      preConfirm: () => {
+        const code = ((document.getElementById('swal-invite') as HTMLInputElement)?.value || '').trim();
+        if (!code) { Swal.showValidationMessage('초대 코드를 입력해 주세요.'); return false; }
+        return { code };
+      },
+    });
+    if (!result.isConfirmed || !result.value) return;
+    const { code } = result.value as { code: string };
+    await Swal.fire({ icon: 'success', title: '그룹에 참여했습니다!', text: `초대 코드 "${code}"로 그룹에 참여했습니다.`, timer: 2000, showConfirmButton: false, timerProgressBar: true });
+  };
 
   return (
     <>
@@ -71,12 +162,12 @@ export default function DashboardPage() {
                     <p className="text-blue-100 text-sm mb-5">스터디 그룹 매니저에 오신 것을 환영합니다.</p>
                     <div className="flex flex-wrap gap-3">
                       <button onClick={openCreateGroupModal}
-                        className="bg-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-sm hover:bg-blue-50 transition-colors"
+                        className="bg-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-sm hover:bg-blue-50 transition-colors cursor-pointer"
                         style={{color:'#0077ff'}}>
                         + 그룹 만들기
                       </button>
                       <button onClick={openJoinGroupModal}
-                        className="border border-white border-opacity-50 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-white hover:bg-opacity-10 transition-colors">
+                        className="border border-white/50 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer">
                         초대코드로 참여
                       </button>
                     </div>
