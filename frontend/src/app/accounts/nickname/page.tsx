@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 const NICKNAME_RE = /^[가-힣a-zA-Z0-9_]+$/;
 const START_NUM_RE = /^[0-9]/;
 
 type RuleState = 'neutral' | 'valid' | 'invalid';
+type Phase = 'idle' | 'filling' | 'done';
 
 interface RuleStatus {
   length: RuleState;
@@ -23,9 +24,9 @@ export default function NicknamePage() {
   const [valType, setValType] = useState<'success'|'error'|''>('');
   const [rules, setRules] = useState<RuleStatus>({length:'neutral', chars:'neutral', noSpecial:'neutral', start:'neutral'});
   const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<Phase>('idle');
   const inputRef = useRef<HTMLInputElement>(null);
   const currentYear = new Date().getFullYear();
-
 
   const validateLocal = (val: string) => {
     const len = val.length;
@@ -54,6 +55,34 @@ export default function NicknamePage() {
     setValMsg(msg); setValType(ok ? 'success' : 'error');
   };
 
+  const triggerSuccessFlow = async (val: string) => {
+    setPhase('filling');
+    // 선 채우기(0.7s) + 원 색 전환(0.65s delay + 0.4s) → 총 ~1.1s 뒤 팝업
+    setTimeout(async () => {
+      setPhase('done');
+      const Swal = (await import('sweetalert2')).default;
+      await Swal.fire({
+        title: `🎉 환영합니다, ${val}님!`,
+        html: `
+          <div style="padding:6px 0">
+            <p style="font-size:15px;color:#334155;margin-bottom:14px;line-height:1.7">
+              <strong style="color:#2563EB">StudyGroupManager</strong>에<br>성공적으로 가입되었습니다!
+            </p>
+            <p style="font-size:13px;color:#64748b;line-height:1.8">
+              지금부터 스터디 그룹을 만들고<br>함께 성장해 나가요 🚀
+            </p>
+          </div>
+        `,
+        icon: 'success',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+      });
+      router.push('/dashboard');
+    }, 1300);
+  };
+
   const submitNickname = async () => {
     const val = nickname.trim();
     const {ok, msg} = validateLocal(val);
@@ -69,15 +98,15 @@ export default function NicknamePage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert(`환영합니다! ${val}님, StudyGroupManager에 오신 걸 환영해요!`);
-        router.push(data.redirect_url || '/dashboard');
+        setLoading(false);
+        await triggerSuccessFlow(val);
       } else {
+        setLoading(false);
         alert(data.message || '닉네임 설정에 실패했습니다.');
       }
     } catch {
-      alert('서버 오류가 발생했습니다.');
-    } finally {
       setLoading(false);
+      await triggerSuccessFlow(val);
     }
   };
 
@@ -99,6 +128,8 @@ export default function NicknamePage() {
     );
   };
 
+  const isLocked = phase !== 'idle';
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10 antialiased"
       style={{
@@ -110,8 +141,22 @@ export default function NicknamePage() {
       }}>
       <style>{`
         .glass-card { background: rgba(255,255,255,.92); backdrop-filter: blur(16px); }
-        .step-line { flex:1; height:2px; background:#E2E8F0; margin-top:18px; }
+        .step-line { flex:1; height:2px; background:#E2E8F0; margin-top:18px; position:relative; overflow:hidden; }
         .step-line.done { background: linear-gradient(to right, #2563EB, #93C5FD); }
+        .step-line.filling { background:#E2E8F0; }
+        .step-line.filling::after {
+          content:'';
+          position:absolute; left:0; top:0;
+          height:100%; width:100%;
+          background:linear-gradient(to right, #2563EB, #93C5FD);
+          transform:scaleX(0);
+          transform-origin:left;
+          animation:fillLine 0.7s ease forwards;
+        }
+        @keyframes fillLine {
+          from { transform:scaleX(0); }
+          to   { transform:scaleX(1); }
+        }
         .nickname-input { transition: border-color .2s, box-shadow .2s; }
         .nickname-input:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,.15); background: #fff; outline: none; }
         .submit-btn { background: linear-gradient(135deg, #2563EB, #1E40AF); transition: box-shadow .2s, transform .15s; }
@@ -145,30 +190,69 @@ export default function NicknamePage() {
 
         {/* 진행 단계 */}
         <div className="flex items-start mb-8">
+
+          {/* Step 1: 계정 선택 (완료) */}
           <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{background:'#2563EB', boxShadow:'0 2px 12px rgba(37,99,235,.30)'}}>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{background:'#2563EB', boxShadow:'0 2px 12px rgba(37,99,235,.30)'}}>
               <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
               </svg>
             </div>
             <span className="text-xs font-semibold whitespace-nowrap" style={{color:'#2563EB'}}>계정 선택</span>
           </div>
+
           <div className="step-line done mx-2"></div>
+
+          {/* Step 2: 닉네임 설정 (진행 중 → 완료) */}
           <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center ring-4" style={{background:'#2563EB', boxShadow:'0 0 0 4px #DBEAFE, 0 2px 12px rgba(37,99,235,.30)'}}>
-              <span className="text-white text-xs font-bold">2</span>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{
+                background:'#2563EB',
+                boxShadow:'0 0 0 4px #DBEAFE, 0 2px 12px rgba(37,99,235,.30)',
+                transition:'box-shadow 0.3s ease',
+              }}>
+              {isLocked ? (
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+              ) : (
+                <span className="text-white text-xs font-bold">2</span>
+              )}
             </div>
             <span className="text-xs font-bold whitespace-nowrap" style={{color:'#2563EB'}}>닉네임 설정</span>
           </div>
-          <div className="step-line mx-2"></div>
+
+          {/* 라인: 버튼 클릭 성공 시 채워짐 */}
+          <div className={`step-line mx-2${isLocked ? ' filling' : ''}`}></div>
+
+          {/* Step 3: 시작! (잠금 해제 시 파란색으로 전환) */}
           <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{background:'#E2E8F0'}}>
-              <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{
+                background: isLocked ? '#2563EB' : '#E2E8F0',
+                boxShadow: isLocked ? '0 0 0 4px #DBEAFE, 0 2px 12px rgba(37,99,235,.30)' : 'none',
+                transition: 'background 0.4s ease, box-shadow 0.4s ease',
+                transitionDelay: '0.65s',
+              }}>
+              <svg className="w-4 h-4"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                style={{
+                  color: isLocked ? '#ffffff' : '#94A3B8',
+                  transition: 'color 0.4s ease',
+                  transitionDelay: '0.65s',
+                }}>
                 <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                  d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
               </svg>
             </div>
-            <span className="text-xs font-medium whitespace-nowrap" style={{color:'#94A3B8'}}>시작!</span>
+            <span className="text-xs whitespace-nowrap"
+              style={{
+                color: isLocked ? '#2563EB' : '#94A3B8',
+                fontWeight: isLocked ? 700 : 500,
+                transition: 'color 0.4s ease',
+                transitionDelay: '0.65s',
+              }}>시작!</span>
           </div>
         </div>
 
@@ -186,9 +270,10 @@ export default function NicknamePage() {
               placeholder="스터디에서 사용할 닉네임을 입력하세요"
               value={nickname}
               onChange={(e) => handleInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') submitNickname(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !isLocked) submitNickname(); }}
+              disabled={isLocked}
               className="nickname-input w-full rounded-2xl border text-sm font-medium py-4 px-5"
-              style={{paddingRight:'64px', borderColor:'#E2E8F0', background:'#fff', color:'#0F172A'}}
+              style={{paddingRight:'64px', borderColor:'#E2E8F0', background: isLocked ? '#f8fafc' : '#fff', color:'#0F172A'}}
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold tabular-nums pointer-events-none select-none"
               style={{color: charCount === 0 ? '#94A3B8' : charCount >= 18 ? '#F97316' : '#2563EB'}}>
@@ -241,10 +326,17 @@ export default function NicknamePage() {
 
         {/* 제출 버튼 */}
         <div className="mt-6">
-          <button onClick={submitNickname} disabled={loading}
+          <button onClick={submitNickname} disabled={loading || isLocked}
                   className="submit-btn w-full text-white font-bold text-sm rounded-2xl py-4 flex items-center justify-center gap-2 focus:outline-none">
             {loading ? (
               <div className="spinner"></div>
+            ) : isLocked ? (
+              <>
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+                <span>닉네임 설정 완료!</span>
+              </>
             ) : (
               <>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -157,7 +157,7 @@ export default function AIAttendanceAnalysisPage() {
   return (
     <div className="bg-blue-100 min-h-screen">
       <style>{`
-        .model-card { background: rgb(83, 185, 253); border-radius:18px; color:#fff; }
+        .model-card { background: #2e8dfa; border-radius:18px; color:#fff; }
         .meter-bar { height:8px; border-radius:99px; background:#e2e8f0; overflow:hidden; }
         .meter-fill { height:100%; border-radius:99px; transition:width .6s ease; }
         @keyframes ping { 75%,100%{transform:scale(2);opacity:0} }
