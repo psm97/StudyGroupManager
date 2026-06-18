@@ -1,325 +1,469 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
-import Swal from 'sweetalert2';
 
-const group = { id: 1, name: 'Web Developer Study', color: '#1258fc', memberCount: 6, attendanceRate: 92, totalSessions: 24, role: '리더' };
+interface GroupData {
+  id: number; name: string; description?: string; color?: string;
+  member_count: number; role?: string; attendance_rate?: number;
+  leader_name?: string; created_at?: string; category?: string;
+}
+interface Member { id: number; nickname: string; role: string; attendance_rate?: number; }
+interface Notice { id: number; title: string; content?: string; created_at: string; }
+interface Session { id: number; topic: string; date: string; status: 'unchecked' | 'completed'; }
 
-const members = [
-  { id: 1, name: '김민수', role: '리더', attendanceRate: 92, present: 22, late: 1, absent: 1, avatar: 'K' },
-  { id: 2, name: '이지연', role: '멤버', attendanceRate: 87, present: 20, late: 2, absent: 2, avatar: 'L' },
-  { id: 3, name: '박철수', role: '멤버', attendanceRate: 79, present: 18, late: 3, absent: 3, avatar: 'P' },
-  { id: 4, name: '최수아', role: '멤버', attendanceRate: 95, present: 23, late: 1, absent: 0, avatar: 'C' },
-  { id: 5, name: '정도현', role: '멤버', attendanceRate: 83, present: 19, late: 2, absent: 3, avatar: 'J' },
-  { id: 6, name: '한예진', role: '멤버', attendanceRate: 71, present: 16, late: 4, absent: 4, avatar: 'H' },
-];
+export default function GroupHomePage() {
+  const { id } = useParams<{id:string}>();
+  const router = useRouter();
+  const [group, setGroup] = useState<GroupData|null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [activeTab, setActiveTab] = useState<'overview'|'members'|'notices'|'attendance'>('overview');
+  /* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js, Font Awesome) */
 
-const notices = [
-  { id: 1, title: '6월 스터디 일정 공지', content: '안녕하세요! 6월 스터디 일정을 안내드립니다.\n\n매주 일요일 오후 2시에 온라인으로 진행됩니다.\n\n참석 불가 시 24시간 전에 미리 알려주세요.', author: '김민수', date: '2026-06-15', isPinned: true, isRead: false },
-  { id: 2, title: '발표 주제 선정 안내', content: '이번 주 발표 주제를 선택해주세요. 구글 시트에 본인 주제를 기입해 주시기 바랍니다.', author: '김민수', date: '2026-06-10', isPinned: false, isRead: true },
-  { id: 3, title: '스터디 자료 업로드 완료', content: '지난 주 발표 자료가 업로드되었습니다. 리소스 탭에서 확인해주세요.', author: '이지연', date: '2026-06-05', isPinned: false, isRead: false },
-];
+  useEffect(() => {
+    fetch(`/groups/api/${id}/`)
+      .then(r=>r.json())
+      .then(data => setGroup(data))
+      .catch(() => setGroup({id:Number(id), name:'Web Developer Study', member_count:6, role:'leader', attendance_rate:92, color:'#1258fc', leader_name:'김리더', category:'개발'}));
 
-const sessions = [
-  { id: 1, date: '2026-06-15', topic: 'React Hooks 심화', presentCount: 5, lateCount: 1, absentCount: 0 },
-  { id: 2, date: '2026-06-08', topic: 'TypeScript 기초', presentCount: 4, lateCount: 1, absentCount: 1 },
-  { id: 3, date: '2026-06-01', topic: 'Next.js App Router', presentCount: 6, lateCount: 0, absentCount: 0 },
-  { id: 4, date: '2026-05-25', topic: 'Redux Toolkit', presentCount: 5, lateCount: 1, absentCount: 0 },
-];
+    fetch(`/groups/api/${id}/members/`)
+      .then(r=>r.json())
+      .then(data => setMembers(data))
+      .catch(() => setMembers([
+        {id:1, nickname:'김리더', role:'leader', attendance_rate:95},
+        {id:2, nickname:'이멤버', role:'member', attendance_rate:88},
+        {id:3, nickname:'박멤버', role:'member', attendance_rate:72},
+      ]));
 
-type TabKey = 'overview' | 'members' | 'notices' | 'attendance';
+    fetch(`/groups/api/${id}/notices/`)
+      .then(r=>r.json())
+      .then(data => setNotices(data))
+      .catch(() => setNotices([
+        {id:1, title:'6월 스터디 일정 안내', created_at:'2025.06.01'},
+        {id:2, title:'자료 공유 링크 업데이트', created_at:'2025.05.28'},
+      ]));
 
-const rateColor = (r: number) => r >= 90 ? '#16a34a' : r >= 75 ? '#d97706' : '#dc2626';
-
-export default function GroupDetailPage() {
-  const [activeTab, setActiveTab] = useState<TabKey>('overview');
+    fetch(`/groups/api/${id}/sessions/`)
+      .then(r=>r.json())
+      .then(data => setSessions(data))
+      .catch(() => setSessions([
+        {id:1, topic:'정렬 알고리즘', date:'2025.06.18', status:'unchecked'},
+        {id:2, topic:'React 컴포넌트 설계', date:'2025.06.11', status:'completed'},
+        {id:3, topic:'JavaScript ES6', date:'2025.06.04', status:'completed'},
+      ]));
+  }, [id]);
 
   const handleCheckIn = async () => {
-    await Swal.fire({
+    const Swal = (await import('sweetalert2')).default;
+    const unchecked = sessions.filter(s => s.status === 'unchecked');
+    if (unchecked.length === 0) {
+      await Swal.fire({ icon: 'info', title: '출석할 세션이 없습니다', text: '현재 미완료 세션이 없습니다.', confirmButtonColor: '#1258fc' });
+      return;
+    }
+    const target = unchecked[0];
+    const result = await Swal.fire({
       title: '출석 체크',
-      html: `<div style="text-align:left;padding:8px 0">
-        <p style="font-weight:600;margin-bottom:8px">📅 오늘의 세션</p>
-        <p style="color:#64748b;font-size:14px">2026-06-18 · React Hooks 심화</p>
-        <p style="color:#64748b;font-size:14px;margin-top:4px">📍 온라인 (Zoom)</p>
-        <div style="margin-top:16px;padding:12px;background:#f0f5ff;border-radius:12px">
-          <p style="font-size:13px;color:#1258fc;font-weight:600">✅ 출석 처리 하시겠습니까?</p>
-        </div>
-      </div>`,
-      showCancelButton: true,
-      confirmButtonText: '출석',
-      cancelButtonText: '취소',
+      html: `
+        <div style="text-align:left">
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+            <p style="font-size:12px;color:#64748b;margin:0 0 4px 0">세션</p>
+            <p style="font-size:15px;font-weight:700;color:#1e293b;margin:0">${target.topic}</p>
+            <p style="font-size:12px;color:#94a3b8;margin:4px 0 0 0">${target.date}</p>
+          </div>
+          <p style="font-size:14px;font-weight:600;color:#1e293b;text-align:center;margin:0">출석 하시겠습니까?</p>
+        </div>`,
+      confirmButtonText: '출석 완료',
       confirmButtonColor: '#1258fc',
-    }).then(r => {
-      if (r.isConfirmed) Swal.fire({ title: '출석 완료!', icon: 'success', timer: 1500, showConfirmButton: false });
+      showCancelButton: true,
+      cancelButtonText: '취소',
     });
+    if (!result.isConfirmed) return;
+    try {
+      await fetch(`/groups/api/${id}/sessions/${target.id}/self-check/`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'present' }),
+      });
+    } catch { }
+    const savedAttendance: Record<string, string> = JSON.parse(localStorage.getItem('sgm_attendance') || '{}');
+    savedAttendance[`g${id}_s${target.id}_m1`] = 'present';
+    localStorage.setItem('sgm_attendance', JSON.stringify(savedAttendance));
+    setSessions(prev => prev.map(s => s.id === target.id ? { ...s, status: 'completed' } : s));
+    await Swal.fire({ icon: 'success', title: '출석 완료!', text: `"${target.topic}" 출석이 완료되었습니다.`, confirmButtonColor: '#1258fc', timer: 2000, timerProgressBar: true, showConfirmButton: false });
   };
 
-  const handleReason = async () => {
-    await Swal.fire({
-      title: '결석/지각 사유 제출',
-      html: `<select class="swal2-select" id="reason-type">
-               <option value="late">지각</option>
-               <option value="absent">결석</option>
-             </select>
-             <textarea class="swal2-textarea" id="reason-text" placeholder="사유를 입력하세요 (최소 10자)" rows="4"></textarea>`,
+  const handleWriteReason = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const opts = sessions.map(s => `<option value="${s.id}">${s.topic} (${s.date})</option>`).join('');
+    const result = await Swal.fire({
+      title: '사유서 작성',
+      html: `
+        <div style="text-align:left">
+          <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">세션 선택</label>
+            <select id="swal-sess" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box">${opts}</select>
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">사유 유형</label>
+            <div style="display:flex;gap:8px">
+              <button onclick="document.querySelectorAll('[data-swal-type]').forEach(b=>{b.style.boxShadow='none';b.style.opacity='0.55'});this.style.boxShadow='0 0 0 2px #1258fc';this.style.opacity='1';document.getElementById('swal-type').value='late';document.getElementById('swal-fwrap').style.display='none'"
+                data-swal-type style="flex:1;padding:9px;border-radius:10px;border:2px solid #fde68a;background:#fefce8;color:#b45309;font-weight:700;font-size:13px;cursor:pointer;opacity:0.55">⏰ 지각</button>
+              <button onclick="document.querySelectorAll('[data-swal-type]').forEach(b=>{b.style.boxShadow='none';b.style.opacity='0.55'});this.style.boxShadow='0 0 0 2px #1258fc';this.style.opacity='1';document.getElementById('swal-type').value='absent';document.getElementById('swal-fwrap').style.display='block'"
+                data-swal-type style="flex:1;padding:9px;border-radius:10px;border:2px solid #fecaca;background:#fff1f2;color:#dc2626;font-weight:700;font-size:13px;cursor:pointer;opacity:0.55">❌ 결석</button>
+            </div>
+            <input type="hidden" id="swal-type" value="" />
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">사유 내용</label>
+            <textarea id="swal-reason" rows="3" placeholder="사유를 입력해 주세요" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#1e293b;resize:none;outline:none;box-sizing:border-box"></textarea>
+          </div>
+          <div id="swal-fwrap" style="display:none">
+            <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">증빙서류 첨부 <span style="color:#94a3b8;font-weight:400">(선택)</span></label>
+            <div style="border:2px dashed #e2e8f0;border-radius:10px;padding:14px;text-align:center;cursor:pointer" onclick="document.getElementById('swal-file').click()">
+              <input type="file" id="swal-file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" style="display:none" onchange="document.getElementById('swal-fname').textContent=this.files[0]?.name||''" />
+              <div style="font-size:22px;margin-bottom:4px">📎</div>
+              <p style="font-size:13px;color:#64748b;margin:0">클릭하여 파일 선택</p>
+              <p id="swal-fname" style="font-size:12px;color:#1258fc;margin:6px 0 0 0"></p>
+            </div>
+          </div>
+        </div>`,
       confirmButtonText: '제출',
-      cancelButtonText: '취소',
-      showCancelButton: true,
       confirmButtonColor: '#1258fc',
+      showCancelButton: true,
+      cancelButtonText: '취소',
       preConfirm: () => {
-        const text = (document.getElementById('reason-text') as HTMLTextAreaElement)?.value;
-        if (!text || text.length < 10) { Swal.showValidationMessage('사유를 10자 이상 입력해주세요'); return false; }
-        return text;
+        const sess = (document.getElementById('swal-sess') as HTMLSelectElement)?.value || '';
+        const type = (document.getElementById('swal-type') as HTMLInputElement)?.value || '';
+        const reason = ((document.getElementById('swal-reason') as HTMLTextAreaElement)?.value || '').trim();
+        const fileInput = document.getElementById('swal-file') as HTMLInputElement;
+        const fileName = fileInput?.files?.[0]?.name || null;
+        if (!type) { Swal.showValidationMessage('사유 유형을 선택해 주세요.'); return false; }
+        if (!reason) { Swal.showValidationMessage('사유 내용을 입력해 주세요.'); return false; }
+        return { sess, type, reason, fileName };
       },
-    }).then(r => {
-      if (r.isConfirmed) Swal.fire({ title: '사유가 제출되었습니다', icon: 'success', timer: 1500, showConfirmButton: false });
     });
+    if (!result.isConfirmed || !result.value) return;
+    const { sess, type, reason, fileName } = result.value as { sess: string; type: string; reason: string; fileName: string | null };
+    const stored: Record<string, unknown> = JSON.parse(localStorage.getItem('sgm_reasons') || '{}');
+    stored[`g${id}_s${sess}_m1`] = { type, reason, fileName };
+    localStorage.setItem('sgm_reasons', JSON.stringify(stored));
+    const savedAttendance: Record<string, string> = JSON.parse(localStorage.getItem('sgm_attendance') || '{}');
+    savedAttendance[`g${id}_s${sess}_m1`] = type;
+    localStorage.setItem('sgm_attendance', JSON.stringify(savedAttendance));
+    await Swal.fire({ icon: 'success', title: '사유서 제출 완료', text: '사유서가 성공적으로 제출되었습니다.', confirmButtonColor: '#1258fc', timer: 2000, timerProgressBar: true, showConfirmButton: false });
   };
-
-  const handleDeleteNotice = async (title: string) => {
-    const r = await Swal.fire({ title: '공지를 삭제하시겠습니까?', text: `"${title}"`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: '삭제', cancelButtonText: '취소' });
-    if (r.isConfirmed) Swal.fire({ title: '삭제 완료', icon: 'success', timer: 1500, showConfirmButton: false });
-  };
-
-  const handleViewNotice = (n: typeof notices[0]) => {
-    Swal.fire({
-      title: n.title,
-      html: `<div style="text-align:left"><p style="white-space:pre-wrap;font-size:14px;color:#334155;line-height:1.7">${n.content}</p><hr style="margin:16px 0;border-color:#e2e8f0"><p style="font-size:12px;color:#94a3b8">${n.author} · ${n.date}</p></div>`,
-      showCloseButton: true,
-      showConfirmButton: false,
-      showDenyButton: group.role === '리더',
-      denyButtonText: '삭제',
-      denyButtonColor: '#dc2626',
-    }).then(r => { if (r.isDenied) handleDeleteNotice(n.title); });
-  };
-
-  const tabs: { key: TabKey; label: string }[] = [
-    { key: 'overview', label: '개요' },
-    { key: 'members', label: '멤버' },
-    { key: 'notices', label: '공지사항' },
-    { key: 'attendance', label: '출석 현황' },
-  ];
-
-  const sortedMembers = [...members].sort((a, b) => b.attendanceRate - a.attendanceRate);
 
   return (
-    <div className="flex h-screen bg-slate-50">
-      <LeftMenu />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto px-4 lg:px-8 py-6 space-y-5">
+    <>
+      <style>{`
+        * { font-family: 'Pretendard', -apple-system, sans-serif; }
+        .nav-link { transition: all 0.2s ease; }
+        .nav-link.active { background: #1258fc; color: #fff; }
+        .nav-link:not(.active):hover { background: #dce6fd; color: #1258fc; }
+        .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
+        .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+        input:checked + .toggle-slider { background: #1258fc; }
+        input:checked + .toggle-slider::before { transform: translateX(18px); }
+        .tab-btn { transition: all .2s; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: #1258fc; border-bottom-color: #1258fc; font-weight: 700; }
+        @media (max-width:1024px) {
+          #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
+          #sidebar.open { transform:translateX(0); }
+          #sidebarOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:40; }
+          #sidebarOverlay.open { display:block; }
+        }
+      `}</style>
 
-          {/* 그룹 헤더 */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0" style={{ background: group.color }}>
-                {group.name[0]}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xl font-bold text-slate-800">{group.name}</h2>
-                  <span className="text-xs px-2 py-0.5 rounded-lg font-semibold" style={{ background: '#dce6fd', color: '#1258fc' }}>{group.role}</span>
-                </div>
-                <p className="text-sm text-slate-500">멤버 {group.memberCount}명 · 총 {group.totalSessions}회 진행</p>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <button onClick={handleCheckIn} className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">출석 체크</button>
-                <button onClick={handleReason} className="border border-slate-200 text-slate-600 text-sm font-semibold px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors">사유 제출</button>
-              </div>
-            </div>
-          </div>
+      <div className="bg-blue-100 min-h-screen">
+        <div id="sidebarOverlay" onClick={() => {
+          document.getElementById('sidebar')?.classList.remove('open');
+          document.getElementById('sidebarOverlay')?.classList.remove('open');
+        }}></div>
 
-          {/* 통계 카드 */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: '출석률', value: `${group.attendanceRate}%`, color: rateColor(group.attendanceRate) },
-              { label: '멤버', value: `${group.memberCount}명`, color: '#1258fc' },
-              { label: '총 세션', value: `${group.totalSessions}회`, color: '#8b5cf6' },
-            ].map((s, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 text-center">
-                <p className="text-xs text-slate-400 mb-1">{s.label}</p>
-                <p className="text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{minHeight:'100vh'}}>
+          <LeftMenu />
+          <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <Header />
+            <div className="flex-1 overflow-y-auto bg-slate-50">
 
-          {/* 탭 + 컨텐츠 */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="flex border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              {tabs.map(t => (
-                <button key={t.key} onClick={() => setActiveTab(t.key)}
-                  className={`px-6 py-3.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${activeTab === t.key ? 'text-blue-600 border-blue-600' : 'text-slate-500 border-transparent hover:text-slate-700'}`}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="p-5">
-              {/* 개요 */}
-              {activeTab === 'overview' && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <div>
-                    <h4 className="font-semibold text-slate-700 mb-3">최근 공지사항</h4>
-                    <div className="space-y-2">
-                      {notices.slice(0, 2).map(n => (
-                        <div key={n.id} onClick={() => handleViewNotice(n)} className="p-3 rounded-xl border border-slate-100 hover:border-blue-200 cursor-pointer transition-colors" style={{ borderLeftColor: n.isPinned ? '#f59e0b' : undefined, borderLeftWidth: n.isPinned ? 3 : undefined }}>
-                          <div className="flex items-center gap-2 mb-0.5">
-                            {n.isPinned && <span className="text-xs">📌</span>}
-                            {!n.isRead && <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-600 font-semibold">NEW</span>}
-                            <p className="text-sm font-semibold text-slate-700 truncate">{n.title}</p>
-                          </div>
-                          <p className="text-xs text-slate-400">{n.author} · {n.date}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-700 mb-3">출석 순위</h4>
-                    <div className="space-y-2">
-                      {sortedMembers.slice(0, 3).map((m, i) => (
-                        <div key={m.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50">
-                          <span className="text-xl w-7 text-center flex-shrink-0">{['🥇', '🥈', '🥉'][i]}</span>
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: group.color }}>{m.avatar}</div>
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-700">{m.name}</p>
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 h-1 bg-slate-200 rounded-full"><div className="h-1 rounded-full" style={{ width: `${m.attendanceRate}%`, background: rateColor(m.attendanceRate) }} /></div>
-                              <span className="text-xs font-medium" style={{ color: rateColor(m.attendanceRate) }}>{m.attendanceRate}%</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 멤버 */}
-              {activeTab === 'members' && (
-                <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-xs text-slate-400 border-b border-slate-100">
-                        <th className="pb-3 pl-1">#</th>
-                        <th className="pb-3">이름</th>
-                        <th className="pb-3">역할</th>
-                        <th className="pb-3 text-center">출석</th>
-                        <th className="pb-3 text-center">지각</th>
-                        <th className="pb-3 text-center">결석</th>
-                        <th className="pb-3">출석률</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {members.map((m, i) => (
-                        <tr key={m.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-3 pl-1 text-slate-400">{i + 1}</td>
-                          <td className="py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: group.color }}>{m.avatar}</div>
-                              <span className="font-medium text-slate-700">{m.name}</span>
-                            </div>
-                          </td>
-                          <td className="py-3">
-                            <span className="text-xs px-2 py-0.5 rounded-lg font-semibold" style={{ background: m.role === '리더' ? '#dce6fd' : '#f1f5f9', color: m.role === '리더' ? '#1258fc' : '#64748b' }}>{m.role}</span>
-                          </td>
-                          <td className="py-3 text-center text-green-600 font-semibold">{m.present}</td>
-                          <td className="py-3 text-center text-amber-600 font-semibold">{m.late}</td>
-                          <td className="py-3 text-center text-red-500 font-semibold">{m.absent}</td>
-                          <td className="py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-20 h-1.5 bg-slate-100 rounded-full"><div className="h-1.5 rounded-full" style={{ width: `${m.attendanceRate}%`, background: rateColor(m.attendanceRate) }} /></div>
-                              <span className="text-xs font-semibold" style={{ color: rateColor(m.attendanceRate) }}>{m.attendanceRate}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* 공지사항 */}
-              {activeTab === 'notices' && (
-                <div className="space-y-3">
-                  {group.role === '리더' && (
-                    <div className="flex justify-end mb-2">
-                      <button onClick={() => Swal.fire({ title: '공지 작성', html: `<input id="swal-title" class="swal2-input" placeholder="제목"><textarea id="swal-content" class="swal2-textarea" placeholder="내용을 입력하세요" rows="5"></textarea>`, confirmButtonText: '등록', cancelButtonText: '취소', showCancelButton: true, confirmButtonColor: '#1258fc' })}
-                        className="text-sm font-semibold bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors">
-                        + 공지 작성
-                      </button>
-                    </div>
-                  )}
-                  {notices.map(n => (
-                    <div key={n.id} onClick={() => handleViewNotice(n)}
-                      className="p-4 rounded-xl border cursor-pointer hover:border-blue-200 transition-all"
-                      style={{ borderColor: n.isPinned ? '#fbbf24' : '#f1f5f9', borderLeftWidth: 3, borderLeftColor: n.isPinned ? '#f59e0b' : !n.isRead ? '#1258fc' : '#e2e8f0' }}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
+              {group ? (
+                <>
+                  {/* 그룹 헤더 배너 */}
+                  <div className="bg-white border-b border-slate-100 px-6 py-5">
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0"
+                          style={{background:group.color||'#1258fc'}}>{group.name[0]}</div>
+                        <div>
                           <div className="flex items-center gap-2 mb-1">
-                            {n.isPinned && <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">📌 중요</span>}
-                            {!n.isRead && <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-blue-100 text-blue-600">NEW</span>}
-                            <p className="text-sm font-semibold text-slate-800">{n.title}</p>
+                            <h1 className="text-xl font-bold text-slate-800">{group.name}</h1>
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'#dce6fd', color:'#1258fc'}}>
+                              {group.role === 'leader' ? '리더' : '멤버'}
+                            </span>
                           </div>
-                          <p className="text-xs text-slate-400 line-clamp-1">{n.content.split('\n')[0]}</p>
-                          <p className="text-xs text-slate-400 mt-1">{n.author} · {n.date}</p>
+                          <p className="text-sm text-slate-500">{group.description || '그룹 설명 없음'}</p>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                            <span>멤버 {group.member_count}명</span>
+                            {group.category && <span>· {group.category}</span>}
+                            {group.created_at && <span>· {group.created_at} 개설</span>}
+                          </div>
                         </div>
-                        {group.role === '리더' && (
-                          <button onClick={e => { e.stopPropagation(); handleDeleteNotice(n.title); }}
-                            className="text-slate-300 hover:text-red-400 transition-colors ml-3 p-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        {group.role === 'leader' && (
+                          <button className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50">
+                            그룹 설정
                           </button>
                         )}
+                        <button
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all"
+                          style={{background:'#1258fc'}}
+                          onClick={handleWriteReason}>
+                          사유서 작성
+                        </button>
+                        <button
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all"
+                          style={{background:'#1258fc'}}
+                          onClick={handleCheckIn}>
+                          출석 체크
+                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
 
-              {/* 출석 현황 */}
-              {activeTab === 'attendance' && (
-                <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-xs text-slate-400 border-b border-slate-100">
-                        <th className="pb-3">날짜</th>
-                        <th className="pb-3">주제</th>
-                        <th className="pb-3 text-center">출석</th>
-                        <th className="pb-3 text-center">지각</th>
-                        <th className="pb-3 text-center">결석</th>
-                        <th className="pb-3">출석률</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {sessions.map(s => {
-                        const total = s.presentCount + s.lateCount + s.absentCount;
-                        const rate = Math.round(((s.presentCount + s.lateCount * 0.5) / total) * 100);
-                        return (
-                          <tr key={s.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="py-3 text-slate-600">{s.date}</td>
-                            <td className="py-3 font-medium text-slate-800">{s.topic}</td>
-                            <td className="py-3 text-center"><span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-green-50 text-green-700">{s.presentCount}</span></td>
-                            <td className="py-3 text-center"><span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700">{s.lateCount}</span></td>
-                            <td className="py-3 text-center"><span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600">{s.absentCount}</span></td>
-                            <td className="py-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-16 h-1.5 bg-slate-100 rounded-full"><div className="h-1.5 rounded-full" style={{ width: `${rate}%`, background: rateColor(rate) }} /></div>
-                                <span className="text-xs font-semibold" style={{ color: rateColor(rate) }}>{rate}%</span>
+                    {/* 통계 바 */}
+                    <div className="grid grid-cols-3 gap-4 mt-2">
+                      {[
+                        {label:'출석률', value:`${group.attendance_rate||0}%`, color:'#1258fc'},
+                        {label:'총 멤버', value:`${group.member_count}명`, color:'#10b981'},
+                        {label:'이번 달 세션', value:'4회', color:'#f59e0b'},
+                      ].map(s => (
+                        <div key={s.label} className="rounded-xl p-3 text-center" style={{background:'#f8fafc', border:'1px solid #f1f5f9'}}>
+                          <p className="text-lg font-bold" style={{color:s.color}}>{s.value}</p>
+                          <p className="text-xs text-slate-400">{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 탭 */}
+                  <div className="bg-white border-b border-slate-100 px-6 flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {([
+                      {key:'overview', label:'개요'},
+                      {key:'members', label:'멤버'},
+                      {key:'notices', label:'공지사항'},
+                      {key:'attendance', label:'출석 현황'},
+                    ] as {key:typeof activeTab, label:string}[]).map(tab => (
+                      <button key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`tab-btn ${activeTab===tab.key?'active':''} px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap`}>
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 탭 콘텐츠 */}
+                  <div className="p-6">
+
+                    {/* 개요 */}
+                    {activeTab === 'overview' && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        {/* 최근 공지 */}
+                        <div className="bg-white rounded-2xl border border-slate-100 p-5">
+                          <h3 className="font-bold text-slate-800 mb-4">최근 공지사항</h3>
+                          <div className="space-y-3">
+                            {notices.slice(0,3).map(n => (
+                              <div key={n.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 cursor-pointer">
+                                <div>
+                                  <p className="text-sm font-medium text-slate-700">{n.title}</p>
+                                  <p className="text-xs text-slate-400 mt-0.5">{n.created_at}</p>
+                                </div>
+                                <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                                </svg>
                               </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            ))}
+                            {notices.length === 0 && <p className="text-xs text-slate-400 text-center py-4">공지사항이 없습니다.</p>}
+                          </div>
+                        </div>
+
+                        {/* 출석 현황 요약 */}
+                        <div className="bg-white rounded-2xl border border-slate-100 p-5">
+                          <h3 className="font-bold text-slate-800 mb-4">멤버 출석 현황</h3>
+                          <div className="space-y-3">
+                            {members.slice(0,5).map(m => (
+                              <div key={m.id} className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+                                  style={{background:group.color||'#1258fc'}}>{m.nickname[0]}</div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex justify-between items-center mb-1">
+                                    <p className="text-xs font-semibold text-slate-700 truncate">{m.nickname}</p>
+                                    <span className="text-xs font-bold" style={{color:group.color||'#1258fc'}}>{m.attendance_rate||0}%</span>
+                                  </div>
+                                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="h-full rounded-full" style={{width:`${m.attendance_rate||0}%`, background:group.color||'#1258fc'}}></div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 멤버 */}
+                    {activeTab === 'members' && (
+                      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                          <h3 className="font-bold text-slate-800">멤버 목록 ({members.length}명)</h3>
+                        </div>
+                        <div className="divide-y divide-slate-50">
+                          {members.map(m => (
+                            <div key={m.id} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50">
+                              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                                style={{background:group.color||'#1258fc'}}>{m.nickname[0]}</div>
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-slate-700">{m.nickname}</p>
+                              </div>
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                                style={{background: m.role==='leader'?'#dce6fd':'#f1f5f9', color: m.role==='leader'?'#1258fc':'#64748b'}}>
+                                {m.role==='leader'?'리더':'멤버'}
+                              </span>
+                              <span className="text-xs font-bold" style={{color:group.color||'#1258fc'}}>{m.attendance_rate||0}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 공지사항 */}
+                    {activeTab === 'notices' && (
+                      <div className="bg-white rounded-2xl border border-slate-100">
+                        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                          <h3 className="font-bold text-slate-800">공지사항</h3>
+                          {group.role === 'leader' && (
+                            <button className="text-xs font-semibold px-3 py-1.5 rounded-xl text-white" style={{background:'#1258fc'}}>
+                              + 공지 작성
+                            </button>
+                          )}
+                        </div>
+                        <div className="divide-y divide-slate-50">
+                          {notices.map(n => (
+                            <div key={n.id} className="px-5 py-4 hover:bg-slate-50 cursor-pointer">
+                              <p className="text-sm font-semibold text-slate-800">{n.title}</p>
+                              <p className="text-xs text-slate-400 mt-1">{n.created_at}</p>
+                            </div>
+                          ))}
+                          {notices.length === 0 && (
+                            <div className="px-5 py-10 text-center text-sm text-slate-400">공지사항이 없습니다.</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 출석 현황 */}
+                    {activeTab === 'attendance' && (
+                      <div className="space-y-5">
+
+                        {/* 세션 목록 */}
+                        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-800">세션 목록</h3>
+                            <a href="/support/calendar" className="text-xs font-semibold hover:underline" style={{color:'#1258fc'}}>
+                              캘린더에서 추가 →
+                            </a>
+                          </div>
+                          {sessions.length === 0 ? (
+                            <div className="px-5 py-10 text-center text-sm text-slate-400">예정된 세션이 없습니다.</div>
+                          ) : (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr style={{background:'#f8fafc'}}>
+                                    {['날짜','주제','상태','액션'].map(h => (
+                                      <th key={h} className="px-4 py-2.5 text-left text-xs text-slate-500 font-bold">{h}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                  {sessions.map(s => (
+                                    <tr key={s.id} className="hover:bg-slate-50">
+                                      <td className="px-4 py-3 text-sm text-slate-500 whitespace-nowrap">{s.date}</td>
+                                      <td className="px-4 py-3 text-sm font-medium text-slate-700">{s.topic}</td>
+                                      <td className="px-4 py-3">
+                                        {s.status === 'completed' ? (
+                                          <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{background:'#dcfce7', color:'#16a34a'}}>✅ 완료</span>
+                                        ) : (
+                                          <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{background:'#fef3c7', color:'#d97706'}}>⚠ 미완료</span>
+                                        )}
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        {s.status === 'unchecked' ? (
+                                          <button
+                                            onClick={() => router.push(`/attendance/check?group_id=${id}&session_id=${s.id}`)}
+                                            className="text-xs font-semibold px-3 py-1.5 rounded-xl text-white"
+                                            style={{background:'#1258fc'}}>
+                                            출석 체크
+                                          </button>
+                                        ) : (
+                                          <button
+                                            onClick={() => router.push(`/attendance/check?group_id=${id}&session_id=${s.id}`)}
+                                            className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50">
+                                            결과 보기
+                                          </button>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 멤버 출석 현황 */}
+                        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                          <div className="px-5 py-4 border-b border-slate-100">
+                            <h3 className="font-bold text-slate-800">멤버 출석 현황</h3>
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr style={{background:'#f8fafc'}}>
+                                  {['멤버','출석','지각','결석','출석률'].map(h => (
+                                    <th key={h} className="px-4 py-2.5 text-left text-xs text-slate-500 font-bold">{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-50">
+                                {members.map(m => (
+                                  <tr key={m.id} className="hover:bg-slate-50">
+                                    <td className="px-4 py-3 text-sm font-medium text-slate-700">{m.nickname}</td>
+                                    <td className="px-4 py-3 text-sm text-emerald-600 font-semibold">—</td>
+                                    <td className="px-4 py-3 text-sm text-amber-500 font-semibold">—</td>
+                                    <td className="px-4 py-3 text-sm text-rose-500 font-semibold">—</td>
+                                    <td className="px-4 py-3 text-sm font-bold" style={{color:group.color||'#1258fc'}}>{m.attendance_rate||0}%</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="p-8 text-center text-slate-400">그룹 정보를 불러오는 중...</div>
               )}
             </div>
-          </div>
-
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
