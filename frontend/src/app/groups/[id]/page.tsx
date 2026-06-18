@@ -755,8 +755,9 @@ export default function GroupHomePage() {
     <>
       <style>{`
         * { font-family: 'Pretendard', -apple-system, sans-serif; }
-        .tab-btn { transition: all .2s; border-bottom: 2px solid transparent; }
+        .tab-btn { transition: all .2s; border-bottom: 2px solid transparent; cursor: pointer; }
         .tab-btn.active { color: #0077ff; border-bottom-color: #0077ff; font-weight: 700; }
+        button:not(:disabled) { cursor: pointer; }
         @media (max-width:1024px) {
           #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
           #sidebar.open { transform:translateX(0); }

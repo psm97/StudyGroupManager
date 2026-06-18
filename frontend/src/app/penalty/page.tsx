@@ -179,6 +179,7 @@ export default function PenaltyPage() {
         .toggle-thumb { width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:left 0.2s ease; }
         .toggle-on .toggle-track { background:#ef4444; }
         .toggle-on .toggle-thumb { left:20px; }
+        button:not(:disabled) { cursor: pointer; }
       `}</style>
 
       <div className="bg-blue-100 min-h-screen">

@@ -157,11 +157,12 @@ export default function AIAttendanceAnalysisPage() {
   return (
     <div className="bg-blue-100 min-h-screen">
       <style>{`
-        .model-card { background: #0077ff; border-radius:18px; color:#fff; }
+        .model-card { background: rgb(83, 185, 253); border-radius:18px; color:#fff; }
         .meter-bar { height:8px; border-radius:99px; background:#e2e8f0; overflow:hidden; }
         .meter-fill { height:100%; border-radius:99px; transition:width .6s ease; }
         @keyframes ping { 75%,100%{transform:scale(2);opacity:0} }
         .ping { animation:ping 1.2s cubic-bezier(0,0,.2,1) infinite; }
+        button:not(:disabled) { cursor: pointer; }
       `}</style>
       <div id="sidebarOverlay" onClick={() => {
         document.getElementById('sidebar')?.classList.remove('open');

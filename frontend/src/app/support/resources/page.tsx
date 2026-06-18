@@ -160,6 +160,7 @@ export default function ResourcesPage() {
         .sticky-head th { position:sticky;top:0;z-index:10;background:#f8fafc; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);} }
         .fade-up { animation:fadeUp .35s ease forwards; }
+        button:not(:disabled) { cursor: pointer; }
       `}</style>
 
       <div className="bg-blue-100 min-h-screen">

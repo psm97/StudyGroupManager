@@ -842,6 +842,7 @@ export default function CalendarPage() {
         .modal-btn-primary:hover { background:#0e47d4; }
         .modal-btn-cancel { background:#f1f5f9; color:#64748b; border:none; border-radius:10px;
           padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer; }
+        button:not(:disabled) { cursor: pointer; }
         html[data-theme="dark"] .modal-btn-cancel { background:#334155; color:#94a3b8; }
         @media (max-width:1024px) { #calLeftPanel { display:none !important; } #calRightPanel { display:none !important; } }
         @media (min-width:1025px) and (max-width:1280px) { #calRightPanel { display:none !important; } }

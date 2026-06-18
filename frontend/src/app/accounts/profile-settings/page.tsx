@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 
@@ -8,9 +8,17 @@ type TabKey = 'info' | 'activity' | 'danger';
 
 export default function ProfileSettingsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('info');
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const userNickname: string = '';
   const userEmail: string = '';
   const userDateJoined: string = '';
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProfilePhotoUrl(URL.createObjectURL(file));
+  };
 
   return (
     <>
@@ -31,6 +39,7 @@ export default function ProfileSettingsPage() {
         .form-input { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px; font-size:14px; color:#1e293b; background:#f8fafc; outline:none; transition: border-color .15s, box-shadow .15s; }
         .form-input:focus { border-color:#0077ff; box-shadow:0 0 0 3px rgba(16,85,232,.1); background:#fff; }
         .section-card { background:#fff; border:1px solid #f1f5f9; border-radius:16px; padding:24px; }
+        button:not(:disabled) { cursor: pointer; }
         @media (max-width:1024px) {
           #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
           #sidebar.open { transform:translateX(0); }
@@ -76,17 +85,24 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-0">
                   <div className="flex flex-col gap-5">
                     <div className="section-card rounded-t-none border-t-0 flex flex-col items-center text-center" style={{borderTopLeftRadius:0, borderTopRightRadius:0}}>
-                      <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg border-4 border-white mb-4 mt-2 cursor-pointer"
-                        style={{background:'linear-gradient(135deg,#3a74ef,#0d44c4)'}}>
-                        {userNickname ? userNickname[0].toUpperCase() : 'U'}
-                      </div>
+                      {profilePhotoUrl ? (
+                        <img src={profilePhotoUrl} alt="프로필 사진"
+                          className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white mb-4 mt-2" />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg border-4 border-white mb-4 mt-2"
+                          style={{background:'linear-gradient(135deg,#3a74ef,#0d44c4)'}}>
+                          {userNickname ? userNickname[0].toUpperCase() : 'U'}
+                        </div>
+                      )}
                       <p className="font-bold text-slate-800 text-lg">{userNickname || '사용자'}</p>
                       <p className="text-sm text-slate-400 mb-1">{userEmail}</p>
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold mb-3" style={{background:'#dce6fd', color:'#0077ff'}}>스터디 멤버</span>
                       <p className="text-xs text-slate-400">{userDateJoined}부터 활동</p>
                       <div className="w-full mt-4 pt-4 border-t border-slate-100 space-y-2">
-                        <button className="w-full text-xs font-semibold py-2 rounded-lg border transition-colors"
-                          style={{color:'#0077ff', borderColor:'#c7d7fb', background:'#f0f5fe'}}>
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+                        <button className="w-full text-xs font-semibold py-2 rounded-lg border transition-colors cursor-pointer"
+                          style={{color:'#0077ff', borderColor:'#c7d7fb', background:'#f0f5fe'}}
+                          onClick={() => fileInputRef.current?.click()}>
                           📷 프로필 사진 변경
                         </button>
                       </div>
@@ -122,7 +138,7 @@ export default function ProfileSettingsPage() {
                             <option value="etc">기타</option>
                           </select>
                         </div>
-                        <button className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm transition-colors"
+                        <button className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm transition-colors cursor-pointer"
                           style={{background:'#0077ff'}}>저장하기</button>
                       </div>
                     </div>
@@ -152,7 +168,7 @@ export default function ProfileSettingsPage() {
                   <div className="p-4 rounded-xl border" style={{background:'#fff1f2', borderColor:'#ffe4e6'}}>
                     <p className="text-sm font-bold text-rose-600 mb-2">계정 탈퇴</p>
                     <p className="text-xs text-rose-500 mb-4">탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.</p>
-                    <button className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm" style={{background:'#e11d48'}}>
+                    <button className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm cursor-pointer" style={{background:'#e11d48'}}>
                       계정 탈퇴
                     </button>
                   </div>

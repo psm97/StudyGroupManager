@@ -35,7 +35,7 @@ export default function GroupTabsCard({
   return (
     <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden ${className}`}>
       <style>{`
-        .group-tab-btn { transition: all .2s ease; }
+        .group-tab-btn { transition: all .2s ease; cursor: pointer; }
         .group-tab-btn.active { color: #0077ff; border-bottom: 2px solid #0077ff; font-weight: 700; }
         .group-tab-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
       `}</style>

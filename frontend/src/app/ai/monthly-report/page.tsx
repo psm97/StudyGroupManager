@@ -156,6 +156,7 @@ export default function AIMonthlyReportPage() {
 
   return (
     <div className="bg-blue-100 min-h-screen">
+      <style>{`button:not(:disabled) { cursor: pointer; }`}</style>
       <div id="sidebarOverlay" onClick={() => {
         document.getElementById('sidebar')?.classList.remove('open');
         (document.getElementById('sidebarOverlay') as HTMLElement)?.classList.remove('open');

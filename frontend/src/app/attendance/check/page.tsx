@@ -252,6 +252,7 @@ export default function AttendanceCheckPage() {
         .member-row:hover { background:#f8fafc; }
         .member-row.changed { box-shadow:inset 3px 0 0 #0077ff;background:#f0f5ff; }
         .status-btn:disabled { cursor:not-allowed;opacity:0.45; }
+        button:not(:disabled) { cursor: pointer; }
         .tab-btn { transition: all .2s ease; }
         .tab-btn.active { color: #0077ff; border-bottom: 2px solid #0077ff; font-weight: 700; }
         .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }

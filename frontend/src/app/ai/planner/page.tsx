@@ -180,6 +180,7 @@ export default function AIPlannerPage() {
         .mbar-fill { height:100%; border-radius:99px; transition:width .6s ease; }
         @keyframes blink { 0%,80%,100%{opacity:.3} 40%{opacity:1} }
         .typing-dot { display:inline-block; width:6px; height:6px; background:#94a3b8; border-radius:50%; margin:0 2px; animation:blink 1.2s infinite; }
+        button:not(:disabled) { cursor: pointer; }
       `}</style>
       <div id="sidebarOverlay" onClick={() => {
         document.getElementById('sidebar')?.classList.remove('open');

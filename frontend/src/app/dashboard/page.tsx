@@ -129,6 +129,7 @@ export default function DashboardPage() {
         .group-card { transition: all 0.2s; }
         .group-card:hover { border-color: #93aeee; box-shadow: 0 4px 16px rgba(16,85,232,0.1); }
         .progress-fill { transition: width 0.7s ease; }
+        button:not(:disabled) { cursor: pointer; }
         @media (max-width:1024px) {
           #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
           #sidebar.open { transform:translateX(0); }
