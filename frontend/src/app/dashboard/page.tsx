@@ -114,28 +114,12 @@ export default function DashboardPage() {
   return (
     <>
       <style>{`
-        * { font-family: 'Pretendard', -apple-system, sans-serif; }
-        .nav-link { transition: all 0.2s ease; }
-        .nav-link.active { background: #0077ff; color: #fff; }
-        .nav-link:not(.active):hover { background: #dce6fd; color: #0077ff; }
-        .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
-        .toggle-wrap input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
-        .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-        input:checked + .toggle-slider { background: #0077ff; }
-        input:checked + .toggle-slider::before { transform: translateX(18px); }
         .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,85,232,0.12); }
         .group-card { transition: all 0.2s; }
         .group-card:hover { border-color: #93aeee; box-shadow: 0 4px 16px rgba(16,85,232,0.1); }
         .progress-fill { transition: width 0.7s ease; }
         button:not(:disabled) { cursor: pointer; }
-        @media (max-width:1024px) {
-          #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
-          #sidebar.open { transform:translateX(0); }
-          #sidebarOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:40; }
-          #sidebarOverlay.open { display:block; }
-        }
       `}</style>
 
       <div className="bg-blue-100 min-h-screen">
@@ -144,7 +128,7 @@ export default function DashboardPage() {
           document.getElementById('sidebarOverlay')?.classList.remove('open');
         }}></div>
 
-        <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" id="mainContainer" style={{minHeight:'100vh'}}>
+        <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{minHeight:'100vh'}}>
           <LeftMenu />
           <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <Header />

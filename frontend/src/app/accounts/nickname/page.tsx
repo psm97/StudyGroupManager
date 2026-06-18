@@ -24,6 +24,8 @@ export default function NicknamePage() {
   const [rules, setRules] = useState<RuleStatus>({length:'neutral', chars:'neutral', noSpecial:'neutral', start:'neutral'});
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const currentYear = new Date().getFullYear();
+
 
   const validateLocal = (val: string) => {
     const len = val.length;
@@ -263,7 +265,7 @@ export default function NicknamePage() {
       </div>
 
       <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap z-10" style={{color:'rgba(148,163,184,.7)'}}>
-        © 2025 StudyGroupManager. All rights reserved.
+        © {currentYear} StudyGroupManager. All rights reserved.
       </p>
     </div>
   );

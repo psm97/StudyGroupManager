@@ -754,16 +754,9 @@ export default function GroupHomePage() {
   return (
     <>
       <style>{`
-        * { font-family: 'Pretendard', -apple-system, sans-serif; }
         .tab-btn { transition: all .2s; border-bottom: 2px solid transparent; cursor: pointer; }
         .tab-btn.active { color: #0077ff; border-bottom-color: #0077ff; font-weight: 700; }
         button:not(:disabled) { cursor: pointer; }
-        @media (max-width:1024px) {
-          #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
-          #sidebar.open { transform:translateX(0); }
-          #sidebarOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:40; }
-          #sidebarOverlay.open { display:block; }
-        }
       `}</style>
 
       <div className="bg-blue-100 min-h-screen">
@@ -775,6 +768,7 @@ export default function GroupHomePage() {
         <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{minHeight:'100vh'}}>
           <LeftMenu />
           <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <Header />
             <div className="flex-1 overflow-y-auto bg-slate-50">
 
               {group ? (

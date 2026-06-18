@@ -41,28 +41,12 @@ export default function GroupListPage() {
   return (
     <>
       <style>{`
-        * { font-family: 'Pretendard', -apple-system, sans-serif; }
-        .nav-link { transition: all 0.2s ease; }
-        .nav-link.active { background: #0077ff; color: #fff; }
-        .nav-link:not(.active):hover { background: #dce6fd; color: #0077ff; }
-        .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
-        .toggle-wrap input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
-        .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-        input:checked + .toggle-slider { background: #0077ff; }
-        input:checked + .toggle-slider::before { transform: translateX(18px); }
         .group-card { transition: transform .2s ease, box-shadow .2s ease; cursor: pointer; }
         .group-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(16,85,232,.13); }
         .tab-btn { transition: all .2s ease; }
         .tab-btn.active { color: #0077ff; border-bottom: 2px solid #0077ff; font-weight: 700; }
         .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
         .progress-bar { transition: width 1s cubic-bezier(.22,1,.36,1); }
-        @media (max-width:1024px) {
-          #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
-          #sidebar.open { transform:translateX(0); }
-          #sidebarOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:40; }
-          #sidebarOverlay.open { display:block; }
-        }
       `}</style>
 
       <div className="bg-blue-100 min-h-screen">
@@ -71,7 +55,7 @@ export default function GroupListPage() {
           document.getElementById('sidebarOverlay')?.classList.remove('open');
         }}></div>
 
-        <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" id="mainContainer" style={{minHeight:'100vh'}}>
+        <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{minHeight:'100vh'}}>
           <LeftMenu />
           <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <Header />

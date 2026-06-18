@@ -100,16 +100,6 @@ export default function ProfilePage() {
   return (
     <>
       <style>{`
-        * { font-family: 'Pretendard', -apple-system, sans-serif; }
-        .nav-link { transition: all 0.2s ease; }
-        .nav-link.active { background: #0077ff; color: #fff; }
-        .nav-link:not(.active):hover { background: #dce6fd; color: #0077ff; }
-        .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
-        .toggle-wrap input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
-        .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-        input:checked + .toggle-slider { background: #0077ff; }
-        input:checked + .toggle-slider::before { transform: translateX(18px); }
         .section-card { background: #fff; border: 1px solid #f1f5f9; border-radius: 16px; padding: 22px; }
         .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
         .badge-blue { background:#dce6fd; color:#0077ff; }
@@ -117,12 +107,6 @@ export default function ProfilePage() {
         .badge-rose { background:#ffe4e6; color:#e11d48; }
         .badge-leader { background:#dce6fd; color:#0077ff; }
         .badge-member { background:#f1f5f9; color:#64748b; }
-        @media (max-width:1024px) {
-          #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
-          #sidebar.open { transform:translateX(0); }
-          #sidebarOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:40; }
-          #sidebarOverlay.open { display:block; }
-        }
       `}</style>
 
       <div className="bg-blue-100 min-h-screen">
