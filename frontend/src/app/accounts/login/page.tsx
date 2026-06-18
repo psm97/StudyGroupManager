@@ -40,7 +40,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10 antialiased"
       style={{
-        backgroundColor: '#EFF6FF',
+        backgroundColor: '#effaff',
         backgroundImage: `
           radial-gradient(ellipse 80% 60% at 15% 10%, rgba(37,99,235,.13) 0%, transparent 60%),
           radial-gradient(ellipse 60% 50% at 85% 85%, rgba(30,64,175,.10) 0%, transparent 55%),
