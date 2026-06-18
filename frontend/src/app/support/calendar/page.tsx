@@ -1128,9 +1128,6 @@ export default function CalendarPage() {
               </div>
               <div className="flex justify-end gap-2 mt-5">
                 <button className="modal-btn-cancel" onClick={() => setEventViewModal({ open:false, event:null })}>닫기</button>
-                {e.type === 'session' && e.group_id && (
-                  <button className="modal-btn-primary" onClick={() => { window.location.href=`/attendance/check?group_id=${e.group_id}&session_id=${e.id}`; }}>출석 체크로 이동 →</button>
-                )}
                 {e.type === 'personal' && (
                   <button className="modal-btn-primary" onClick={() => {
                     setEventViewModal({ open:false, event:null });

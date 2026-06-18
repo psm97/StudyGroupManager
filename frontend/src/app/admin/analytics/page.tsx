@@ -1,11 +1,52 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale, LinearScale, PointElement, LineElement,
+  ArcElement, Tooltip, Legend, Filler,
+} from 'chart.js';
+import { Line, Doughnut } from 'react-chartjs-2';
 
-/* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js) */
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler);
+
+const DAU_BASE = [72,68,75,80,77,65,69,83,88,79,71,85,90,87,76,69,74,82,89,84,78,73,81,86,92,88,76,80,85,89];
+const DAU_EXT  = [...DAU_BASE, ...DAU_BASE.map(v=>Math.min(100,v+3)), ...DAU_BASE.slice(0,30).map(v=>Math.max(50,v-5))];
 
 export default function AdminAnalyticsPage() {
   const [period, setPeriod] = useState<'7d'|'30d'|'90d'>('30d');
+
+  const dauChartData = useMemo(() => {
+    const count = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+    const values = period === '7d' ? DAU_BASE.slice(-7) : period === '30d' ? DAU_BASE : DAU_EXT;
+    const labels = Array.from({length: count}, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (count - 1 - i));
+      return `${d.getMonth()+1}/${d.getDate()}`;
+    });
+    return {
+      labels,
+      datasets: [{
+        label: 'DAU',
+        data: values.slice(0, count),
+        borderColor: '#0077ff',
+        backgroundColor: 'rgba(0,119,255,0.07)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: count > 30 ? 2 : 3,
+        pointBackgroundColor: '#0077ff',
+      }],
+    };
+  }, [period]);
+
+  const categoryChartData = {
+    labels: ['IT/개발', '외국어', '자격증', '취업/면접', '기타'],
+    datasets: [{
+      data: [35, 22, 18, 15, 10],
+      backgroundColor: ['#0077ff','#3b82f6','#60a5fa','#93c5fd','#bfdbfe'],
+      borderWidth: 0,
+    }],
+  };
 
   return (
     <div>
@@ -47,15 +88,36 @@ export default function AdminAnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <div className="bg-white rounded-2xl border border-slate-100 p-5" style={{boxShadow:'0 1px 8px rgba(15,23,42,.05)'}}>
           <h2 className="font-bold text-slate-800 mb-4">일별 활성 사용자</h2>
-          {/* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js recharts 등) */}
-          <div className="h-48 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
-            <p className="text-sm text-slate-400">Chart.js 차트 (recharts 등 npm 패키지로 교체 예정)</p>
+          <div className="h-48">
+            <Line
+              data={dauChartData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                scales: {
+                  x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { size: 11 } } },
+                  y: { grid: { color: '#f1f5f9' }, beginAtZero: false, ticks: { font: { size: 11 } } },
+                },
+              }}
+            />
           </div>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 p-5" style={{boxShadow:'0 1px 8px rgba(15,23,42,.05)'}}>
           <h2 className="font-bold text-slate-800 mb-4">카테고리별 그룹 분포</h2>
-          <div className="h-48 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
-            <p className="text-sm text-slate-400">차트 영역 (npm 패키지로 교체 예정)</p>
+          <div className="h-48 flex items-center justify-center">
+            <Doughnut
+              data={categoryChartData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+                  tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%` } },
+                },
+                cutout: '65%',
+              }}
+            />
           </div>
         </div>
       </div>

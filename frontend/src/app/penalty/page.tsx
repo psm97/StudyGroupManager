@@ -1,10 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
+import {
+  Chart as ChartJS,
+  CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 interface MemberSummary {
   userId: string;
@@ -50,12 +57,13 @@ const MOCK_RECORDS: PenaltyRecord[] = [
   { id: 10, memberId: '4', memberNickname: '최지아', reason: '결석 벌금', date: '2025-04-29', amount: 5000, isPaid: true },
 ];
 
+const LEADER_GROUP_IDS = new Set([1]); // 현재 사용자가 리더인 그룹 ID
+
 type SortKey = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
 
 export default function PenaltyPage() {
   const searchParams = useSearchParams();
   const initialGroupId = parseInt(searchParams.get('group_id') || '1') || 1;
-  const isLeader = true; // mock
 
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId);
   const [records, setRecords] = useState<PenaltyRecord[]>(MOCK_RECORDS);
@@ -66,6 +74,7 @@ export default function PenaltyPage() {
   const [ruleModal, setRuleModal] = useState(false);
   const [newAbsentFee, setNewAbsentFee] = useState(String(penaltyRule.absentFee));
   const [newLateFee, setNewLateFee] = useState(String(penaltyRule.lateFee));
+  const isLeader = LEADER_GROUP_IDS.has(selectedGroupId);
   const groupId = String(selectedGroupId);
   const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
 
@@ -75,6 +84,27 @@ export default function PenaltyPage() {
   const unpaidCount = records.filter(r => !r.isPaid).length;
   const paidCount = records.filter(r => r.isPaid).length;
   const paidRate = totalPenalty > 0 ? Math.round((totalPaid / totalPenalty) * 100) : 0;
+
+  const penaltyTrendData = useMemo(() => {
+    const map = new Map<string, {발생: number; 납부: number; 미납: number}>();
+    records.forEach(r => {
+      const [y, m] = r.date.split('-');
+      const key = `${y}-${m}`;
+      if (!map.has(key)) map.set(key, {발생: 0, 납부: 0, 미납: 0});
+      const entry = map.get(key)!;
+      entry.발생 += r.amount;
+      if (r.isPaid) entry.납부 += r.amount; else entry.미납 += r.amount;
+    });
+    const sorted = [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
+    return {
+      labels: sorted.map(([k]) => { const [y, m] = k.split('-'); return `${y}.${m}`; }),
+      datasets: [
+        { label: '발생', data: sorted.map(([,v]) => v.발생), borderColor: '#94a3b8', backgroundColor: 'rgba(148,163,184,0.1)', tension: 0.4, pointRadius: 4 },
+        { label: '납부', data: sorted.map(([,v]) => v.납부), borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)',  tension: 0.4, pointRadius: 4 },
+        { label: '미납', data: sorted.map(([,v]) => v.미납), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',   tension: 0.4, pointRadius: 4 },
+      ],
+    };
+  }, [records]);
 
   const filteredRecords = records
     .filter(r => !unpaidOnly || !r.isPaid)
@@ -167,7 +197,13 @@ export default function PenaltyPage() {
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">벌금 관리</h1>
-              <p className="text-white/70 text-sm mt-1">{selectedGroup.name}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-white/70 text-sm">{selectedGroup.name}</p>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+                  style={{ background: isLeader ? 'rgba(253,230,138,0.25)' : 'rgba(255,255,255,0.15)', color: isLeader ? '#fde68a' : 'rgba(255,255,255,0.7)' }}>
+                  {isLeader ? '👑 리더' : '멤버'}
+                </span>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <div className="border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
@@ -303,9 +339,22 @@ export default function PenaltyPage() {
               <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-red-400 inline-block rounded" />미납</span>
             </div>
           </div>
-          {/* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js penalty-chart) */}
-          <div className="h-60 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 text-sm border border-slate-100">
-            월별 벌금 라인 차트 (Chart.js 통합 필요)
+          <div className="h-60">
+            <Line
+              data={penaltyTrendData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+                  tooltip: { mode: 'index', intersect: false, callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ₩${(ctx.parsed.y as number).toLocaleString()}` } },
+                },
+                scales: {
+                  x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                  y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { font: { size: 11 }, callback: (v) => `₩${(v as number).toLocaleString()}` } },
+                },
+              }}
+            />
           </div>
         </div>
 

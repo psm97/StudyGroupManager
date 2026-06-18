@@ -45,6 +45,8 @@ interface Group {
   color?: string;
 }
 
+const LEADER_GROUP_IDS = new Set([1]); // 현재 사용자가 리더인 그룹 ID
+
 const MOCK_GROUPS: Group[] = [
   { id: 1, name: 'Web Developer Study', color: '#0077ff' },
   { id: 2, name: 'Python 스터디', color: '#10b981' },
@@ -79,6 +81,7 @@ export default function AttendanceCheckPage() {
   const [selectedGroupId, setSelectedGroupId] = useState(parseInt(groupId) || 0);
   const [reasons, setReasons] = useState<Record<string, {type:string;reason:string;fileName:string|null}>>({});
   const [statusFilter, setStatusFilter] = useState<'all'|'present'|'late'|'absent'|'unset'>('all');
+  const isLeader = LEADER_GROUP_IDS.has(selectedGroupId);
 
   useEffect(() => {
     fetch('/groups/api/my-groups/')
@@ -248,6 +251,7 @@ export default function AttendanceCheckPage() {
         .member-row { transition:background 0.15s; }
         .member-row:hover { background:#f8fafc; }
         .member-row.changed { box-shadow:inset 3px 0 0 #0077ff;background:#f0f5ff; }
+        .status-btn:disabled { cursor:not-allowed;opacity:0.45; }
         .tab-btn { transition: all .2s ease; }
         .tab-btn.active { color: #0077ff; border-bottom: 2px solid #0077ff; font-weight: 700; }
         .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
@@ -299,11 +303,23 @@ export default function AttendanceCheckPage() {
 
         <div className="px-4 lg:px-8 py-5 space-y-4">
 
+          {/* 읽기 전용 배너 */}
+          {!isLeader && (
+            <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+              <span className="text-amber-500 text-base flex-shrink-0">🔒</span>
+              <div>
+                <p className="text-sm font-bold text-amber-700">읽기 전용 모드</p>
+                <p className="text-xs text-amber-600 mt-0.5">리더만 출석 내용을 수정할 수 있습니다.</p>
+              </div>
+            </div>
+          )}
+
           {/* 탭 + 컨텐츠 */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div className="flex border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {groupTabs.map(g => {
                 const isActive = activeGroupId === g.id;
+                const isGroupLeader = LEADER_GROUP_IDS.has(g.id);
                 return (
                   <button key={g.id}
                     onClick={() => { setSelectedGroupId(g.id); setStatusFilter('all'); }}
@@ -311,6 +327,9 @@ export default function AttendanceCheckPage() {
                     {g.name}
                     <span className="ml-1.5 badge" style={isActive ? { background: '#dce6fd', color: '#0077ff' } : { background: '#f1f5f9', color: '#64748b' }}>
                       {members.length}명
+                    </span>
+                    <span className="ml-1 badge" style={{ background: isGroupLeader ? '#fef3c7' : '#f1f5f9', color: isGroupLeader ? '#d97706' : '#94a3b8', fontSize: '10px' }}>
+                      {isGroupLeader ? '👑 리더' : '멤버'}
                     </span>
                   </button>
                 );
@@ -343,17 +362,19 @@ export default function AttendanceCheckPage() {
               })}
               </div>
               <div className="flex flex-wrap items-center gap-2 border-t border-slate-50 pt-3">
+              {isLeader && <>
               <span className="text-xs text-slate-500 font-semibold flex-shrink-0">일괄 적용</span>
               <button onClick={() => setAll('present')} className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">✅ 전원 출석</button>
               <button onClick={() => setAll('late')} className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">⏰ 전원 지각</button>
               <button onClick={() => setAll('absent')} className="text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">❌ 전원 결석</button>
               <button onClick={resetAll} className="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">🔄 초기화</button>
+              </>}
               <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100 ml-auto flex-shrink-0">
                 <svg className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span>결석 <span className="font-bold text-red-600">{penaltyRule.absentFee.toLocaleString()}원</span></span>
                 <span className="text-slate-200">·</span>
                 <span>지각 <span className="font-bold text-amber-600">{penaltyRule.lateFee.toLocaleString()}원</span></span>
-                <button onClick={() => { setNewAbsentFee(penaltyRule.absentFee.toString()); setNewLateFee(penaltyRule.lateFee.toString()); setRuleModal(true); }} className="ml-1 text-blue-600 hover:text-blue-800 font-semibold transition-colors">수정</button>
+                {isLeader && <button onClick={() => { setNewAbsentFee(penaltyRule.absentFee.toString()); setNewLateFee(penaltyRule.lateFee.toString()); setRuleModal(true); }} className="ml-1 text-blue-600 hover:text-blue-800 font-semibold transition-colors">수정</button>}
               </div>
               </div>
             </div>
@@ -426,13 +447,13 @@ export default function AttendanceCheckPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          <button type="button" className={`status-btn btn-present ${s.status === 'present' ? 'active' : ''}`} onClick={() => selectStatus(m.id, 'present')}>
+                          <button type="button" className={`status-btn btn-present ${s.status === 'present' ? 'active' : ''}`} onClick={() => selectStatus(m.id, 'present')} disabled={!isLeader}>
                             <span>✅</span><span>출석</span>
                           </button>
-                          <button type="button" className={`status-btn btn-late ${s.status === 'late' ? 'active' : ''}`} onClick={() => selectStatus(m.id, 'late')}>
+                          <button type="button" className={`status-btn btn-late ${s.status === 'late' ? 'active' : ''}`} onClick={() => selectStatus(m.id, 'late')} disabled={!isLeader}>
                             <span>⏰</span><span>지각</span>
                           </button>
-                          <button type="button" className={`status-btn btn-absent ${s.status === 'absent' ? 'active' : ''}`} onClick={() => selectStatus(m.id, 'absent')}>
+                          <button type="button" className={`status-btn btn-absent ${s.status === 'absent' ? 'active' : ''}`} onClick={() => selectStatus(m.id, 'absent')} disabled={!isLeader}>
                             <span>❌</span><span>결석</span>
                           </button>
                         </div>
@@ -509,23 +530,27 @@ export default function AttendanceCheckPage() {
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <button onClick={() => router.back()} className="flex-1 sm:flex-none text-center text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition-colors">취소</button>
-              <button onClick={confirmSave} disabled={saving}
-                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white px-6 py-2.5 rounded-xl transition-colors shadow-sm ${c.filled > 0 ? 'btn-pulse' : ''}`}
-                style={{ background: '#0077ff' }}>
-                {saving ? (
-                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
-                )}
-                {saving ? '저장 중...' : '출석 저장'}
-              </button>
+              {isLeader ? (
+                <button onClick={confirmSave} disabled={saving}
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white px-6 py-2.5 rounded-xl transition-colors shadow-sm ${c.filled > 0 ? 'btn-pulse' : ''}`}
+                  style={{ background: '#0077ff' }}>
+                  {saving ? (
+                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
+                  )}
+                  {saving ? '저장 중...' : '출석 저장'}
+                </button>
+              ) : (
+                <span className="flex-1 sm:flex-none text-center text-sm font-semibold px-6 py-2.5 rounded-xl" style={{background:'#f1f5f9', color:'#94a3b8'}}>🔒 읽기 전용</span>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* 저장 확인 모달 */}
-      {confirmModal && (
+      {isLeader && confirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
             <h2 className="text-lg font-bold text-slate-800 mb-4">출석 저장 확인</h2>
@@ -553,7 +578,7 @@ export default function AttendanceCheckPage() {
       )}
 
       {/* 벌금 규칙 수정 모달 */}
-      {ruleModal && (
+      {isLeader && ruleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
             <h2 className="text-lg font-bold text-slate-800 mb-4">벌금 규칙 수정</h2>

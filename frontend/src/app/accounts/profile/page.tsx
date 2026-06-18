@@ -23,6 +23,22 @@ export default function ProfilePage() {
   const [penalties, setPenalties] = useState<PenaltyItem[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [heatmap, setHeatmap] = useState<number[]>([]);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
+  const [bgPhotoUrl, setBgPhotoUrl] = useState<string | null>(null);
+
+  const handleProfilePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProfilePhotoUrl(URL.createObjectURL(file));
+    e.target.value = '';
+  };
+
+  const handleBgPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBgPhotoUrl(URL.createObjectURL(file));
+    e.target.value = '';
+  };
 
   const userNickname: string = '';
   const userEmail: string = '';
@@ -122,13 +138,44 @@ export default function ProfilePage() {
             <div className="flex-1 overflow-y-auto bg-slate-50">
 
               {/* 프로필 배너 */}
-              <div className="mx-4 mt-4 rounded-t-2xl relative overflow-hidden min-h-[160px] flex flex-col items-center text-center p-8"
-                style={{background:'linear-gradient(135deg, #0077ff 0%, #0077ff 60%, #3eb0ed 100%)'}}>
+              <div className="mx-4 mt-4 rounded-t-2xl relative overflow-hidden min-h-[180px] flex flex-col items-center text-center p-8"
+                style={{
+                  background: bgPhotoUrl
+                    ? `linear-gradient(rgba(0,0,0,0.38),rgba(0,0,0,0.38)) center/cover, url(${bgPhotoUrl}) center/cover`
+                    : 'linear-gradient(135deg, #0077ff 0%, #0077ff 60%, #3eb0ed 100%)',
+                }}>
+
+                {/* 배경 사진 변경 버튼 */}
+                <label className="absolute top-3 right-3 flex items-center gap-1.5 text-xs font-semibold cursor-pointer px-3 py-1.5 rounded-xl transition-colors"
+                  style={{background:'rgba(255,255,255,0.18)', color:'#fff', border:'1px solid rgba(255,255,255,0.3)', backdropFilter:'blur(4px)'}}>
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  배경 사진 변경
+                  <input type="file" accept="image/*" className="hidden" onChange={handleBgPhotoChange} />
+                </label>
+
                 <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{color:'rgba(255,255,255,.7)'}}>✦ 프로필 ✦</p>
-                <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-3 border-4 border-white"
-                  style={{background:'linear-gradient(135deg,#0077ff,#0d44c4)'}}>
-                  {userNickname ? userNickname[0].toUpperCase() : 'U'}
+
+                {/* 프로필 사진 + 수정 버튼 */}
+                <div className="relative mb-3">
+                  <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-white overflow-hidden"
+                    style={{background: profilePhotoUrl ? 'transparent' : 'linear-gradient(135deg,#0077ff,#0d44c4)'}}>
+                    {profilePhotoUrl
+                      ? <img src={profilePhotoUrl} alt="프로필" className="w-full h-full object-cover" />
+                      : (userNickname ? userNickname[0].toUpperCase() : 'U')}
+                  </div>
+                  <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors"
+                    style={{background:'#fff', border:'2px solid #e2e8f0'}}>
+                    <svg className="w-4 h-4" style={{color:'#0077ff'}} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleProfilePhotoChange} />
+                  </label>
                 </div>
+
                 <p className="text-white font-bold text-xl leading-tight mb-5">{userNickname || '사용자'}</p>
               </div>
 
@@ -155,10 +202,6 @@ export default function ProfilePage() {
                           <span className="text-xs font-medium text-slate-600 truncate max-w-[140px]">{item.value}</span>
                         </div>
                       ))}
-                      <div className="flex items-center justify-between py-2.5">
-                        <span className="text-xs text-slate-500">멤버 레벨</span>
-                        <span className="badge badge-blue" style={{fontSize:'11px'}}>스터디 멤버</span>
-                      </div>
                     </div>
                   </div>
 

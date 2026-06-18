@@ -1,12 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
+import {
+  Chart as ChartJS,
+  CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
-/* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js) */
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
 interface MemberRisk {
   user_id: string;
@@ -117,6 +122,37 @@ export default function AIAttendanceAnalysisPage() {
     const rOk = logRiskFilter === 'all' || riskClass(log.risk_score) === logRiskFilter;
     return mOk && rOk;
   });
+
+  const trendChartData = useMemo(() => {
+    const weeks = ['5주전','4주전','3주전','2주전','지난주','이번주'];
+    const base = [88, 85, 82, 79, 76, 73];
+    const danger = memberRisks.filter(m => m.risk_score >= 70).length;
+    const adjustment = danger * 2;
+    return {
+      labels: weeks,
+      datasets: [
+        {
+          label: '그룹 평균 출석률',
+          data: base.map((v, i) => Math.max(50, v - adjustment + i)),
+          borderColor: '#0077ff',
+          backgroundColor: 'rgba(0,119,255,0.08)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#0077ff',
+        },
+        {
+          label: '목표 출석률',
+          data: weeks.map(() => 85),
+          borderColor: '#22c55e',
+          borderDash: [5, 4],
+          backgroundColor: 'transparent',
+          pointRadius: 0,
+          tension: 0,
+        },
+      ],
+    };
+  }, [memberRisks]);
 
   return (
     <div className="bg-blue-100 min-h-screen">
@@ -245,9 +281,22 @@ export default function AIAttendanceAnalysisPage() {
                   <span className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-sm">📈</span>
                   출석 패턴 트렌드
                 </h2>
-                {/* TODO: 패턴 차트 (Chart.js → recharts 교체 예정) */}
-                <div className="h-56 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
-                  <p className="text-sm text-slate-400">출석 패턴 차트 영역 (npm 패키지로 교체 예정)</p>
+                <div className="h-56">
+                  <Line
+                    data={trendChartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+                        tooltip: { mode: 'index', intersect: false },
+                      },
+                      scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                        y: { grid: { color: '#f1f5f9' }, min: 50, max: 100, ticks: { font: { size: 11 }, callback: (v) => `${v}%` } },
+                      },
+                    }}
+                  />
                 </div>
               </div>
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6">

@@ -1,12 +1,17 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
+import {
+  Chart as ChartJS,
+  CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
-/* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js, recharts 등) */
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
 interface WeekSchedule {
   week_label: string;
@@ -127,6 +132,39 @@ export default function AIPlannerPage() {
   const probBadgeClass = achievementProb >= 70 ? 'bg-emerald-50 text-emerald-700' : achievementProb >= 40 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600';
 
   const suggestIcons = ['🎯', '📅', '👥', '📈', '💪', '🔥'];
+
+  const weeklyChartData = useMemo(() => {
+    if (schedule.length > 0) {
+      return {
+        labels: schedule.map(w => w.week_label),
+        datasets: [{
+          label: '달성률',
+          data: schedule.map(w => w.completion_rate),
+          borderColor: '#0077ff',
+          backgroundColor: 'rgba(0,119,255,0.08)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#0077ff',
+        }],
+      };
+    }
+    const mockWeeks = ['1주차','2주차','3주차','4주차','5주차','6주차','7주차','8주차'];
+    const mockData = [0, 25, 40, 55, 45, 62, 72, progressRate];
+    return {
+      labels: mockWeeks,
+      datasets: [{
+        label: '달성률',
+        data: mockData,
+        borderColor: '#0077ff',
+        backgroundColor: 'rgba(0,119,255,0.08)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#0077ff',
+      }],
+    };
+  }, [schedule, progressRate]);
 
   return (
     <div className="bg-blue-100 min-h-screen">
@@ -250,11 +288,24 @@ export default function AIPlannerPage() {
                     )}
                   </div>
                 </div>
-                {/* TODO: 주차별 성과 추이 차트 (recharts 등 npm 패키지로 교체 예정) */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                   <h2 className="font-bold text-slate-800 mb-4">주차별 성과 추이</h2>
-                  <div className="h-44 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
-                    <p className="text-sm text-slate-400">차트 영역 (npm 패키지로 교체 예정)</p>
+                  <div className="h-44">
+                    <Line
+                      data={weeklyChartData}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { callbacks: { label: (ctx) => ` 달성률: ${ctx.parsed.y}%` } },
+                        },
+                        scales: {
+                          x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                          y: { grid: { color: '#f1f5f9' }, min: 0, max: 100, ticks: { font: { size: 11 }, callback: (v) => `${v}%` } },
+                        },
+                      }}
+                    />
                   </div>
                 </div>
               </div>
