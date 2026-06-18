@@ -46,7 +46,7 @@ interface Group {
 }
 
 const MOCK_GROUPS: Group[] = [
-  { id: 1, name: 'Web Developer Study', color: '#1258fc' },
+  { id: 1, name: 'Web Developer Study', color: '#0077ff' },
   { id: 2, name: 'Python 스터디', color: '#10b981' },
 ];
 
@@ -244,12 +244,12 @@ export default function AttendanceCheckPage() {
         .btn-absent { background:#fff1f2;border-color:#fee2e2;color:#fca5a5; }
         .btn-absent.active { background:#fee2e2;border-color:#f87171;color:#dc2626; }
         .prog-track { height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden; }
-        .prog-fill { height:100%;border-radius:99px;transition:width 0.5s ease;background:linear-gradient(90deg,#1258fc,#3a74ef); }
+        .prog-fill { height:100%;border-radius:99px;transition:width 0.5s ease;background:linear-gradient(90deg,#0077ff,#3a74ef); }
         .member-row { transition:background 0.15s; }
         .member-row:hover { background:#f8fafc; }
-        .member-row.changed { box-shadow:inset 3px 0 0 #1258fc;background:#f0f5ff; }
+        .member-row.changed { box-shadow:inset 3px 0 0 #0077ff;background:#f0f5ff; }
         .tab-btn { transition: all .2s ease; }
-        .tab-btn.active { color: #1258fc; border-bottom: 2px solid #1258fc; font-weight: 700; }
+        .tab-btn.active { color: #0077ff; border-bottom: 2px solid #0077ff; font-weight: 700; }
         .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
         .fade-up { animation:fadeUp 0.3s ease forwards; }
@@ -268,7 +268,7 @@ export default function AttendanceCheckPage() {
 
         {/* 세션 정보 배너 */}
         <div className="px-4 lg:px-8 pt-5">
-          <div className="rounded-2xl relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)' }}>
+          <div className="rounded-2xl relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#0077ff 0%,#0077ff 55%,#3eb0ed 100%)' }}>
             <div className="absolute top-0 right-0 w-56 h-56 bg-white opacity-5 rounded-full translate-x-16 -translate-y-16" />
             <div className="relative z-10 px-6 lg:px-10 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
               <div>
@@ -309,7 +309,7 @@ export default function AttendanceCheckPage() {
                     onClick={() => { setSelectedGroupId(g.id); setStatusFilter('all'); }}
                     className={`tab-btn ${isActive ? 'active' : ''} px-5 py-3.5 text-sm text-slate-500 border-b-2 border-transparent -mb-px whitespace-nowrap`}>
                     {g.name}
-                    <span className="ml-1.5 badge" style={isActive ? { background: '#dce6fd', color: '#1258fc' } : { background: '#f1f5f9', color: '#64748b' }}>
+                    <span className="ml-1.5 badge" style={isActive ? { background: '#dce6fd', color: '#0077ff' } : { background: '#f1f5f9', color: '#64748b' }}>
                       {members.length}명
                     </span>
                   </button>
@@ -321,7 +321,7 @@ export default function AttendanceCheckPage() {
               <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-slate-500 flex-shrink-0">상태 필터</span>
               {([
-                { key: 'all' as const, label: '전체', color: '#1258fc', bg: '#dce6fd' },
+                { key: 'all' as const, label: '전체', color: '#0077ff', bg: '#dce6fd' },
                 { key: 'present' as const, label: '출석', color: '#16a34a', bg: '#dcfce7' },
                 { key: 'late' as const, label: '지각', color: '#d97706', bg: '#fef9c3' },
                 { key: 'absent' as const, label: '결석', color: '#dc2626', bg: '#fee2e2' },
@@ -372,7 +372,7 @@ export default function AttendanceCheckPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 flex-shrink-0" style={{ color: '#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <svg className="w-5 h-5 flex-shrink-0" style={{ color: '#0077ff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 <h2 className="font-bold text-slate-800">멤버 출석</h2>
                 <span className="text-xs text-slate-400 font-normal">({filteredMembers.length}/{members.length}명)</span>
               </div>
@@ -413,7 +413,7 @@ export default function AttendanceCheckPage() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <p className="font-semibold text-slate-800 text-sm">{m.nickname}</p>
-                              {m.role === 'leader' && <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#dce6fd', color: '#1258fc' }}>리더</span>}
+                              {m.role === 'leader' && <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: '#dce6fd', color: '#0077ff' }}>리더</span>}
                               {m.hasRecord && <span className="text-xs text-amber-600 font-medium">기존 기록 있음</span>}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -511,7 +511,7 @@ export default function AttendanceCheckPage() {
               <button onClick={() => router.back()} className="flex-1 sm:flex-none text-center text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition-colors">취소</button>
               <button onClick={confirmSave} disabled={saving}
                 className={`flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-bold text-white px-6 py-2.5 rounded-xl transition-colors shadow-sm ${c.filled > 0 ? 'btn-pulse' : ''}`}
-                style={{ background: '#1258fc' }}>
+                style={{ background: '#0077ff' }}>
                 {saving ? (
                   <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
                 ) : (
@@ -533,7 +533,7 @@ export default function AttendanceCheckPage() {
               <div className="rounded-xl p-3" style={{ background: '#dcfce7' }}><p className="text-xl font-bold text-emerald-600">{c.present}</p><p className="text-xs text-emerald-500 mt-0.5">출석</p></div>
               <div className="rounded-xl p-3" style={{ background: '#fef9c3' }}><p className="text-xl font-bold text-amber-600">{c.late}</p><p className="text-xs text-amber-500 mt-0.5">지각</p></div>
               <div className="rounded-xl p-3" style={{ background: '#fee2e2' }}><p className="text-xl font-bold text-red-600">{c.absent}</p><p className="text-xs text-red-500 mt-0.5">결석</p></div>
-              <div className="rounded-xl p-3" style={{ background: '#dce6fd' }}><p className="text-xl font-bold" style={{ color: '#1258fc' }}>{c.rate}%</p><p className="text-xs mt-0.5" style={{ color: '#3a74ef' }}>출석률</p></div>
+              <div className="rounded-xl p-3" style={{ background: '#dce6fd' }}><p className="text-xl font-bold" style={{ color: '#0077ff' }}>{c.rate}%</p><p className="text-xs mt-0.5" style={{ color: '#3a74ef' }}>출석률</p></div>
             </div>
             {c.filled < c.total && <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-3">⚠️ {c.total - c.filled}명의 출석 상태가 입력되지 않았습니다. 미입력 멤버는 건너뜁니다.</p>}
             {c.penalty > 0 && (
@@ -546,7 +546,7 @@ export default function AttendanceCheckPage() {
             <p className="text-xs text-slate-400 mb-5">저장 후 출석률이 자동으로 갱신됩니다.</p>
             <div className="flex gap-3">
               <button onClick={() => setConfirmModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
-              <button onClick={submitAttendance} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#1258fc' }}>저장 완료</button>
+              <button onClick={submitAttendance} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#0077ff' }}>저장 완료</button>
             </div>
           </div>
         </div>
@@ -571,7 +571,7 @@ export default function AttendanceCheckPage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setRuleModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
-              <button onClick={saveRule} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#1258fc' }}>저장</button>
+              <button onClick={saveRule} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#0077ff' }}>저장</button>
             </div>
           </div>
         </div>

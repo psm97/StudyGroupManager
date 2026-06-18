@@ -121,7 +121,7 @@ export default function AIAttendanceAnalysisPage() {
   return (
     <div className="bg-blue-100 min-h-screen">
       <style>{`
-        .model-card { background: linear-gradient(135deg,#0d44c4,#1258fc); border-radius:18px; color:#fff; }
+        .model-card { background: #0077ff; border-radius:18px; color:#fff; }
         .meter-bar { height:8px; border-radius:99px; background:#e2e8f0; overflow:hidden; }
         .meter-fill { height:100%; border-radius:99px; transition:width .6s ease; }
         @keyframes ping { 75%,100%{transform:scale(2);opacity:0} }
@@ -138,7 +138,7 @@ export default function AIAttendanceAnalysisPage() {
           <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
             {/* 배너 */}
-            <div className="rounded-2xl p-5 sm:p-6 text-white" style={{background:'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)'}}>
+            <div className="rounded-2xl p-5 sm:p-6 text-white" style={{background:'linear-gradient(135deg,#0077ff 0%,#0077ff 55%,#3eb0ed 100%)'}}>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -281,7 +281,7 @@ export default function AIAttendanceAnalysisPage() {
                           <span className="text-slate-600">{f.label}</span>
                           <div className="flex items-center gap-2">
                             <div className="w-20 meter-bar">
-                              <div className="meter-fill" style={{width:`${f.weight}%`, background:'#1258fc'}} />
+                              <div className="meter-fill" style={{width:`${f.weight}%`, background:'#0077ff'}} />
                             </div>
                             <span className="text-slate-400 w-8 text-right">{f.weight}%</span>
                           </div>

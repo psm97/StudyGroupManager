@@ -110,7 +110,7 @@ export default function AdminTopbar() {
             <div className="absolute right-0 top-12 w-72 rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50" style={{background:'#fff'}}>
               <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                 <p className="text-sm font-bold text-slate-800">알림</p>
-                <button className="text-xs font-medium hover:underline" style={{color:'#1258fc'}} onClick={() => setNotifPanelOpen(false)}>모두 읽음</button>
+                <button className="text-xs font-medium hover:underline" style={{color:'#0077ff'}} onClick={() => setNotifPanelOpen(false)}>모두 읽음</button>
               </div>
               <div className="max-h-64 overflow-y-auto">
                 <div className="px-4 py-6 text-center text-sm text-slate-400">알림이 없습니다.</div>

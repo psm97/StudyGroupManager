@@ -122,9 +122,9 @@ export default function NoticePage() {
         .notice-card { background:#fff;border:1px solid #f1f5f9;border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease; }
         .notice-card:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,85,232,.08);border-color:#93aeee; }
         .notice-card.pinned { border-left:3px solid #f59e0b; }
-        .notice-card.unread { border-left:3px solid #1258fc; }
+        .notice-card.unread { border-left:3px solid #0077ff; }
         .notice-card.pinned.unread { border-left:3px solid #f59e0b; }
-        .unread-dot { display:inline-block;width:8px;height:8px;border-radius:50%;background:#1258fc;flex-shrink:0;margin-top:3px; }
+        .unread-dot { display:inline-block;width:8px;height:8px;border-radius:50%;background:#0077ff;flex-shrink:0;margin-top:3px; }
         .filter-tab { transition:all .15s ease;white-space:nowrap;cursor:pointer; }
         .filter-tab.active { background:#CED4DA;color:#495057; }
         mark { background:#fef08a;border-radius:2px;padding:0 2px; }
@@ -146,7 +146,7 @@ export default function NoticePage() {
           <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-4">
 
         {/* 배너 */}
-        <div className="rounded-2xl p-5 sm:p-6 text-white fade-up" style={{ background: 'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)' }}>
+        <div className="rounded-2xl p-5 sm:p-6 text-white fade-up" style={{ background: 'linear-gradient(135deg,#0077ff 0%,#0077ff 55%,#3eb0ed 100%)' }}>
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">Notice Board</p>
@@ -208,7 +208,7 @@ export default function NoticePage() {
               <p className="font-bold text-slate-600 mb-1">{searchQuery ? '검색 결과가 없습니다' : '아직 공지사항이 없습니다'}</p>
               <p className="text-sm text-slate-400 mb-5">{searchQuery ? '다른 검색어를 시도해 보세요.' : '그룹 리더가 공지를 작성하면 이곳에 표시됩니다.'}</p>
               {isLeader && !searchQuery && (
-                <button onClick={openCreate} className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm" style={{ background: '#1258fc' }}>
+                <button onClick={openCreate} className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm" style={{ background: '#0077ff' }}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                   첫 공지 작성하기
                 </button>
@@ -231,7 +231,7 @@ export default function NoticePage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       {n.isPinned && <span className="text-amber-500 text-sm flex-shrink-0">📌</span>}
-                      {!n.isRead && <span className="text-xs font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ color: '#1258fc', background: '#eff6ff' }}>NEW</span>}
+                      {!n.isRead && <span className="text-xs font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ color: '#0077ff', background: '#eff6ff' }}>NEW</span>}
                       <h3 className="font-bold text-slate-800 text-sm sm:text-base leading-snug"
                         dangerouslySetInnerHTML={{ __html: highlight(n.title, searchQuery) }} />
                     </div>
@@ -287,7 +287,7 @@ export default function NoticePage() {
             <div className="px-6 pb-6 flex gap-3">
               <button onClick={() => setViewModal(null)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">닫기</button>
               {isLeader && <>
-                <button onClick={() => openEdit(viewModal)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#1258fc' }}>수정</button>
+                <button onClick={() => openEdit(viewModal)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#0077ff' }}>수정</button>
                 <button onClick={() => deleteNotice(viewModal.id, viewModal.title)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors">삭제</button>
               </>}
             </div>
@@ -319,7 +319,7 @@ export default function NoticePage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setCreateModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
-              <button onClick={submitCreate} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#1258fc' }}>작성 완료</button>
+              <button onClick={submitCreate} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#0077ff' }}>작성 완료</button>
             </div>
           </div>
         </div>
@@ -348,7 +348,7 @@ export default function NoticePage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setEditModal(null)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
-              <button onClick={submitEdit} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#1258fc' }}>수정 완료</button>
+              <button onClick={submitEdit} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#0077ff' }}>수정 완료</button>
             </div>
           </div>
         </div>
@@ -358,7 +358,7 @@ export default function NoticePage() {
       {isLeader && (
         <button onClick={openCreate}
           className="fixed bottom-6 right-6 sm:hidden w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all hover:scale-105"
-          style={{ background: '#1258fc' }}>
+          style={{ background: '#0077ff' }}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
         </button>
       )}

@@ -217,11 +217,12 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
+        <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap z-10" style={{color:'rgba(148,163,184,.7)'}}>
+        © {currentYear} StudyGroupManager. All rights reserved.
+        </p>
       </div>
 
-      <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap z-10" style={{color:'rgba(148,163,184,.7)'}}>
-        © {currentYear} StudyGroupManager. All rights reserved.
-      </p>
+
     </div>
   );
 }

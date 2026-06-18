@@ -30,7 +30,7 @@ export default function LeftMenu() {
         :root {
           --bg-sidebar: #ffffff; --bg-nav-hover: #dce6fd;
           --text-heading: #0f172a; --text-nav: #475569;
-          --text-nav-hover: #1258fc; --border-sidebar: #f1f5f9; --text-muted: #94a3b8;
+          --text-nav-hover: #0077ff; --border-sidebar: #f1f5f9; --text-muted: #94a3b8;
         }
         html[data-theme="dark"] {
           --bg-sidebar: #111827; --bg-nav-hover: #1a2d52;
@@ -39,7 +39,7 @@ export default function LeftMenu() {
         }
         #sidebar { background: var(--bg-sidebar) !important; border-color: var(--border-sidebar) !important; transition: transform .3s ease; }
         .nav-link { transition: all .2s ease; }
-        .nav-link.active { background: #1258fc !important; color: #fff !important; }
+        .nav-link.active { background: #0077ff !important; color: #fff !important; }
         .nav-link:not(.active) { color: var(--text-nav) !important; }
         .nav-link:not(.active):hover { background: var(--bg-nav-hover) !important; color: var(--text-nav-hover) !important; }
         #sidebar p.font-bold, #sidebar p.text-sm.leading-tight { color: var(--text-heading) !important; }
@@ -48,7 +48,7 @@ export default function LeftMenu() {
         .toggle-wrap input { opacity: 0; width: 0; height: 0; }
         .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
         .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
-        .toggle-wrap input:checked + .toggle-slider { background: #1258fc; }
+        .toggle-wrap input:checked + .toggle-slider { background: #0077ff; }
         .toggle-wrap input:checked + .toggle-slider::before { transform: translateX(18px); }
         html[data-theme="dark"] .toggle-slider { background: #334155; }
         html[data-theme="dark"] #sidebar .mx-4.mb-5 { background: #1a2d52 !important; border-color: #2a4080 !important; }
@@ -67,7 +67,7 @@ export default function LeftMenu() {
         {/* 로고 */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <a href="/dashboard" className="flex items-center gap-3 group" title="대시보드로 이동">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow transition-transform group-hover:scale-105" style={{background:'#1258fc'}}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow transition-transform group-hover:scale-105" style={{background:'#0077ff'}}>
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -75,7 +75,7 @@ export default function LeftMenu() {
             </div>
             <div>
               <p className="font-bold text-slate-800 leading-tight group-hover:text-blue-700 transition-colors" style={{fontSize:'14px'}}>StudyGroup</p>
-              <p className="font-semibold transition-colors" style={{fontSize:'12px', color:'#1258fc'}}>Manager</p>
+              <p className="font-semibold transition-colors" style={{fontSize:'12px', color:'#0077ff'}}>Manager</p>
             </div>
           </a>
           <button className="lg:hidden text-slate-400 hover:text-slate-600 p-1" onClick={closeSidebar}>
@@ -118,7 +118,7 @@ export default function LeftMenu() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>내 그룹
-                <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'#dce6fd',color:'#1258fc'}}>0</span>
+                <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'#dce6fd',color:'#0077ff'}}>0</span>
               </a>
             </li>
             <li>
@@ -215,20 +215,20 @@ export default function LeftMenu() {
         {/* AI 월간 리포트 위젯 */}
         <div className="mx-4 mb-5 p-4 rounded-2xl border" style={{background:'#eef2fd', borderColor:'#c7d7fb'}}>
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background:'#1258fc'}}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background:'#0077ff'}}>
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
               </svg>
             </div>
-            <p className="font-bold text-sm" style={{color:'#1258fc'}}>AI 월간 리포트</p>
+            <p className="font-bold text-sm" style={{color:'#0077ff'}}>AI 월간 리포트</p>
           </div>
-          <p className="text-xs mb-3 leading-relaxed" style={{color:'#1258fc'}}>출석·벌금 데이터를 AI가 분석하여 리포트를 자동 생성합니다.</p>
+          <p className="text-xs mb-3 leading-relaxed" style={{color:'#0077ff'}}>출석·벌금 데이터를 AI가 분석하여 리포트를 자동 생성합니다.</p>
           <a href="/ai/monthly-report"
             className="block w-full text-center text-white text-xs font-bold py-2 rounded-lg transition-colors"
-            style={{background:'#1258fc'}}
+            style={{background:'#0077ff'}}
             onMouseOver={(e) => (e.currentTarget.style.background = '#0d44c4')}
-            onMouseOut={(e) => (e.currentTarget.style.background = '#1258fc')}>
+            onMouseOut={(e) => (e.currentTarget.style.background = '#0077ff')}>
             시작하기 →
           </a>
         </div>

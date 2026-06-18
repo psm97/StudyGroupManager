@@ -57,7 +57,7 @@ export default function ProfilePage() {
     fetch('/groups/api/my-groups/')
       .then(r => r.json())
       .then(data => setGroups(data))
-      .catch(() => setGroups([{id:1, name:'Web Developer', color:'#1258fc', role:'leader', member_count:6}]));
+      .catch(() => setGroups([{id:1, name:'Web Developer', color:'#0077ff', role:'leader', member_count:6}]));
 
     // Load penalty
     fetch('/penalty/api/my-history/')
@@ -79,27 +79,27 @@ export default function ProfilePage() {
       });
   }, []);
 
-  const colors = ['#f1f5f9','#c7d7fb','#6d98e8','#1258fc'];
+  const colors = ['#f1f5f9','#c7d7fb','#6d98e8','#0077ff'];
 
   return (
     <>
       <style>{`
         * { font-family: 'Pretendard', -apple-system, sans-serif; }
         .nav-link { transition: all 0.2s ease; }
-        .nav-link.active { background: #1258fc; color: #fff; }
-        .nav-link:not(.active):hover { background: #dce6fd; color: #1258fc; }
+        .nav-link.active { background: #0077ff; color: #fff; }
+        .nav-link:not(.active):hover { background: #dce6fd; color: #0077ff; }
         .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
         .toggle-wrap input { opacity: 0; width: 0; height: 0; }
         .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
         .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-        input:checked + .toggle-slider { background: #1258fc; }
+        input:checked + .toggle-slider { background: #0077ff; }
         input:checked + .toggle-slider::before { transform: translateX(18px); }
         .section-card { background: #fff; border: 1px solid #f1f5f9; border-radius: 16px; padding: 22px; }
         .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
-        .badge-blue { background:#dce6fd; color:#1258fc; }
+        .badge-blue { background:#dce6fd; color:#0077ff; }
         .badge-green { background:#dcfce7; color:#16a34a; }
         .badge-rose { background:#ffe4e6; color:#e11d48; }
-        .badge-leader { background:#dce6fd; color:#1258fc; }
+        .badge-leader { background:#dce6fd; color:#0077ff; }
         .badge-member { background:#f1f5f9; color:#64748b; }
         @media (max-width:1024px) {
           #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
@@ -123,10 +123,10 @@ export default function ProfilePage() {
 
               {/* 프로필 배너 */}
               <div className="mx-4 mt-4 rounded-t-2xl relative overflow-hidden min-h-[160px] flex flex-col items-center text-center p-8"
-                style={{background:'linear-gradient(135deg, #1258fc 0%, #0d44c4 60%, #2f72b8 100%)'}}>
+                style={{background:'linear-gradient(135deg, #0077ff 0%, #0077ff 60%, #3eb0ed 100%)'}}>
                 <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{color:'rgba(255,255,255,.7)'}}>✦ 프로필 ✦</p>
                 <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-3 border-4 border-white"
-                  style={{background:'linear-gradient(135deg,#3a74ef,#0d44c4)'}}>
+                  style={{background:'linear-gradient(135deg,#0077ff,#0d44c4)'}}>
                   {userNickname ? userNickname[0].toUpperCase() : 'U'}
                 </div>
                 <p className="text-white font-bold text-xl leading-tight mb-5">{userNickname || '사용자'}</p>
@@ -141,7 +141,7 @@ export default function ProfilePage() {
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">기본 정보</p>
                     <div className="space-y-3">
                       {[
-                        {label:'닉네임', value: userNickname || '-', bg:'#dce6fd', color:'#1258fc'},
+                        {label:'닉네임', value: userNickname || '-', bg:'#dce6fd', color:'#0077ff'},
                         {label:'이메일', value: userEmail || '-', bg:'#dcfce7', color:'#10b981'},
                         {label:'가입일', value: userDateJoined || '-', bg:'#fef3c7', color:'#d97706'},
                       ].map(item => (
@@ -166,7 +166,7 @@ export default function ProfilePage() {
                   <div className="section-card">
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-sm font-bold text-slate-700">참여 중인 그룹</p>
-                      <a href="/groups" className="text-xs font-semibold hover:underline" style={{color:'#1258fc'}}>전체 →</a>
+                      <a href="/groups" className="text-xs font-semibold hover:underline" style={{color:'#0077ff'}}>전체 →</a>
                     </div>
                     <div className="space-y-2">
                       {groups.length === 0 ? (
@@ -174,7 +174,7 @@ export default function ProfilePage() {
                       ) : groups.slice(0,5).map(g => (
                         <a key={g.id} href={`/groups/${g.id}`} className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-blue-50 transition-colors">
                           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-                            style={{background:g.color||'#1258fc'}}>{g.name.charAt(0)}</div>
+                            style={{background:g.color||'#0077ff'}}>{g.name.charAt(0)}</div>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-semibold text-slate-700 truncate">{g.name}</p>
                             <p className="text-xs text-slate-400">{g.role==='leader'?'리더':'멤버'} · {g.member_count}명</p>
@@ -220,7 +220,7 @@ export default function ProfilePage() {
                         <p className="text-xs text-slate-400 mt-0.5">{attendanceMonth}</p>
                       </div>
                       <div className="flex gap-4 text-center">
-                        {[{val:atRate,label:'출석률',color:'#1258fc'},{val:atPresent,label:'출석',color:'#1e293b'},{val:atLate,label:'지각',color:'#f59e0b'},{val:atAbsent,label:'결석',color:'#e11d48'}].map((s,i,arr) => (
+                        {[{val:atRate,label:'출석률',color:'#0077ff'},{val:atPresent,label:'출석',color:'#1e293b'},{val:atLate,label:'지각',color:'#f59e0b'},{val:atAbsent,label:'결석',color:'#e11d48'}].map((s,i,arr) => (
                           <div key={s.label} className="flex gap-4">
                             <div>
                               <p className="text-xl font-bold" style={{color:s.color}}>{s.val}</p>

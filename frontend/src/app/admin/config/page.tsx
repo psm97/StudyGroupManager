@@ -84,7 +84,7 @@ export default function AdminConfigPage() {
                     onChange={e=>setSettings({...settings, auto_penalty:e.target.checked})}
                     className="opacity-0 w-0 h-0 absolute" />
                   <span className="absolute cursor-pointer inset-0 rounded-full transition-all"
-                    style={{background: settings.auto_penalty?'#1258fc':'#e2e8f0'}}
+                    style={{background: settings.auto_penalty?'#0077ff':'#e2e8f0'}}
                     onClick={()=>setSettings({...settings, auto_penalty:!settings.auto_penalty})}>
                     <span className="absolute w-4 h-4 rounded-full bg-white transition-all"
                       style={{bottom:'3px', left: settings.auto_penalty?'19px':'3px'}}></span>
@@ -112,7 +112,7 @@ export default function AdminConfigPage() {
                 <span className="relative inline-block cursor-pointer" style={{width:'40px', height:'22px'}}
                   onClick={()=>setSettings({...settings, [item.key]:!settings[item.key]})}>
                   <span className="absolute inset-0 rounded-full transition-all"
-                    style={{background: settings[item.key]?'#1258fc':'#e2e8f0'}}>
+                    style={{background: settings[item.key]?'#0077ff':'#e2e8f0'}}>
                     <span className="absolute w-4 h-4 rounded-full bg-white transition-all"
                       style={{bottom:'3px', left: settings[item.key]?'19px':'3px'}}></span>
                   </span>

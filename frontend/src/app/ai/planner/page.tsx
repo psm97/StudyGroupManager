@@ -134,9 +134,9 @@ export default function AIPlannerPage() {
         :root { --bg-body:#dbeafe; --bg-main:#f8fafc; --bg-card:#ffffff; --border-card:#e2e8f0; --text-primary:#1e293b; --text-secondary:#64748b; --text-muted:#94a3b8; }
         html[data-theme="dark"] { --bg-body:#0c1120; --bg-main:#1e293b; --bg-card:#1e293b; --border-card:#334155; --text-primary:#f1f5f9; --text-secondary:#94a3b8; --text-muted:#64748b; }
         body { background: var(--bg-body); color: var(--text-primary); }
-        .bubble-user { background:#1258fc; color:#fff; border-radius:18px 18px 4px 18px; padding:10px 16px; max-width:80%; align-self:flex-end; font-size:14px; }
+        .bubble-user { background:#0077ff; color:#fff; border-radius:18px 18px 4px 18px; padding:10px 16px; max-width:80%; align-self:flex-end; font-size:14px; }
         .bubble-ai { background:var(--bg-card); border:1px solid var(--border-card); border-radius:18px 18px 18px 4px; padding:12px 16px; max-width:85%; align-self:flex-start; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,.06); color:var(--text-primary); }
-        .suggest-chip { display:inline-flex; align-items:center; gap:4px; background:#eef3ff; border:1px solid #bacefc; color:#1258fc; border-radius:99px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
+        .suggest-chip { display:inline-flex; align-items:center; gap:4px; background:#eef3ff; border:1px solid #bacefc; color:#0077ff; border-radius:99px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
         .suggest-chip:hover { background:#dce6fd; border-color:#88a8f8; }
         .mbar { height:7px; border-radius:99px; background:#e2e8f0; overflow:hidden; }
         .mbar-fill { height:100%; border-radius:99px; transition:width .6s ease; }
@@ -154,7 +154,7 @@ export default function AIPlannerPage() {
           <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
             {/* 배너 */}
-            <div className="rounded-2xl p-5 sm:p-6 text-white" style={{background:'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)'}}>
+            <div className="rounded-2xl p-5 sm:p-6 text-white" style={{background:'linear-gradient(135deg,#0077ff 0%,#0077ff 55%,#3eb0ed 100%)'}}>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -202,12 +202,12 @@ export default function AIPlannerPage() {
                   <svg className="w-36 h-36" style={{transform:'rotate(-90deg)'}}>
                     <circle fill="none" stroke="#e2e8f0" strokeWidth="10" cx="72" cy="72" r="58"/>
                     <circle fill="none" strokeWidth="10" strokeLinecap="round" cx="72" cy="72" r="58"
-                      stroke="#1258fc"
+                      stroke="#0077ff"
                       strokeDasharray={`${achievementProb * 3.64} 364`}
                       style={{transition:'stroke-dashoffset .9s ease'}}/>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold" style={{color:'#1258fc'}}>{achievementProb}%</span>
+                    <span className="text-3xl font-bold" style={{color:'#0077ff'}}>{achievementProb}%</span>
                     <span className="text-xs text-slate-400 mt-0.5">달성 가능성</span>
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export default function AIPlannerPage() {
                     </span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-500">
-                    <span>현재 진행률</span><span className="font-bold" style={{color:'#1258fc'}}>{progressRate}%</span>
+                    <span>현재 진행률</span><span className="font-bold" style={{color:'#0077ff'}}>{progressRate}%</span>
                   </div>
                 </div>
               </div>
@@ -239,7 +239,7 @@ export default function AIPlannerPage() {
                   <div className="space-y-2">
                     {suggestions.length > 0 ? suggestions.map((s, i) => (
                       <div key={i} className="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                        <span className="mt-0.5 flex-shrink-0" style={{color:'#1258fc'}}>{suggestIcons[i] || '💡'}</span>
+                        <span className="mt-0.5 flex-shrink-0" style={{color:'#0077ff'}}>{suggestIcons[i] || '💡'}</span>
                         <p className="text-sm text-slate-700 leading-relaxed">{s.text}</p>
                       </div>
                     )) : (
@@ -298,7 +298,7 @@ export default function AIPlannerPage() {
                     style={{maxHeight:'120px', background:'#f8fafc'}} />
                   <button onClick={() => sendChat()} disabled={isSending}
                     className="flex-shrink-0 w-10 h-10 text-white rounded-xl flex items-center justify-center transition-colors shadow-sm self-end"
-                    style={{background:'#1258fc'}}>
+                    style={{background:'#0077ff'}}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>
@@ -316,8 +316,8 @@ export default function AIPlannerPage() {
                     <button key={tab} onClick={() => setActiveTab(tab)}
                       className="flex-shrink-0 px-5 sm:px-6 py-4 text-sm transition-colors"
                       style={{
-                        color: activeTab === tab ? '#1258fc' : '#64748b',
-                        borderBottom: activeTab === tab ? '2.5px solid #1258fc' : '2px solid transparent',
+                        color: activeTab === tab ? '#0077ff' : '#64748b',
+                        borderBottom: activeTab === tab ? '2.5px solid #0077ff' : '2px solid transparent',
                         fontWeight: activeTab === tab ? 700 : 400,
                       }}>
                       {tab === 'schedule' ? '📅 생성된 일정' : '📚 학습 자료 추천'}
@@ -336,7 +336,7 @@ export default function AIPlannerPage() {
                       {schedule.map((w, i) => (
                         <div key={i} className="rounded-xl border border-slate-200 bg-white p-4" style={{transition:'transform .18s ease'}}>
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50" style={{color:'#1258fc'}}>{w.week_label}</span>
+                            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50" style={{color:'#0077ff'}}>{w.week_label}</span>
                             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${diffClass(w.difficulty)}`}>난이도 {w.difficulty}</span>
                           </div>
                           <p className="font-bold text-slate-800 text-sm mb-1.5">{w.topic}</p>
@@ -346,7 +346,7 @@ export default function AIPlannerPage() {
                             <span>📎 {w.materials_count}개 자료</span>
                           </div>
                           <div className="mt-3 mbar">
-                            <div className="mbar-fill" style={{width:`${w.completion_rate}%`, background:'#1258fc'}} />
+                            <div className="mbar-fill" style={{width:`${w.completion_rate}%`, background:'#0077ff'}} />
                           </div>
                           <p className="text-right text-xs text-slate-400 mt-1">달성 {w.completion_rate}%</p>
                         </div>
@@ -376,7 +376,7 @@ export default function AIPlannerPage() {
                           <p className="text-xs text-slate-500 mb-2">{item.description}</p>
                           <div className="flex flex-wrap gap-1.5">
                             {item.keywords.map(k => (
-                              <span key={k} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 border border-blue-100" style={{color:'#1258fc'}}>#{k}</span>
+                              <span key={k} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 border border-blue-100" style={{color:'#0077ff'}}>#{k}</span>
                             ))}
                           </div>
                         </div>

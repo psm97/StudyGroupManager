@@ -10,7 +10,7 @@ export interface GroupTabItem {
 }
 
 export const DEFAULT_GROUP_TABS: GroupTabItem[] = [
-  { id: 1, name: 'Web Developer Study', color: '#1258fc', memberCount: 4 },
+  { id: 1, name: 'Web Developer Study', color: '#0077ff', memberCount: 4 },
   { id: 2, name: 'Python 스터디', color: '#10b981', memberCount: 4 },
 ];
 
@@ -36,7 +36,7 @@ export default function GroupTabsCard({
     <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden ${className}`}>
       <style>{`
         .group-tab-btn { transition: all .2s ease; }
-        .group-tab-btn.active { color: #1258fc; border-bottom: 2px solid #1258fc; font-weight: 700; }
+        .group-tab-btn.active { color: #0077ff; border-bottom: 2px solid #0077ff; font-weight: 700; }
         .group-tab-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
       `}</style>
       <div className="flex border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -53,7 +53,7 @@ export default function GroupTabsCard({
               <span
                 className="ml-1.5 group-tab-badge"
                 style={isActive
-                  ? { background: '#dce6fd', color: '#1258fc' }
+                  ? { background: '#dce6fd', color: '#0077ff' }
                   : { background: '#f1f5f9', color: '#64748b' }}
               >
                 {group.memberCount ?? 4}명

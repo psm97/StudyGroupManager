@@ -17,19 +17,19 @@ export default function ProfileSettingsPage() {
       <style>{`
         * { font-family: 'Pretendard', -apple-system, sans-serif; }
         .nav-link { transition: all 0.2s ease; }
-        .nav-link.active { background: #1258fc; color: #fff; }
-        .nav-link:not(.active):hover { background: #dce6fd; color: #1258fc; }
+        .nav-link.active { background: #0077ff; color: #fff; }
+        .nav-link:not(.active):hover { background: #dce6fd; color: #0077ff; }
         .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
         .toggle-wrap input { opacity: 0; width: 0; height: 0; }
         .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
         .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-        input:checked + .toggle-slider { background: #1258fc; }
+        input:checked + .toggle-slider { background: #0077ff; }
         input:checked + .toggle-slider::before { transform: translateX(18px); }
         .tab-btn { transition: all 0.2s; position: relative; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: #1258fc; border-bottom-color: #1258fc; font-weight: 700; }
-        .tab-btn:not(.active):hover { color: #1258fc; background: #f0f5fe; }
+        .tab-btn.active { color: #0077ff; border-bottom-color: #0077ff; font-weight: 700; }
+        .tab-btn:not(.active):hover { color: #0077ff; background: #f0f5fe; }
         .form-input { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px; font-size:14px; color:#1e293b; background:#f8fafc; outline:none; transition: border-color .15s, box-shadow .15s; }
-        .form-input:focus { border-color:#1258fc; box-shadow:0 0 0 3px rgba(16,85,232,.1); background:#fff; }
+        .form-input:focus { border-color:#0077ff; box-shadow:0 0 0 3px rgba(16,85,232,.1); background:#fff; }
         .section-card { background:#fff; border:1px solid #f1f5f9; border-radius:16px; padding:24px; }
         @media (max-width:1024px) {
           #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
@@ -82,11 +82,11 @@ export default function ProfileSettingsPage() {
                       </div>
                       <p className="font-bold text-slate-800 text-lg">{userNickname || '사용자'}</p>
                       <p className="text-sm text-slate-400 mb-1">{userEmail}</p>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold mb-3" style={{background:'#dce6fd', color:'#1258fc'}}>스터디 멤버</span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold mb-3" style={{background:'#dce6fd', color:'#0077ff'}}>스터디 멤버</span>
                       <p className="text-xs text-slate-400">{userDateJoined}부터 활동</p>
                       <div className="w-full mt-4 pt-4 border-t border-slate-100 space-y-2">
                         <button className="w-full text-xs font-semibold py-2 rounded-lg border transition-colors"
-                          style={{color:'#1258fc', borderColor:'#c7d7fb', background:'#f0f5fe'}}>
+                          style={{color:'#0077ff', borderColor:'#c7d7fb', background:'#f0f5fe'}}>
                           📷 프로필 사진 변경
                         </button>
                       </div>
@@ -123,7 +123,7 @@ export default function ProfileSettingsPage() {
                           </select>
                         </div>
                         <button className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm transition-colors"
-                          style={{background:'#1258fc'}}>저장하기</button>
+                          style={{background:'#0077ff'}}>저장하기</button>
                       </div>
                     </div>
                   </div>

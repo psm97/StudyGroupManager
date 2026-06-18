@@ -156,7 +156,7 @@ export default function ResourcesPage() {
         .cat-badge-note { background:#f0fdf4;color:#16a34a; }
         .cat-badge-etc { background:#f8fafc;color:#64748b; }
         .drop-zone { border:2px dashed #93aeee;border-radius:16px;background:#f0f5fe;transition:all .2s ease; }
-        .drop-zone:hover, .drop-zone.drag-over { border-color:#1258fc;background:#dce6fd; }
+        .drop-zone:hover, .drop-zone.drag-over { border-color:#0077ff;background:#dce6fd; }
         .sticky-head th { position:sticky;top:0;z-index:10;background:#f8fafc; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);} }
         .fade-up { animation:fadeUp .35s ease forwards; }
@@ -174,7 +174,7 @@ export default function ResourcesPage() {
           <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-4">
 
         {/* 배너 */}
-        <div className="rounded-2xl p-5 sm:p-6 text-white fade-up" style={{ background: 'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)' }}>
+        <div className="rounded-2xl p-5 sm:p-6 text-white fade-up" style={{ background: 'linear-gradient(135deg,#0077ff 0%,#0077ff 55%,#3eb0ed 100%)' }}>
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">Resource Room</p>
@@ -260,7 +260,7 @@ export default function ResourcesPage() {
                         </div>
                         <p className="font-bold text-slate-500 mb-1">{searchQuery ? '검색 결과가 없습니다' : '업로드된 파일이 없습니다'}</p>
                         <p className="text-xs text-slate-400 mb-5">파일을 업로드하면 멤버 모두와 공유됩니다.</p>
-                        <button onClick={() => setUploadModal(true)} className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm" style={{ background: '#1258fc' }}>파일 업로드</button>
+                        <button onClick={() => setUploadModal(true)} className="inline-flex items-center gap-2 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm" style={{ background: '#0077ff' }}>파일 업로드</button>
                       </td>
                     </tr>
                   ) : filtered.map(r => (
@@ -286,7 +286,7 @@ export default function ResourcesPage() {
                       <td className="px-4 py-3.5 text-slate-400 font-mono text-xs hidden md:table-cell">{r.date}</td>
                       <td className="px-4 py-3.5 text-slate-400 text-xs hidden sm:table-cell">{r.fileSize}</td>
                       <td className="px-4 py-3.5 text-center">
-                        <button onClick={() => recordDownload(r.id)} className="inline-flex items-center gap-1.5 text-sm font-bold hover:text-blue-700 transition-colors" style={{ color: '#1258fc' }}>
+                        <button onClick={() => recordDownload(r.id)} className="inline-flex items-center gap-1.5 text-sm font-bold hover:text-blue-700 transition-colors" style={{ color: '#0077ff' }}>
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                           {r.downloadCount}
                         </button>
@@ -395,7 +395,7 @@ export default function ResourcesPage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => { setUploadModal(false); setUploadFile(null); }} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
-              <button onClick={submitUpload} disabled={uploading} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors disabled:opacity-70" style={{ background: '#1258fc' }}>
+              <button onClick={submitUpload} disabled={uploading} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors disabled:opacity-70" style={{ background: '#0077ff' }}>
                 {uploading ? '업로드 중...' : '업로드'}
               </button>
             </div>
@@ -406,7 +406,7 @@ export default function ResourcesPage() {
       {/* 모바일 FAB */}
       <button onClick={() => setUploadModal(true)}
         className="fixed bottom-6 right-6 sm:hidden w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all hover:scale-105"
-        style={{ background: '#1258fc' }}>
+        style={{ background: '#0077ff' }}>
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
       </button>
     </>

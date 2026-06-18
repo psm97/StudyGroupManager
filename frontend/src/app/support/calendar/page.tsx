@@ -90,8 +90,8 @@ interface MoreEventsModal {
 }
 
 // ── Constants ────────────────────────────────────────────
-const GROUP_COLORS = ['#1258fc', '#7c3aed', '#059669', '#d97706', '#e11d48', '#0891b2', '#9333ea', '#dc2626'];
-const MEMO_COLORS  = ['#2E86AB', '#1258fc', '#7c3aed', '#059669', '#d97706', '#e11d48', '#0891b2', '#9333ea'];
+const GROUP_COLORS = ['#0077ff', '#7c3aed', '#059669', '#d97706', '#e11d48', '#0891b2', '#9333ea', '#dc2626'];
+const MEMO_COLORS  = ['#2E86AB', '#0077ff', '#7c3aed', '#059669', '#d97706', '#e11d48', '#0891b2', '#9333ea'];
 const MONTHS       = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const DAYS_KR      = ['일','월','화','수','목','금','토'];
 
@@ -110,7 +110,7 @@ function fallbackEvents(): CalEvent[] {
     { id:1, title:'Python 알고리즘 세션', date:`${y}-${m}-${p(td)}`, start_time:'14:00', end_time:'16:00',
       group_id:1, group_name:'Python 알고리즘', group_color:'#7c3aed', type:'session', status:'unchecked', topic:'정렬 알고리즘', location:'강남 스터디카페' },
     { id:2, title:'Web Dev 세션', date:`${y}-${m}-${p(Math.min(td+2,28))}`, start_time:'10:00', end_time:'12:00',
-      group_id:2, group_name:'Web Developer', group_color:'#1258fc', type:'session', status:'completed', topic:'React 컴포넌트' },
+      group_id:2, group_name:'Web Developer', group_color:'#0077ff', type:'session', status:'completed', topic:'React 컴포넌트' },
     { id:3, title:'토익 스터디', date:`${y}-${m}-${p(Math.min(td+4,28))}`, start_time:'09:00', end_time:'11:00',
       group_id:3, group_name:'토익 900점', group_color:'#059669', type:'session', status:'unchecked' },
     { id:4, title:'개인: 책 읽기', date:`${y}-${m}-${p(Math.min(td+1,28))}`,
@@ -125,7 +125,7 @@ function fallbackUpcoming(): CalEvent[] {
   const evts: CalEvent[] = [];
   const titles  = ['Python 세션','Web Dev','토익 스터디','개인 리뷰','AI 리포트'];
   const gnames  = ['Python 알고리즘','Web Developer','토익 900점','개인','AI 리포트'];
-  const colors  = ['#7c3aed','#1258fc','#059669','#2E86AB','#d97706'];
+  const colors  = ['#7c3aed','#0077ff','#059669','#2E86AB','#d97706'];
   const times   = ['14:00','10:00','09:00','','15:00'];
   for (let i = 1; i <= 5; i++) {
     const d = new Date(t); d.setDate(t.getDate()+i);
@@ -536,12 +536,12 @@ export default function CalendarPage() {
         <div key={ds} className="month-cell p-1 cursor-pointer" onClick={() => handleDateClick(ds)}>
           <div className="flex justify-end p-0.5 mb-0.5">
             {isToday
-              ? <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-xs font-bold text-white" style={{ background:'#1258fc' }}>{day}</span>
+              ? <span className="w-6 h-6 rounded-full inline-flex items-center justify-center text-xs font-bold text-white" style={{ background:'#0077ff' }}>{day}</span>
               : <span className="text-xs font-medium text-slate-600">{day}</span>}
           </div>
           <div className="space-y-0.5">
             {shown.map(e => {
-              const color = e.color || e.group_color || '#1258fc';
+              const color = e.color || e.group_color || '#0077ff';
               return (
                 <div key={e.id} className="event-chip" style={{ background:`${color}1a`, color, borderLeftColor:color }}
                   onClick={ev => { ev.stopPropagation(); handleEventClick(e.id); }} title={e.title}>
@@ -607,7 +607,7 @@ export default function CalendarPage() {
                   <th key={i} className="week-header-cell py-2 px-1 text-center" style={{ background:'var(--bg-input)', borderBottom:'1px solid var(--border-card)' }}>
                     <span className={`block text-xs font-bold ${i===0?'text-rose-500':i===6?'text-blue-500':'text-slate-500'}`}>{DAYS_KR[i]}</span>
                     <span className={`mx-auto mt-0.5 w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold ${isTodayDay?'text-white':'text-slate-700'}`}
-                      style={isTodayDay?{background:'#1258fc'}:{}}>{day.getDate()}</span>
+                      style={isTodayDay?{background:'#0077ff'}:{}}>{day.getDate()}</span>
                     <span className="block text-xs text-slate-400">{day.getMonth()+1}/{day.getDate()}</span>
                   </th>
                 );
@@ -624,7 +624,7 @@ export default function CalendarPage() {
                 return (
                   <td key={i} className="week-day-cell" style={{ height:'auto', minHeight:30, verticalAlign:'top', padding:3 }}>
                     {allDay.map(e => {
-                      const color = e.color || e.group_color || '#1258fc';
+                      const color = e.color || e.group_color || '#0077ff';
                       return (
                         <div key={e.id} className="event-chip mb-0.5" style={{ background:`${color}1a`, color, borderLeftColor:color }}
                           onClick={() => handleEventClick(e.id)}>
@@ -648,7 +648,7 @@ export default function CalendarPage() {
                     return (
                       <td key={i} className="week-day-cell" onClick={() => handleDateTimeClick(ds, label)}>
                         {slotEvts.map(e => {
-                          const color = e.color || e.group_color || '#1258fc';
+                          const color = e.color || e.group_color || '#0077ff';
                           return (
                             <div key={e.id} className="day-event-block" style={{ borderColor:color, background:`${color}15`, color }}
                               onClick={ev => { ev.stopPropagation(); handleEventClick(e.id); }}>
@@ -682,7 +682,7 @@ export default function CalendarPage() {
           <div className="mb-4 p-3 rounded-xl border border-slate-100" style={{ background:'var(--bg-input)' }}>
             <p className="text-xs font-bold text-slate-500 mb-2">종일</p>
             {allDay.map(e => {
-              const color = e.color || e.group_color || '#1258fc';
+              const color = e.color || e.group_color || '#0077ff';
               return (
                 <div key={e.id} className="event-chip mb-1" style={{ background:`${color}1a`, color, borderLeftColor:color }}
                   onClick={() => handleEventClick(e.id)}>
@@ -703,7 +703,7 @@ export default function CalendarPage() {
               <div className="flex-1 min-h-[50px] py-1.5 cursor-pointer hover:bg-slate-50 rounded transition-colors"
                 onClick={() => handleDateTimeClick(ds, label)}>
                 {slotEvts.map(e => {
-                  const color = e.color || e.group_color || '#1258fc';
+                  const color = e.color || e.group_color || '#0077ff';
                   return (
                     <div key={e.id} className="day-event-block" style={{ borderColor:color, background:`${color}15`, color }}
                       onClick={ev => { ev.stopPropagation(); handleEventClick(e.id); }}>
@@ -729,7 +729,7 @@ export default function CalendarPage() {
       const diff = Math.ceil((ed.getTime() - now.getTime()) / 86400000);
       const dday = diff===0?'D-Day':diff>0?`D-${diff}`:`D+${Math.abs(diff)}`;
       const ddayColor = diff===0?'#e11d48':diff<=3?'#d97706':'#2E86AB';
-      const color = e.color || e.group_color || '#1258fc';
+      const color = e.color || e.group_color || '#0077ff';
       return (
         <div key={e.id} className="flex gap-3 cursor-pointer hover:bg-slate-50 rounded-xl p-2 -mx-2 transition-colors"
           onClick={() => handleEventClick(e.id)}>
@@ -776,7 +776,7 @@ export default function CalendarPage() {
           --bg-header: #ffffff; --bg-content: #f8fafc; --bg-card: #ffffff;
           --bg-input: #f8fafc; --bg-skeleton: #e2e8f0; --bg-nav-hover: #dce6fd;
           --text-primary: #1e293b; --text-secondary: #475569; --text-muted: #94a3b8;
-          --text-heading: #0f172a; --text-nav: #475569; --text-nav-hover: #1258fc;
+          --text-heading: #0f172a; --text-nav: #475569; --text-nav-hover: #0077ff;
           --border-default: #f1f5f9; --border-card: #f1f5f9; --border-input: #e2e8f0;
           --border-sidebar: #f1f5f9; --cal-other: #cbd5e1; --scrollbar-track: #f1f5f9;
         }
@@ -792,10 +792,10 @@ export default function CalendarPage() {
         body { background: var(--bg-body) !important; }
         .mini-cal-day { width:26px; height:26px; display:flex; align-items:center; justify-content:center;
           border-radius:50%; font-size:11px; cursor:pointer; transition:all 0.15s; }
-        .mini-cal-day:hover:not(.today):not(.other) { background:#dce6fd; color:#1258fc; }
-        .mini-cal-day.today { background:#1258fc; color:white; font-weight:700; }
+        .mini-cal-day:hover:not(.today):not(.other) { background:#dce6fd; color:#0077ff; }
+        .mini-cal-day.today { background:#0077ff; color:white; font-weight:700; }
         .mini-cal-day.other { color:var(--cal-other); cursor:default; pointer-events:none; }
-        .mini-cal-day.selected:not(.today) { background:#dce6fd; color:#1258fc; font-weight:600; }
+        .mini-cal-day.selected:not(.today) { background:#dce6fd; color:#0077ff; font-weight:600; }
         .mini-cal-day.has-event { position:relative; }
         .mini-cal-day.has-event::after { content:''; position:absolute; bottom:2px; left:50%;
           transform:translateX(-50%); width:3px; height:3px; background:#2E86AB; border-radius:50%; }
@@ -836,8 +836,8 @@ export default function CalendarPage() {
           font-size:14px; outline:none; transition:border-color .2s; background:var(--bg-input);
           color:var(--text-primary); box-sizing:border-box; }
         html[data-theme="dark"] .modal-input { border-color:#334155; }
-        .modal-input:focus { border-color:#1258fc; box-shadow:0 0 0 3px rgba(18,88,252,.12); }
-        .modal-btn-primary { background:#1258fc; color:#fff; border:none; border-radius:10px;
+        .modal-input:focus { border-color:#0077ff; box-shadow:0 0 0 3px rgba(18,88,252,.12); }
+        .modal-btn-primary { background:#0077ff; color:#fff; border:none; border-radius:10px;
           padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s; }
         .modal-btn-primary:hover { background:#0e47d4; }
         .modal-btn-cancel { background:#f1f5f9; color:#64748b; border:none; border-radius:10px;
@@ -862,7 +862,7 @@ export default function CalendarPage() {
 
             {/* ① Banner */}
             <div className="px-4 lg:px-6 pt-4">
-              <div className="relative rounded-2xl overflow-hidden shadow-md" style={{ background:'linear-gradient(135deg,#1258fc 0%,#286af8 55%,#3a74ef 100%)' }}>
+              <div className="relative rounded-2xl overflow-hidden shadow-md" style={{ background:'linear-gradient(135deg,#0077ff 0%,#0077ff 55%,#3eb0ed 100%)' }}>
                 <div className="absolute top-0 right-0 w-56 h-56 bg-white opacity-5 rounded-full translate-x-20 -translate-y-20"></div>
                 <div className="absolute bottom-0 w-36 h-36 bg-white opacity-5 rounded-full translate-y-14" style={{ left:'33%' }}></div>
                 <div className="relative z-10 px-5 lg:px-7 py-5">
@@ -883,7 +883,7 @@ export default function CalendarPage() {
                         {(['day','week','month'] as ViewType[]).map(v => (
                           <button key={v} onClick={() => setView(v)}
                             className="text-xs font-semibold px-3 py-1.5 rounded-md transition-all"
-                            style={view===v ? { background:'#fff', color:'#1258fc', boxShadow:'0 1px 3px rgba(0,0,0,0.15)' } : { color:'rgba(255,255,255,0.7)' }}>
+                            style={view===v ? { background:'#fff', color:'#0077ff', boxShadow:'0 1px 3px rgba(0,0,0,0.15)' } : { color:'rgba(255,255,255,0.7)' }}>
                             {v==='day'?'일':v==='week'?'주':'월'}
                           </button>
                         ))}
@@ -1073,7 +1073,7 @@ export default function CalendarPage() {
       {/* Event View Modal */}
       {eventViewModal.open && eventViewModal.event && (() => {
         const e = eventViewModal.event!;
-        const color = e.color || e.group_color || '#1258fc';
+        const color = e.color || e.group_color || '#0077ff';
         const st = getStatusBadge(e);
         return (
           <div className="modal-overlay" onClick={() => setEventViewModal({ open:false, event:null })}>
@@ -1152,7 +1152,7 @@ export default function CalendarPage() {
               <button onClick={() => openSessionCreate(dateClickModal.ds)}
                 className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50 transition-colors text-left">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background:'#dce6fd' }}>
-                  <svg style={{ width:18, height:18, color:'#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <svg style={{ width:18, height:18, color:'#0077ff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-800">스터디 세션 생성</p>
@@ -1357,7 +1357,7 @@ export default function CalendarPage() {
             <h2 className="text-base font-bold text-slate-800 mb-3">📅 {moreModal.ds}</h2>
             <div className="space-y-2">
               {moreModal.events.map(e => {
-                const color = e.color || e.group_color || '#1258fc';
+                const color = e.color || e.group_color || '#0077ff';
                 return (
                   <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors"
                     onClick={() => { setMoreModal(s => ({ ...s, open:false })); handleEventClick(e.id); }}>

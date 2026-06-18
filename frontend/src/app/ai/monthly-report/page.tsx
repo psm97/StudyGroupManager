@@ -106,7 +106,7 @@ export default function AIMonthlyReportPage() {
   };
 
   const statusBadge = (s: string) => {
-    if (s === 'done') return { bg: '#dce6fd', color: '#1258fc', text: '완료' };
+    if (s === 'done') return { bg: '#dce6fd', color: '#0077ff', text: '완료' };
     if (s === 'pending') return { bg: '#fef3c7', color: '#b45309', text: '대기' };
     return { bg: '#f0fdf4', color: '#15803d', text: '생성중' };
   };
@@ -144,7 +144,7 @@ export default function AIMonthlyReportPage() {
           <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6">
 
             {/* 배너 */}
-            <div className="rounded-2xl p-5 sm:p-6 text-white mb-5" style={{background:'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)'}}>
+            <div className="rounded-2xl p-5 sm:p-6 text-white mb-5" style={{background:'linear-gradient(135deg,#0077ff 0%,#0077ff 55%,#3eb0ed 100%)'}}>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -239,8 +239,8 @@ export default function AIMonthlyReportPage() {
                           <button key={t.key} onClick={() => setActiveRTab(t.key)}
                             className="flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-blue-600 transition-colors border-b-2"
                             style={{
-                              color: activeRTab === t.key ? '#1258fc' : '#64748b',
-                              borderBottomColor: activeRTab === t.key ? '#1258fc' : 'transparent',
+                              color: activeRTab === t.key ? '#0077ff' : '#64748b',
+                              borderBottomColor: activeRTab === t.key ? '#0077ff' : 'transparent',
                               fontWeight: activeRTab === t.key ? 700 : 400,
                             }}>
                             {t.label}
@@ -255,7 +255,7 @@ export default function AIMonthlyReportPage() {
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                           <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
                             <p className="text-xs text-blue-400 font-semibold mb-1">평균 출석률</p>
-                            <p className="text-2xl font-bold" style={{color:'#1258fc'}}>{currentReport.avg_attendance}%</p>
+                            <p className="text-2xl font-bold" style={{color:'#0077ff'}}>{currentReport.avg_attendance}%</p>
                           </div>
                           <div className="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
                             <p className="text-xs text-slate-400 font-semibold mb-1">총 세션</p>
@@ -321,9 +321,9 @@ export default function AIMonthlyReportPage() {
                                     <td className="px-4 py-3">
                                       <div className="flex items-center gap-2">
                                         <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                                          <div className="h-full rounded-full" style={{width:`${m.paid_rate}%`, background:'#1258fc'}} />
+                                          <div className="h-full rounded-full" style={{width:`${m.paid_rate}%`, background:'#0077ff'}} />
                                         </div>
-                                        <span className="text-xs font-bold w-8 text-right" style={{color:'#1258fc'}}>{m.paid_rate}%</span>
+                                        <span className="text-xs font-bold w-8 text-right" style={{color:'#0077ff'}}>{m.paid_rate}%</span>
                                       </div>
                                     </td>
                                   </tr>
@@ -338,7 +338,7 @@ export default function AIMonthlyReportPage() {
                     {/* AI 인사이트 */}
                     {activeRTab === 'insight' && (
                       <div className="p-5 sm:p-6">
-                        <div className="rounded-2xl p-5 mb-5" style={{background:'linear-gradient(135deg,#0d44c4,#1258fc)'}}>
+                        <div className="rounded-2xl p-5 mb-5" style={{background:'linear-gradient(135deg,#0d44c4,#0077ff)'}}>
                           <div className="flex items-center gap-2 mb-3">
                             <span className="text-xl">🤖</span>
                             <p className="text-sm font-bold text-white/90">AI 종합 평가</p>

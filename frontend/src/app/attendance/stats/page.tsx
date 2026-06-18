@@ -38,7 +38,7 @@ interface Summary {
 
 const MOCK_GROUPS: Group[] = [
   { id: 1, name: 'Python 알고리즘', color: '#7c3aed', memberCount: 5 },
-  { id: 2, name: 'Web Developer Study', color: '#1258fc', memberCount: 6 },
+  { id: 2, name: 'Web Developer Study', color: '#0077ff', memberCount: 6 },
   { id: 3, name: '토익 900점', color: '#059669', memberCount: 4 },
 ];
 
@@ -78,7 +78,7 @@ export default function AttendanceStatsPage() {
     fetch('/groups/api/my-groups/')
       .then(r => r.json())
       .then((data: { id: number; name: string; color: string; member_count: number }[]) => {
-        const gs = data.map(g => ({ id: g.id, name: g.name, color: g.color || '#1258fc', memberCount: g.member_count }));
+        const gs = data.map(g => ({ id: g.id, name: g.name, color: g.color || '#0077ff', memberCount: g.member_count }));
         setGroups(gs);
         if (gs.length > 0) setSelectedGroupId(gs[0].id);
       })
@@ -163,7 +163,7 @@ export default function AttendanceStatsPage() {
     <>
       <style>{`
         .filter-tab { transition: all 0.18s ease; }
-        .filter-tab.active { background: #1258fc; color: #fff; box-shadow: 0 2px 8px rgba(16,85,232,0.3); }
+        .filter-tab.active { background: #0077ff; color: #fff; box-shadow: 0 2px 8px rgba(16,85,232,0.3); }
         .rate-bar  { height: 7px; border-radius: 99px; background: #e2e8f0; overflow: hidden; min-width: 60px; }
         .rate-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
         .cell-present { background: #dcfce7; color: #16a34a; }
@@ -177,7 +177,7 @@ export default function AttendanceStatsPage() {
         .group-card { min-width:160px; cursor:pointer; border-radius:16px; padding:16px; border:2px solid #f1f5f9;
           background:#fff; transition:all 0.18s ease; flex-shrink:0; }
         .group-card:hover { border-color:#93aeee; transform:translateY(-2px); box-shadow:0 6px 20px rgba(16,85,232,.1); }
-        .group-card.selected { border-color:#1258fc; box-shadow:0 0 0 3px rgba(18,88,252,.1); }
+        .group-card.selected { border-color:#0077ff; box-shadow:0 0 0 3px rgba(18,88,252,.1); }
       `}</style>
 
       <div className="bg-blue-100 min-h-screen">
@@ -192,7 +192,7 @@ export default function AttendanceStatsPage() {
           <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
             {/* 배너 */}
-            <div className="rounded-2xl p-5 sm:p-6 text-white" style={{ background: 'linear-gradient(135deg,#0d44c4 0%,#1258fc 50%,#3a74ef 100%)' }}>
+            <div className="rounded-2xl p-5 sm:p-6 text-white" style={{ background: 'linear-gradient(135deg,#0d44c4 0%,#0077ff 50%,#3a74ef 100%)' }}>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
                   <span className="inline-block text-xs font-semibold bg-white/20 rounded-full px-3 py-1 mb-2">출석 관리</span>
@@ -221,7 +221,7 @@ export default function AttendanceStatsPage() {
             {/* 그룹 선택 */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <svg className="w-4 h-4" style={{ color: '#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" style={{ color: '#0077ff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
                 내 스터디 그룹
@@ -242,7 +242,7 @@ export default function AttendanceStatsPage() {
                       <p className="font-semibold text-slate-800 text-sm leading-snug mb-1 line-clamp-2">{g.name}</p>
                       <p className="text-xs text-slate-400">멤버 {g.memberCount}명</p>
                       {selectedGroupId === g.id && (
-                        <div className="mt-2 text-xs font-bold px-2 py-0.5 rounded-full inline-block" style={{ background: '#dce6fd', color: '#1258fc' }}>
+                        <div className="mt-2 text-xs font-bold px-2 py-0.5 rounded-full inline-block" style={{ background: '#dce6fd', color: '#0077ff' }}>
                           선택됨
                         </div>
                       )}
@@ -333,7 +333,7 @@ export default function AttendanceStatsPage() {
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style={{ animationDelay: '280ms' }}>
                   <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                      <svg className="w-4 h-4" style={{ color: '#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" style={{ color: '#0077ff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/>
                       </svg>
                       멤버별 출석 현황
@@ -406,7 +406,7 @@ export default function AttendanceStatsPage() {
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden fade-up" style={{ animationDelay: '360ms' }}>
                   <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                      <svg className="w-4 h-4" style={{ color: '#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" style={{ color: '#0077ff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                       </svg>
                       세션별 출석 현황

@@ -28,7 +28,7 @@ export default function GroupHomePage() {
     fetch(`/groups/api/${id}/`)
       .then(r=>r.json())
       .then(data => setGroup(data))
-      .catch(() => setGroup({id:Number(id), name:'Web Developer Study', member_count:6, role:'leader', attendance_rate:92, color:'#1258fc', leader_name:'김리더', category:'개발'}));
+      .catch(() => setGroup({id:Number(id), name:'Web Developer Study', member_count:6, role:'leader', attendance_rate:92, color:'#0077ff', leader_name:'김리더', category:'개발'}));
 
     fetch(`/groups/api/${id}/members/`)
       .then(r=>r.json())
@@ -61,7 +61,7 @@ export default function GroupHomePage() {
     const Swal = (await import('sweetalert2')).default;
     const unchecked = sessions.filter(s => s.status === 'unchecked');
     if (unchecked.length === 0) {
-      await Swal.fire({ icon: 'info', title: '출석할 세션이 없습니다', text: '현재 미완료 세션이 없습니다.', confirmButtonColor: '#1258fc' });
+      await Swal.fire({ icon: 'info', title: '출석할 세션이 없습니다', text: '현재 미완료 세션이 없습니다.', confirmButtonColor: '#0077ff' });
       return;
     }
     const target = unchecked[0];
@@ -77,7 +77,7 @@ export default function GroupHomePage() {
           <p style="font-size:14px;font-weight:600;color:#1e293b;text-align:center;margin:0">출석 하시겠습니까?</p>
         </div>`,
       confirmButtonText: '출석 완료',
-      confirmButtonColor: '#1258fc',
+      confirmButtonColor: '#0077ff',
       showCancelButton: true,
       cancelButtonText: '취소',
     });
@@ -91,7 +91,7 @@ export default function GroupHomePage() {
     savedAttendance[`g${id}_s${target.id}_m1`] = 'present';
     localStorage.setItem('sgm_attendance', JSON.stringify(savedAttendance));
     setSessions(prev => prev.map(s => s.id === target.id ? { ...s, status: 'completed' } : s));
-    await Swal.fire({ icon: 'success', title: '출석 완료!', text: `"${target.topic}" 출석이 완료되었습니다.`, confirmButtonColor: '#1258fc', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+    await Swal.fire({ icon: 'success', title: '출석 완료!', text: `"${target.topic}" 출석이 완료되었습니다.`, confirmButtonColor: '#0077ff', timer: 2000, timerProgressBar: true, showConfirmButton: false });
   };
 
   const handleWriteReason = async () => {
@@ -108,9 +108,9 @@ export default function GroupHomePage() {
           <div style="margin-bottom:14px">
             <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">사유 유형</label>
             <div style="display:flex;gap:8px">
-              <button onclick="document.querySelectorAll('[data-swal-type]').forEach(b=>{b.style.boxShadow='none';b.style.opacity='0.55'});this.style.boxShadow='0 0 0 2px #1258fc';this.style.opacity='1';document.getElementById('swal-type').value='late';document.getElementById('swal-fwrap').style.display='none'"
+              <button onclick="document.querySelectorAll('[data-swal-type]').forEach(b=>{b.style.boxShadow='none';b.style.opacity='0.55'});this.style.boxShadow='0 0 0 2px #0077ff';this.style.opacity='1';document.getElementById('swal-type').value='late';document.getElementById('swal-fwrap').style.display='none'"
                 data-swal-type style="flex:1;padding:9px;border-radius:10px;border:2px solid #fde68a;background:#fefce8;color:#b45309;font-weight:700;font-size:13px;cursor:pointer;opacity:0.55">⏰ 지각</button>
-              <button onclick="document.querySelectorAll('[data-swal-type]').forEach(b=>{b.style.boxShadow='none';b.style.opacity='0.55'});this.style.boxShadow='0 0 0 2px #1258fc';this.style.opacity='1';document.getElementById('swal-type').value='absent';document.getElementById('swal-fwrap').style.display='block'"
+              <button onclick="document.querySelectorAll('[data-swal-type]').forEach(b=>{b.style.boxShadow='none';b.style.opacity='0.55'});this.style.boxShadow='0 0 0 2px #0077ff';this.style.opacity='1';document.getElementById('swal-type').value='absent';document.getElementById('swal-fwrap').style.display='block'"
                 data-swal-type style="flex:1;padding:9px;border-radius:10px;border:2px solid #fecaca;background:#fff1f2;color:#dc2626;font-weight:700;font-size:13px;cursor:pointer;opacity:0.55">❌ 결석</button>
             </div>
             <input type="hidden" id="swal-type" value="" />
@@ -125,12 +125,12 @@ export default function GroupHomePage() {
               <input type="file" id="swal-file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" style="display:none" onchange="document.getElementById('swal-fname').textContent=this.files[0]?.name||''" />
               <div style="font-size:22px;margin-bottom:4px">📎</div>
               <p style="font-size:13px;color:#64748b;margin:0">클릭하여 파일 선택</p>
-              <p id="swal-fname" style="font-size:12px;color:#1258fc;margin:6px 0 0 0"></p>
+              <p id="swal-fname" style="font-size:12px;color:#0077ff;margin:6px 0 0 0"></p>
             </div>
           </div>
         </div>`,
       confirmButtonText: '제출',
-      confirmButtonColor: '#1258fc',
+      confirmButtonColor: '#0077ff',
       showCancelButton: true,
       cancelButtonText: '취소',
       preConfirm: () => {
@@ -152,7 +152,7 @@ export default function GroupHomePage() {
     const savedAttendance: Record<string, string> = JSON.parse(localStorage.getItem('sgm_attendance') || '{}');
     savedAttendance[`g${id}_s${sess}_m1`] = type;
     localStorage.setItem('sgm_attendance', JSON.stringify(savedAttendance));
-    await Swal.fire({ icon: 'success', title: '사유서 제출 완료', text: '사유서가 성공적으로 제출되었습니다.', confirmButtonColor: '#1258fc', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+    await Swal.fire({ icon: 'success', title: '사유서 제출 완료', text: '사유서가 성공적으로 제출되었습니다.', confirmButtonColor: '#0077ff', timer: 2000, timerProgressBar: true, showConfirmButton: false });
   };
 
   return (
@@ -160,16 +160,16 @@ export default function GroupHomePage() {
       <style>{`
         * { font-family: 'Pretendard', -apple-system, sans-serif; }
         .nav-link { transition: all 0.2s ease; }
-        .nav-link.active { background: #1258fc; color: #fff; }
-        .nav-link:not(.active):hover { background: #dce6fd; color: #1258fc; }
+        .nav-link.active { background: #0077ff; color: #fff; }
+        .nav-link:not(.active):hover { background: #dce6fd; color: #0077ff; }
         .toggle-wrap { position: relative; display: inline-block; width: 40px; height: 22px; }
         .toggle-wrap input { opacity: 0; width: 0; height: 0; }
         .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
         .toggle-slider::before { content:""; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-        input:checked + .toggle-slider { background: #1258fc; }
+        input:checked + .toggle-slider { background: #0077ff; }
         input:checked + .toggle-slider::before { transform: translateX(18px); }
         .tab-btn { transition: all .2s; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: #1258fc; border-bottom-color: #1258fc; font-weight: 700; }
+        .tab-btn.active { color: #0077ff; border-bottom-color: #0077ff; font-weight: 700; }
         @media (max-width:1024px) {
           #sidebar { position:fixed; top:0; left:0; height:100vh; z-index:50; transform:translateX(-100%); }
           #sidebar.open { transform:translateX(0); }
@@ -197,11 +197,11 @@ export default function GroupHomePage() {
                     <div className="flex items-start justify-between gap-4 mb-4">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0"
-                          style={{background:group.color||'#1258fc'}}>{group.name[0]}</div>
+                          style={{background:group.color||'#0077ff'}}>{group.name[0]}</div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h1 className="text-xl font-bold text-slate-800">{group.name}</h1>
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'#dce6fd', color:'#1258fc'}}>
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'#dce6fd', color:'#0077ff'}}>
                               {group.role === 'leader' ? '리더' : '멤버'}
                             </span>
                           </div>
@@ -221,13 +221,13 @@ export default function GroupHomePage() {
                         )}
                         <button
                           className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all"
-                          style={{background:'#1258fc'}}
+                          style={{background:'#0077ff'}}
                           onClick={handleWriteReason}>
                           사유서 작성
                         </button>
                         <button
                           className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all"
-                          style={{background:'#1258fc'}}
+                          style={{background:'#0077ff'}}
                           onClick={handleCheckIn}>
                           출석 체크
                         </button>
@@ -237,7 +237,7 @@ export default function GroupHomePage() {
                     {/* 통계 바 */}
                     <div className="grid grid-cols-3 gap-4 mt-2">
                       {[
-                        {label:'출석률', value:`${group.attendance_rate||0}%`, color:'#1258fc'},
+                        {label:'출석률', value:`${group.attendance_rate||0}%`, color:'#0077ff'},
                         {label:'총 멤버', value:`${group.member_count}명`, color:'#10b981'},
                         {label:'이번 달 세션', value:'4회', color:'#f59e0b'},
                       ].map(s => (
@@ -297,14 +297,14 @@ export default function GroupHomePage() {
                             {members.slice(0,5).map(m => (
                               <div key={m.id} className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-                                  style={{background:group.color||'#1258fc'}}>{m.nickname[0]}</div>
+                                  style={{background:group.color||'#0077ff'}}>{m.nickname[0]}</div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex justify-between items-center mb-1">
                                     <p className="text-xs font-semibold text-slate-700 truncate">{m.nickname}</p>
-                                    <span className="text-xs font-bold" style={{color:group.color||'#1258fc'}}>{m.attendance_rate||0}%</span>
+                                    <span className="text-xs font-bold" style={{color:group.color||'#0077ff'}}>{m.attendance_rate||0}%</span>
                                   </div>
                                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                    <div className="h-full rounded-full" style={{width:`${m.attendance_rate||0}%`, background:group.color||'#1258fc'}}></div>
+                                    <div className="h-full rounded-full" style={{width:`${m.attendance_rate||0}%`, background:group.color||'#0077ff'}}></div>
                                   </div>
                                 </div>
                               </div>
@@ -324,15 +324,15 @@ export default function GroupHomePage() {
                           {members.map(m => (
                             <div key={m.id} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50">
                               <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                                style={{background:group.color||'#1258fc'}}>{m.nickname[0]}</div>
+                                style={{background:group.color||'#0077ff'}}>{m.nickname[0]}</div>
                               <div className="flex-1">
                                 <p className="text-sm font-semibold text-slate-700">{m.nickname}</p>
                               </div>
                               <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                                style={{background: m.role==='leader'?'#dce6fd':'#f1f5f9', color: m.role==='leader'?'#1258fc':'#64748b'}}>
+                                style={{background: m.role==='leader'?'#dce6fd':'#f1f5f9', color: m.role==='leader'?'#0077ff':'#64748b'}}>
                                 {m.role==='leader'?'리더':'멤버'}
                               </span>
-                              <span className="text-xs font-bold" style={{color:group.color||'#1258fc'}}>{m.attendance_rate||0}%</span>
+                              <span className="text-xs font-bold" style={{color:group.color||'#0077ff'}}>{m.attendance_rate||0}%</span>
                             </div>
                           ))}
                         </div>
@@ -345,7 +345,7 @@ export default function GroupHomePage() {
                         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                           <h3 className="font-bold text-slate-800">공지사항</h3>
                           {group.role === 'leader' && (
-                            <button className="text-xs font-semibold px-3 py-1.5 rounded-xl text-white" style={{background:'#1258fc'}}>
+                            <button className="text-xs font-semibold px-3 py-1.5 rounded-xl text-white" style={{background:'#0077ff'}}>
                               + 공지 작성
                             </button>
                           )}
@@ -372,7 +372,7 @@ export default function GroupHomePage() {
                         <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
                           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                             <h3 className="font-bold text-slate-800">세션 목록</h3>
-                            <a href="/support/calendar" className="text-xs font-semibold hover:underline" style={{color:'#1258fc'}}>
+                            <a href="/support/calendar" className="text-xs font-semibold hover:underline" style={{color:'#0077ff'}}>
                               캘린더에서 추가 →
                             </a>
                           </div>
@@ -405,7 +405,7 @@ export default function GroupHomePage() {
                                           <button
                                             onClick={() => router.push(`/attendance/check?group_id=${id}&session_id=${s.id}`)}
                                             className="text-xs font-semibold px-3 py-1.5 rounded-xl text-white"
-                                            style={{background:'#1258fc'}}>
+                                            style={{background:'#0077ff'}}>
                                             출석 체크
                                           </button>
                                         ) : (
@@ -445,7 +445,7 @@ export default function GroupHomePage() {
                                     <td className="px-4 py-3 text-sm text-emerald-600 font-semibold">—</td>
                                     <td className="px-4 py-3 text-sm text-amber-500 font-semibold">—</td>
                                     <td className="px-4 py-3 text-sm text-rose-500 font-semibold">—</td>
-                                    <td className="px-4 py-3 text-sm font-bold" style={{color:group.color||'#1258fc'}}>{m.attendance_rate||0}%</td>
+                                    <td className="px-4 py-3 text-sm font-bold" style={{color:group.color||'#0077ff'}}>{m.attendance_rate||0}%</td>
                                   </tr>
                                 ))}
                               </tbody>

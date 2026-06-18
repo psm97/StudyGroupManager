@@ -137,7 +137,7 @@ export default function PenaltyPage() {
       <style>{`
         .member-penalty-card { transition: transform 0.18s ease, box-shadow 0.18s ease; cursor: pointer; }
         .member-penalty-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(16,85,232,0.1); }
-        .member-penalty-card.active-card { box-shadow: 0 0 0 2px #1258fc, 0 6px 20px rgba(16,85,232,0.15); }
+        .member-penalty-card.active-card { box-shadow: 0 0 0 2px #0077ff, 0 6px 20px rgba(16,85,232,0.15); }
         .badge-paid   { background: #dcfce7; color: #15803d; }
         .badge-unpaid { background: #fee2e2; color: #dc2626; }
         .rate-bar { height: 5px; border-radius: 99px; background: #f1f5f9; overflow: hidden; }
@@ -163,7 +163,7 @@ export default function PenaltyPage() {
           <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
         {/* 배너 */}
-        <div className="rounded-2xl p-5 sm:p-6 text-white" style={{ background: 'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)' }}>
+        <div className="rounded-2xl p-5 sm:p-6 text-white" style={{ background: 'linear-gradient(135deg,#0077ff 0%,#0077ff 55%,#3eb0ed 100%)' }}>
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">벌금 관리</h1>
@@ -254,7 +254,7 @@ export default function PenaltyPage() {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style={{ animationDelay: '80ms' }}>
           <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <h2 className="font-bold text-slate-800 flex items-center gap-2">
-              <svg className="w-4 h-4" style={{ color: '#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              <svg className="w-4 h-4" style={{ color: '#0077ff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4.13a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
               멤버별 벌금 현황
             </h2>
             <span className="text-xs text-slate-400">카드 클릭 시 해당 멤버 내역 필터</span>
@@ -292,7 +292,7 @@ export default function PenaltyPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <div>
               <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                <svg className="w-4 h-4" style={{ color: '#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                <svg className="w-4 h-4" style={{ color: '#0077ff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
                 월별 벌금 추이
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">발생 / 납부 / 미납 금액 월별 추이</p>
@@ -313,7 +313,7 @@ export default function PenaltyPage() {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-up" style={{ animationDelay: '240ms' }}>
           <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2 className="font-bold text-slate-800 flex items-center gap-2">
-              <svg className="w-4 h-4" style={{ color: '#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              <svg className="w-4 h-4" style={{ color: '#0077ff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
               벌금 내역
               <span className="text-xs font-normal text-slate-400 ml-1">({filteredRecords.length}/{records.length}건)</span>
             </h2>
@@ -428,7 +428,7 @@ export default function PenaltyPage() {
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setRuleModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
-              <button onClick={saveRule} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#1258fc' }}>저장</button>
+              <button onClick={saveRule} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors" style={{ background: '#0077ff' }}>저장</button>
             </div>
           </div>
         </div>
