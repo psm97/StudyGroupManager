@@ -1,433 +1,255 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
-import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 
-/* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js) */
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-interface Report {
-  id: number;
-  year: number;
-  month: number;
-  status: 'done' | 'pending' | 'generating';
-  avg_attendance: number;
-  session_count: number;
-  total_penalty: number;
-  created_at: string;
-  ai_insight?: string;
-  total_late?: number;
-  total_absent?: number;
-  paid_penalty?: number;
-  unpaid_penalty?: number;
-  paid_rate?: number;
-  penalty_count?: number;
-  paid_count?: number;
-  key_findings?: { type: 'positive' | 'negative' | 'info'; text: string }[];
-  member_performance?: MemberPerf[];
-  penalty_members?: PenaltyMember[];
-}
+const groupTabs = [{ id: 1, name: 'Web Developer Study' }, { id: 2, name: 'Python 스터디' }];
 
-interface MemberPerf {
-  nickname: string;
-  attendance_rate: number;
-  late_count: number;
-  absent_count: number;
-  penalty: number;
-  contribution: number;
-  improvement_item?: string;
-}
+const reports = [
+  { id: 1, month: '2026-06', label: '2026년 6월', status: 'ready', avgRate: 87, sessions: 4, penalty: 76000 },
+  { id: 2, month: '2026-05', label: '2026년 5월', status: 'ready', avgRate: 84, sessions: 5, penalty: 52000 },
+  { id: 3, month: '2026-04', label: '2026년 4월', status: 'ready', avgRate: 81, sessions: 4, penalty: 61000 },
+  { id: 4, month: '2026-03', label: '2026년 3월', status: 'ready', avgRate: 79, sessions: 5, penalty: 85000 },
+];
 
-interface PenaltyMember {
-  nickname: string;
-  total: number;
-  paid: number;
-  unpaid: number;
-  paid_rate: number;
-}
+const memberPerf = [
+  { rank: 1, name: '최수아', avatar: 'C', rate: 100, late: 0, absent: 0, penalty: 0, contribution: '최우수', improved: '+5%' },
+  { rank: 2, name: '김민수', avatar: 'K', rate: 92, late: 1, absent: 0, penalty: 3000, contribution: '우수', improved: '+2%' },
+  { rank: 3, name: '이지연', avatar: 'L', rate: 87, late: 2, absent: 0, penalty: 6000, contribution: '양호', improved: '+1%' },
+  { rank: 4, name: '정도현', avatar: 'J', rate: 83, late: 2, absent: 1, penalty: 16000, contribution: '보통', improved: '-3%' },
+  { rank: 5, name: '박철수', avatar: 'P', rate: 79, late: 3, absent: 1, penalty: 19000, contribution: '주의', improved: '-1%' },
+  { rank: 6, name: '한예진', avatar: 'H', rate: 67, late: 4, absent: 2, penalty: 32000, contribution: '경고', improved: '-5%' },
+];
 
-export default function AIMonthlyReportPage() {
-  const searchParams = useSearchParams();
-  const initialGroupId = parseInt(searchParams.get('group_id') || '1') || 1;
-  const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId);
-  const [reports, setReports] = useState<Report[]>([]);
-  const [currentReport, setCurrentReport] = useState<Report | null>(null);
-  const [activeRTab, setActiveRTab] = useState<'attendance' | 'penalty' | 'insight' | 'member'>('attendance');
-  const [groupName, setGroupName] = useState('');
-  const [nextReportDate, setNextReportDate] = useState('—');
-  const [loading, setLoading] = useState(true);
-  const groupId = String(selectedGroupId);
-  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
+const barData = {
+  labels: ['6/1 세션1', '6/8 세션2', '6/15 세션3', '6/22 세션4'],
+  datasets: [
+    { label: '출석', data: [6, 5, 5, 6], backgroundColor: '#dcfce7', borderColor: '#16a34a', borderWidth: 1 },
+    { label: '지각', data: [0, 1, 1, 0], backgroundColor: '#fef3c7', borderColor: '#d97706', borderWidth: 1 },
+    { label: '결석', data: [0, 0, 0, 0], backgroundColor: '#fee2e2', borderColor: '#dc2626', borderWidth: 1 },
+  ],
+};
+const barOptions = { responsive: true, plugins: { legend: { position: 'bottom' as const } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#f1f5f9' } } } };
 
-  useEffect(() => {
-    fetch(`/ai/monthly-report/?group_id=${groupId}`)
-      .then(r => r.json())
-      .then(d => {
-        setReports(d.reports || []);
-        setCurrentReport(d.current_report || (d.reports?.[0] ?? null));
-        setGroupName(d.group_name || selectedGroup.name);
-        setNextReportDate(d.next_report_date || '—');
-        setLoading(false);
-      })
-      .catch(() => {
-        const mock: Report[] = [
-          {id:1, year:2025, month:6, status:'done', avg_attendance:88, session_count:8, total_penalty:15000, created_at:'2025.06.30',
-           ai_insight:'전반적으로 출석률이 양호합니다. 특히 이번 달은 목표 대비 높은 참여율을 보여주었습니다.',
-           total_late:3, total_absent:2, paid_penalty:10000, unpaid_penalty:5000, paid_rate:67,
-           key_findings:[
-             {type:'positive', text:'출석률이 전월 대비 5% 향상되었습니다.'},
-             {type:'negative', text:'2명의 멤버가 연속 결석 위험에 있습니다.'},
-           ],
-           member_performance:[
-             {nickname:'홍길동', attendance_rate:95, late_count:0, absent_count:0, penalty:0, contribution:92},
-             {nickname:'김철수', attendance_rate:80, late_count:1, absent_count:1, penalty:5000, contribution:75, improvement_item:'출석 개선 필요'},
-           ],
-           penalty_members:[
-             {nickname:'홍길동', total:0, paid:0, unpaid:0, paid_rate:100},
-             {nickname:'김철수', total:5000, paid:3000, unpaid:2000, paid_rate:60},
-           ],
-          },
-        ];
-        setReports(mock);
-        setCurrentReport(mock[0]);
-        setGroupName(selectedGroup.name);
-        setLoading(false);
-      });
-  }, [groupId, selectedGroup.name]);
+type ReportTab = 'attendance' | 'penalty' | 'insight' | 'members';
 
-  const selectReport = async (id: number) => {
-    try {
-      const res = await fetch(`/ai/monthly-report/${id}/`);
-      const d = await res.json();
-      setCurrentReport(d);
-    } catch { /* keep current */ }
-  };
+const contributionStyle = (c: string) => ({
+  '최우수': { bg: '#dcfce7', color: '#16a34a' },
+  '우수': { bg: '#dce6fd', color: '#1258fc' },
+  '양호': { bg: '#ede9fe', color: '#7c3aed' },
+  '보통': { bg: '#f1f5f9', color: '#64748b' },
+  '주의': { bg: '#fef3c7', color: '#d97706' },
+  '경고': { bg: '#fee2e2', color: '#dc2626' },
+}[c] || { bg: '#f1f5f9', color: '#64748b' });
 
-  const statusBadge = (s: string) => {
-    if (s === 'done') return { bg: '#dce6fd', color: '#1258fc', text: '완료' };
-    if (s === 'pending') return { bg: '#fef3c7', color: '#b45309', text: '대기' };
-    return { bg: '#f0fdf4', color: '#15803d', text: '생성중' };
-  };
-
-  const medalIcon = (i: number) => {
-    if (i === 0) return '🥇';
-    if (i === 1) return '🥈';
-    if (i === 2) return '🥉';
-    return String(i + 1);
-  };
-
-  const findingStyle = (type: string) => {
-    if (type === 'positive') return { bg: 'bg-green-50', border: 'border-green-100', icon: '✅' };
-    if (type === 'negative') return { bg: 'bg-red-50', border: 'border-red-100', icon: '⚠️' };
-    return { bg: 'bg-blue-50', border: 'border-blue-100', icon: '💡' };
-  };
-
-  const rTabLabels = [
-    { key: 'attendance' as const, label: '📋 출석 통계' },
-    { key: 'penalty' as const, label: '💰 벌금 정산' },
-    { key: 'insight' as const, label: '🤖 AI 인사이트' },
-    { key: 'member' as const, label: '👥 멤버 성과' },
-  ];
+export default function MonthlyReportPage() {
+  const [activeGroupId, setActiveGroupId] = useState(1);
+  const [selectedReport, setSelectedReport] = useState(reports[0]);
+  const [reportTab, setReportTab] = useState<ReportTab>('attendance');
 
   return (
-    <div className="bg-blue-100 min-h-screen">
-      <div id="sidebarOverlay" onClick={() => {
-        document.getElementById('sidebar')?.classList.remove('open');
-        (document.getElementById('sidebarOverlay') as HTMLElement)?.classList.remove('open');
-      }} />
-      <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{minHeight:'100vh'}}>
-        <LeftMenu />
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <Header />
-          <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6">
+    <div className="flex h-screen bg-slate-50">
+      <LeftMenu />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-y-auto px-4 lg:px-8 py-6 space-y-5">
 
-            {/* 배너 */}
-            <div className="rounded-2xl p-5 sm:p-6 text-white mb-5" style={{background:'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)'}}>
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold" style={{background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)'}}>
-                      📊 Monthly Report
-                    </span>
-                  </div>
-                  <h1 className="text-2xl sm:text-3xl font-bold">AI 월간 보고서</h1>
-                  <p className="text-white/60 text-sm mt-1">{groupName} · 총 {reports.length}개 리포트</p>
-                </div>
-                <div className="flex flex-wrap gap-2 items-center">
-                  <div className="border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[90px]">
-                    <p className="text-sm font-bold text-blue-200">{nextReportDate}</p>
-                    <p className="text-xs opacity-60 mt-0.5">다음 자동 생성</p>
-                  </div>
-                </div>
+          {/* 배너 */}
+          <div className="rounded-2xl p-5 text-white" style={{ background: 'linear-gradient(135deg,#1258fc,#3a74ef)' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold mb-1">AI 월간 리포트 📋</h2>
+                <p className="text-blue-100 text-sm">AI가 매월 자동으로 스터디 현황을 분석합니다</p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <span className="bg-white/20 text-xs px-3 py-1.5 rounded-full font-semibold">총 {reports.length}개 리포트</span>
+                <span className="bg-white/20 text-xs px-3 py-1.5 rounded-full font-semibold">다음 생성: 2026-07-01</span>
               </div>
             </div>
+          </div>
 
-            {/* 탭 + 컨텐츠 */}
-            <GroupTabsCard
-              activeGroupId={selectedGroupId}
-              onSelect={group => {
-                setSelectedGroupId(group.id);
-                setActiveRTab('attendance');
-              }}
-              className="mb-5"
-            />
+          {/* 그룹 탭 */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="flex border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {groupTabs.map(g => (
+                <button key={g.id} onClick={() => setActiveGroupId(g.id)}
+                  className={`px-5 py-3.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap ${activeGroupId === g.id ? 'text-blue-600 border-blue-600' : 'text-slate-500 border-transparent'}`}>
+                  {g.name}
+                </button>
+              ))}
+            </div>
+          </div>
 
-            {/* Main grid */}
-            <div className="flex flex-col lg:flex-row gap-5">
-              {/* 리포트 목록 */}
-              <div className="lg:w-72 flex-shrink-0 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-slate-700 text-sm">리포트 목록</h2>
-                  <span className="text-xs text-slate-400">{reports.length}개</span>
-                </div>
-                {loading ? (
-                  <div className="bg-white rounded-2xl border border-slate-100 text-center py-8 text-slate-400 text-sm">로딩 중...</div>
-                ) : reports.length === 0 ? (
-                  <div className="bg-white rounded-2xl border border-slate-100 text-center py-10 px-4">
-                    <p className="text-2xl mb-2">📊</p>
-                    <p className="text-sm font-semibold text-slate-500 mb-1">생성된 리포트 없음</p>
-                    <p className="text-xs text-slate-400">매월 말일 자동 생성되거나<br/>직접 생성할 수 있습니다.</p>
+          {/* 2-col 레이아웃 */}
+          <div className="flex flex-col lg:flex-row gap-5">
+            {/* 리포트 목록 */}
+            <div className="lg:w-72 flex-shrink-0 space-y-3">
+              {reports.map(r => (
+                <button key={r.id} onClick={() => setSelectedReport(r)}
+                  className={`w-full text-left bg-white rounded-2xl border-2 p-4 transition-all ${selectedReport.id === r.id ? 'border-blue-500 shadow-md' : 'border-slate-100 hover:border-blue-200'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-slate-800 text-sm">{r.label}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-green-100 text-green-700">완료</span>
                   </div>
-                ) : reports.map((r, idx) => {
-                  const badge = statusBadge(r.status);
-                  return (
-                    <div key={r.id} onClick={() => { selectReport(r.id); setCurrentReport(r); }}
-                      className={`rounded-2xl border p-4 cursor-pointer transition-all ${idx === 0 && currentReport?.id === r.id ? 'border-blue-500' : 'border-slate-200'}`}
-                      style={{background:'#fff', transition:'transform .18s ease, box-shadow .18s ease, border-color .18s ease'}}>
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm">{r.year}년 {r.month}월</p>
-                          <p className="text-xs text-slate-400 mt-0.5 font-mono">{r.created_at} 생성</p>
-                        </div>
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                          style={{background:badge.bg, color:badge.color}}>{badge.text}</span>
+                  <div className="grid grid-cols-3 gap-1 text-center">
+                    {[['출석률', `${r.avgRate}%`, '#1258fc'], ['세션', `${r.sessions}회`, '#10b981'], ['벌금', `₩${(r.penalty / 1000).toFixed(0)}k`, '#dc2626']].map(([l, v, c], i) => (
+                      <div key={i} className="bg-slate-50 rounded-lg py-1.5">
+                        <p className="text-xs text-slate-400">{l}</p>
+                        <p className="text-xs font-bold" style={{ color: c }}>{v}</p>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-center">
-                        <div>
-                          <p className="text-xs font-bold text-slate-700">{r.avg_attendance}%</p>
-                          <p className="text-xs text-slate-400">출석률</p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-700">{r.session_count}회</p>
-                          <p className="text-xs text-slate-400">세션</p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-red-500">{r.total_penalty.toLocaleString()}원</p>
-                          <p className="text-xs text-slate-400">벌금</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* 리포트 상세 */}
+            <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              {/* 리포트 탭 */}
+              <div className="flex border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {([
+                  { key: 'attendance', label: '출석 통계' },
+                  { key: 'penalty', label: '벌금 정산' },
+                  { key: 'insight', label: 'AI 인사이트' },
+                  { key: 'members', label: '멤버 성과' },
+                ] as { key: ReportTab; label: string }[]).map(t => (
+                  <button key={t.key} onClick={() => setReportTab(t.key)}
+                    className={`px-5 py-3.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap ${reportTab === t.key ? 'text-blue-600 border-blue-600' : 'text-slate-500 border-transparent'}`}>
+                    {t.label}
+                  </button>
+                ))}
               </div>
 
-              {/* 리포트 미리보기 */}
-              <div className="flex-1 min-w-0">
-                {currentReport ? (
-                  <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden" style={{boxShadow:'0 4px 24px rgba(0,0,0,.06)'}}>
-                    <div className="px-5 sm:px-6 py-4 border-b border-slate-100">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div>
-                          <h2 className="text-xl font-bold text-slate-800">{currentReport.year}년 {currentReport.month}월 리포트</h2>
-                          <p className="text-xs text-slate-400 mt-0.5">{currentReport.created_at} 생성 · {groupName}</p>
+              <div className="p-5">
+                {/* 출석 통계 */}
+                {reportTab === 'attendance' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[['평균 출석률', `${selectedReport.avgRate}%`, '#1258fc', '#dce6fd'], ['총 세션', `${selectedReport.sessions}회`, '#10b981', '#d1fae5'], ['지각', '6회', '#d97706', '#fef3c7'], ['결석', '2회', '#dc2626', '#fee2e2']].map(([l, v, c, bg], i) => (
+                        <div key={i} className="rounded-xl p-3 text-center" style={{ background: bg }}>
+                          <p className="text-xs mb-1" style={{ color: c }}>{l}</p>
+                          <p className="text-xl font-bold" style={{ color: c }}>{v}</p>
                         </div>
-                      </div>
-                      <div className="flex gap-0 mt-4 border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                        {rTabLabels.map(t => (
-                          <button key={t.key} onClick={() => setActiveRTab(t.key)}
-                            className="flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-blue-600 transition-colors border-b-2"
-                            style={{
-                              color: activeRTab === t.key ? '#1258fc' : '#64748b',
-                              borderBottomColor: activeRTab === t.key ? '#1258fc' : 'transparent',
-                              fontWeight: activeRTab === t.key ? 700 : 400,
-                            }}>
-                            {t.label}
-                          </button>
-                        ))}
-                      </div>
+                      ))}
                     </div>
-
-                    {/* 출석 통계 */}
-                    {activeRTab === 'attendance' && (
-                      <div className="p-5 sm:p-6">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-                          <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
-                            <p className="text-xs text-blue-400 font-semibold mb-1">평균 출석률</p>
-                            <p className="text-2xl font-bold" style={{color:'#1258fc'}}>{currentReport.avg_attendance}%</p>
-                          </div>
-                          <div className="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
-                            <p className="text-xs text-slate-400 font-semibold mb-1">총 세션</p>
-                            <p className="text-2xl font-bold text-slate-700">{currentReport.session_count}회</p>
-                          </div>
-                          <div className="bg-amber-50 rounded-xl p-4 text-center border border-amber-100">
-                            <p className="text-xs text-amber-400 font-semibold mb-1">누적 지각</p>
-                            <p className="text-2xl font-bold text-amber-700">{currentReport.total_late ?? 0}회</p>
-                          </div>
-                          <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100">
-                            <p className="text-xs text-red-400 font-semibold mb-1">누적 결석</p>
-                            <p className="text-2xl font-bold text-red-600">{currentReport.total_absent ?? 0}회</p>
-                          </div>
-                        </div>
-                        {/* TODO: 세션별 출석률 차트 (Chart.js → recharts 교체 예정) */}
-                        <div className="h-48 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
-                          <p className="text-sm text-slate-400">출석률 차트 영역 (npm 패키지로 교체 예정)</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 벌금 정산 */}
-                    {activeRTab === 'penalty' && (
-                      <div className="p-5 sm:p-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-                          <div className="bg-red-50 rounded-xl p-4 border border-red-100">
-                            <p className="text-xs text-red-400 font-semibold mb-1">총 발생</p>
-                            <p className="text-2xl font-bold text-red-600">{(currentReport.total_penalty ?? 0).toLocaleString()}원</p>
-                            <p className="text-xs text-slate-400 mt-1">{currentReport.penalty_count ?? 0}건</p>
-                          </div>
-                          <div className="bg-green-50 rounded-xl p-4 border border-green-100">
-                            <p className="text-xs text-green-400 font-semibold mb-1">납부 완료</p>
-                            <p className="text-2xl font-bold text-green-600">{(currentReport.paid_penalty ?? 0).toLocaleString()}원</p>
-                          </div>
-                          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                            <p className="text-xs text-slate-400 font-semibold mb-1">미납</p>
-                            <p className="text-2xl font-bold text-slate-700">{(currentReport.unpaid_penalty ?? 0).toLocaleString()}원</p>
-                            <p className="text-xs text-slate-400 mt-1">납부율 <strong>{currentReport.paid_rate ?? 0}%</strong></p>
-                          </div>
-                        </div>
-                        {currentReport.penalty_members && currentReport.penalty_members.length > 0 && (
-                          <div className="overflow-x-auto rounded-xl border border-slate-100">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100" style={{background:'#f8fafc'}}>
-                                  {['멤버','발생','납부','미납','납부율'].map(h => <th key={h} className="px-4 py-3 text-left">{h}</th>)}
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-50">
-                                {currentReport.penalty_members.map((m, i) => (
-                                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-4 py-3">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                                          {m.nickname[0]}
-                                        </div>
-                                        <span className="font-medium text-slate-700 text-sm">{m.nickname}</span>
-                                      </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-right font-semibold text-slate-700">{m.total.toLocaleString()}원</td>
-                                    <td className="px-4 py-3 text-right text-green-600 font-semibold">{m.paid.toLocaleString()}원</td>
-                                    <td className="px-4 py-3 text-right text-red-500 font-semibold">{m.unpaid.toLocaleString()}원</td>
-                                    <td className="px-4 py-3">
-                                      <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                                          <div className="h-full rounded-full" style={{width:`${m.paid_rate}%`, background:'#1258fc'}} />
-                                        </div>
-                                        <span className="text-xs font-bold w-8 text-right" style={{color:'#1258fc'}}>{m.paid_rate}%</span>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* AI 인사이트 */}
-                    {activeRTab === 'insight' && (
-                      <div className="p-5 sm:p-6">
-                        <div className="rounded-2xl p-5 mb-5" style={{background:'linear-gradient(135deg,#0d44c4,#1258fc)'}}>
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-xl">🤖</span>
-                            <p className="text-sm font-bold text-white/90">AI 종합 평가</p>
-                            <span className="text-xs text-white/40 ml-auto">GPT-4o 생성</span>
-                          </div>
-                          <p className="text-sm text-white/80 leading-relaxed">
-                            {currentReport.ai_insight || 'AI 인사이트를 불러오는 중...'}
-                          </p>
-                        </div>
-                        <h3 className="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-xs">🔍</span>
-                          주요 발견 사항
-                        </h3>
-                        <div className="space-y-2.5">
-                          {(currentReport.key_findings || []).map((f, i) => {
-                            const fs = findingStyle(f.type);
-                            return (
-                              <div key={i} className={`flex items-start gap-3 p-3.5 rounded-xl border ${fs.bg} ${fs.border}`}>
-                                <span className="flex-shrink-0 text-base mt-0.5">{fs.icon}</span>
-                                <p className="text-sm text-slate-700 leading-relaxed">{f.text}</p>
-                              </div>
-                            );
-                          })}
-                          {(!currentReport.key_findings || currentReport.key_findings.length === 0) && (
-                            <div className="text-center py-6 text-slate-400 text-sm">분석 데이터가 없습니다.</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 멤버 성과 */}
-                    {activeRTab === 'member' && (
-                      <div className="p-5 sm:p-6">
-                        <div className="overflow-x-auto rounded-xl border border-slate-100">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100" style={{background:'#f8fafc'}}>
-                                {['순위','멤버','출석률','지각','결석','벌금','기여도','개선 항목'].map(h => (
-                                  <th key={h} className="px-4 py-3 text-center">{h}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                              {(currentReport.member_performance || []).map((m, i) => (
-                                <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                  <td className="px-4 py-3 text-center">{medalIcon(i)}</td>
-                                  <td className="px-4 py-3">
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                                        {m.nickname[0]}
-                                      </div>
-                                      <span className="font-semibold text-slate-800 text-sm">{m.nickname}</span>
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-3 text-center">
-                                    <span className={`font-bold text-sm ${m.attendance_rate >= 80 ? 'text-green-600' : m.attendance_rate >= 60 ? 'text-amber-600' : 'text-red-500'}`}>
-                                      {m.attendance_rate}%
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-3 text-center text-slate-500">{m.late_count}</td>
-                                  <td className="px-4 py-3 text-center text-slate-500">{m.absent_count}</td>
-                                  <td className="px-4 py-3 text-right text-slate-600 font-semibold">{m.penalty.toLocaleString()}원</td>
-                                  <td className="px-4 py-3 text-center">
-                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${m.contribution >= 80 ? 'bg-green-50 text-green-700' : m.contribution >= 60 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'}`}>
-                                      {m.contribution}점
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-3 text-center text-xs text-slate-500">{m.improvement_item || '—'}</td>
-                                </tr>
-                              ))}
-                              {(!currentReport.member_performance || currentReport.member_performance.length === 0) && (
-                                <tr><td colSpan={8} className="text-center py-8 text-slate-400 text-sm">데이터 없음</td></tr>
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
+                    <Bar data={barData} options={barOptions} />
                   </div>
-                ) : (
-                  <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center" style={{boxShadow:'0 4px 24px rgba(0,0,0,.06)'}}>
-                    <div className="text-5xl mb-4">📊</div>
-                    <h3 className="font-bold text-slate-700 text-lg mb-2">아직 생성된 리포트가 없습니다</h3>
-                    <p className="text-slate-400 text-sm">매월 말일 자동으로 생성되거나, 직접 생성 버튼을 눌러 만들 수 있습니다.</p>
+                )}
+
+                {/* 벌금 정산 */}
+                {reportTab === 'penalty' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      {[['총 발생', `₩${selectedReport.penalty.toLocaleString()}`, '#1258fc', '#dce6fd'], ['납부완료', '₩81,000', '#16a34a', '#dcfce7'], ['미납', '₩76,000', '#dc2626', '#fee2e2']].map(([l, v, c, bg], i) => (
+                        <div key={i} className="rounded-xl p-3 text-center" style={{ background: bg }}>
+                          <p className="text-xs mb-1" style={{ color: c }}>{l}</p>
+                          <p className="text-base font-bold" style={{ color: c }}>{v}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                      <table className="w-full text-sm">
+                        <thead><tr className="text-xs text-slate-400 border-b border-slate-100">
+                          <th className="pb-2 text-left">멤버</th><th className="pb-2 text-center">결석</th><th className="pb-2 text-center">지각</th><th className="pb-2 text-right">벌금</th><th className="pb-2 text-center">상태</th>
+                        </tr></thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {memberPerf.map(m => (
+                            <tr key={m.rank} className="hover:bg-slate-50">
+                              <td className="py-2.5 font-medium text-slate-700">{m.name}</td>
+                              <td className="py-2.5 text-center text-red-500">{m.absent}</td>
+                              <td className="py-2.5 text-center text-amber-600">{m.late}</td>
+                              <td className="py-2.5 text-right font-semibold text-slate-700">₩{m.penalty.toLocaleString()}</td>
+                              <td className="py-2.5 text-center">
+                                <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: m.penalty === 0 ? '#dcfce7' : '#fef3c7', color: m.penalty === 0 ? '#16a34a' : '#d97706' }}>
+                                  {m.penalty === 0 ? '없음' : '미납'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI 인사이트 */}
+                {reportTab === 'insight' && (
+                  <div className="space-y-4">
+                    <div className="rounded-2xl p-5 text-white" style={{ background: 'linear-gradient(135deg,#7c3aed,#1258fc)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xl">🤖</span>
+                        <h4 className="font-bold">{selectedReport.label} AI 분석</h4>
+                      </div>
+                      <p className="text-sm text-purple-100 leading-relaxed">
+                        이번 달 평균 출석률 87%로 전월 대비 3% 향상되었습니다. Web Developer Study 그룹의 출석률이 안정적으로 유지되고 있으며, 최수아 멤버가 100% 출석으로 그룹에 긍정적인 영향을 주고 있습니다. 한예진 멤버의 지속적인 출석 감소에 주의가 필요합니다.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      {[
+                        { icon: '✅', text: '출석률이 전월 대비 3% 향상되었습니다', type: 'positive' },
+                        { icon: '✅', text: '최수아 멤버가 이달 100% 출석 달성했습니다', type: 'positive' },
+                        { icon: '⚠️', text: '한예진 멤버의 출석률이 3개월 연속 하락 중입니다', type: 'negative' },
+                        { icon: '⚠️', text: '미납 벌금이 전월 대비 46% 증가했습니다', type: 'negative' },
+                        { icon: 'ℹ️', text: '다음 달 총 5회의 세션이 예정되어 있습니다', type: 'info' },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-xl"
+                          style={{ background: item.type === 'positive' ? '#f0fdf4' : item.type === 'negative' ? '#fff7ed' : '#f0f9ff' }}>
+                          <span className="text-base flex-shrink-0">{item.icon}</span>
+                          <p className="text-sm text-slate-700">{item.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 멤버 성과 */}
+                {reportTab === 'members' && (
+                  <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <table className="w-full text-sm">
+                      <thead><tr className="text-xs text-slate-400 border-b border-slate-100">
+                        <th className="pb-3 text-left">순위</th>
+                        <th className="pb-3 text-left">멤버</th>
+                        <th className="pb-3 text-center">출석률</th>
+                        <th className="pb-3 text-center">지각</th>
+                        <th className="pb-3 text-center">결석</th>
+                        <th className="pb-3 text-right">벌금</th>
+                        <th className="pb-3 text-center">기여도</th>
+                        <th className="pb-3 text-center">변화</th>
+                      </tr></thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {memberPerf.map(m => {
+                          const cs = contributionStyle(m.contribution);
+                          return (
+                            <tr key={m.rank} className="hover:bg-slate-50">
+                              <td className="py-3">{m.rank < 4 ? ['🥇', '🥈', '🥉'][m.rank - 1] : <span className="text-slate-400 pl-1">{m.rank}</span>}</td>
+                              <td className="py-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#1258fc' }}>{m.avatar}</div>
+                                  <span className="font-medium text-slate-700">{m.name}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 text-center font-bold text-blue-600">{m.rate}%</td>
+                              <td className="py-3 text-center text-amber-600">{m.late}</td>
+                              <td className="py-3 text-center text-red-500">{m.absent}</td>
+                              <td className="py-3 text-right text-slate-600">₩{m.penalty.toLocaleString()}</td>
+                              <td className="py-3 text-center"><span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={cs}>{m.contribution}</span></td>
+                              <td className="py-3 text-center text-xs font-semibold" style={{ color: m.improved.startsWith('+') ? '#16a34a' : '#dc2626' }}>{m.improved}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
             </div>
           </div>
+
         </main>
       </div>
     </div>
