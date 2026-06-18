@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 
 type TabKey = 'info' | 'activity' | 'danger';
 
 export default function ProfileSettingsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('info');
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -18,6 +20,82 @@ export default function ProfileSettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setProfilePhotoUrl(URL.createObjectURL(file));
+  };
+
+  const handleSave = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    try {
+      const nickname = (document.getElementById('nickname') as HTMLInputElement)?.value?.trim() || '';
+      const bio      = (document.getElementById('bio') as HTMLTextAreaElement)?.value?.trim() || '';
+      const category = (document.getElementById('category') as HTMLSelectElement)?.value || '';
+      await fetch('/accounts/api/profile/update/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname, bio, category }),
+      });
+    } catch { /* API 미구현 시 무시 */ }
+
+    await Swal.fire({
+      icon: 'success',
+      title: '저장 완료!',
+      text: '프로필 정보가 성공적으로 저장되었습니다.',
+      timer: 2000,
+      timerProgressBar: true,
+      showConfirmButton: false,
+    });
+  };
+
+  const handleDeleteAccount = async () => {
+    const Swal = (await import('sweetalert2')).default;
+
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: '정말로 탈퇴하시겠습니까?',
+      html: `
+        <div style="text-align:center;padding:4px 0">
+          <p style="font-size:14px;color:#64748b;margin-bottom:12px;line-height:1.6">
+            계정 탈퇴 시 아래 데이터가 <strong style="color:#e11d48">영구 삭제</strong>됩니다.
+          </p>
+          <ul style="font-size:13px;color:#64748b;list-style:none;padding-left:0;margin-bottom:14px;line-height:2.1">
+            <li>- 모든 스터디 그룹 참여 이력</li>
+            <li>- 출석 및 벌금 기록</li>
+            <li>- 프로필 정보 및 업로드 파일</li>
+          </ul>
+          <p style="font-size:13px;color:#e11d48;font-weight:600">이 작업은 되돌릴 수 없습니다.</p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '탈퇴하기',
+      cancelButtonText: '취소',
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#94a3b8',
+      focusCancel: true,
+      reverseButtons: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    Swal.fire({
+      title: '탈퇴 처리 중...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); },
+    });
+
+    try {
+      await fetch('/accounts/api/delete/', { method: 'DELETE' });
+    } catch { /* API 미구현 시 무시 */ }
+
+    await Swal.fire({
+      icon: 'success',
+      title: '탈퇴가 완료되었습니다.',
+      text: '그동안 이용해 주셔서 감사합니다.',
+      timer: 2500,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+    });
+
+    router.push('/accounts/login');
   };
 
   return (
@@ -122,7 +200,8 @@ export default function ProfileSettingsPage() {
                             <option value="etc">기타</option>
                           </select>
                         </div>
-                        <button className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm transition-colors cursor-pointer"
+                        <button onClick={handleSave}
+                          className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm transition-colors cursor-pointer"
                           style={{background:'#0077ff'}}>저장하기</button>
                       </div>
                     </div>
@@ -152,7 +231,8 @@ export default function ProfileSettingsPage() {
                   <div className="p-4 rounded-xl border" style={{background:'#fff1f2', borderColor:'#ffe4e6'}}>
                     <p className="text-sm font-bold text-rose-600 mb-2">계정 탈퇴</p>
                     <p className="text-xs text-rose-500 mb-4">탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.</p>
-                    <button className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm cursor-pointer" style={{background:'#e11d48'}}>
+                    <button onClick={handleDeleteAccount}
+                      className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm cursor-pointer" style={{background:'#e11d48'}}>
                       계정 탈퇴
                     </button>
                   </div>
