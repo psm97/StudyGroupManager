@@ -12,6 +12,7 @@ interface GroupData {
 }
 interface Member { id: number; nickname: string; role: string; attendance_rate?: number; }
 interface Notice { id: number; title: string; content?: string; created_at: string; }
+interface Session { id: number; topic: string; date: string; status: 'unchecked' | 'completed'; }
 
 export default function GroupHomePage() {
   const { id } = useParams<{id:string}>();
@@ -19,8 +20,8 @@ export default function GroupHomePage() {
   const [group, setGroup] = useState<GroupData|null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [activeTab, setActiveTab] = useState<'overview'|'members'|'notices'|'attendance'>('overview');
-
   /* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js, Font Awesome) */
 
   useEffect(() => {
@@ -45,7 +46,114 @@ export default function GroupHomePage() {
         {id:1, title:'6월 스터디 일정 안내', created_at:'2025.06.01'},
         {id:2, title:'자료 공유 링크 업데이트', created_at:'2025.05.28'},
       ]));
+
+    fetch(`/groups/api/${id}/sessions/`)
+      .then(r=>r.json())
+      .then(data => setSessions(data))
+      .catch(() => setSessions([
+        {id:1, topic:'정렬 알고리즘', date:'2025.06.18', status:'unchecked'},
+        {id:2, topic:'React 컴포넌트 설계', date:'2025.06.11', status:'completed'},
+        {id:3, topic:'JavaScript ES6', date:'2025.06.04', status:'completed'},
+      ]));
   }, [id]);
+
+  const handleCheckIn = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const unchecked = sessions.filter(s => s.status === 'unchecked');
+    if (unchecked.length === 0) {
+      await Swal.fire({ icon: 'info', title: '출석할 세션이 없습니다', text: '현재 미완료 세션이 없습니다.', confirmButtonColor: '#1258fc' });
+      return;
+    }
+    const target = unchecked[0];
+    const result = await Swal.fire({
+      title: '출석 체크',
+      html: `
+        <div style="text-align:left">
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+            <p style="font-size:12px;color:#64748b;margin:0 0 4px 0">세션</p>
+            <p style="font-size:15px;font-weight:700;color:#1e293b;margin:0">${target.topic}</p>
+            <p style="font-size:12px;color:#94a3b8;margin:4px 0 0 0">${target.date}</p>
+          </div>
+          <p style="font-size:14px;font-weight:600;color:#1e293b;text-align:center;margin:0">출석 하시겠습니까?</p>
+        </div>`,
+      confirmButtonText: '출석 완료',
+      confirmButtonColor: '#1258fc',
+      showCancelButton: true,
+      cancelButtonText: '취소',
+    });
+    if (!result.isConfirmed) return;
+    try {
+      await fetch(`/groups/api/${id}/sessions/${target.id}/self-check/`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'present' }),
+      });
+    } catch { }
+    const savedAttendance: Record<string, string> = JSON.parse(localStorage.getItem('sgm_attendance') || '{}');
+    savedAttendance[`g${id}_s${target.id}_m1`] = 'present';
+    localStorage.setItem('sgm_attendance', JSON.stringify(savedAttendance));
+    setSessions(prev => prev.map(s => s.id === target.id ? { ...s, status: 'completed' } : s));
+    await Swal.fire({ icon: 'success', title: '출석 완료!', text: `"${target.topic}" 출석이 완료되었습니다.`, confirmButtonColor: '#1258fc', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+  };
+
+  const handleWriteReason = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const opts = sessions.map(s => `<option value="${s.id}">${s.topic} (${s.date})</option>`).join('');
+    const result = await Swal.fire({
+      title: '사유서 작성',
+      html: `
+        <div style="text-align:left">
+          <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">세션 선택</label>
+            <select id="swal-sess" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box">${opts}</select>
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">사유 유형</label>
+            <div style="display:flex;gap:8px">
+              <button onclick="document.querySelectorAll('[data-swal-type]').forEach(b=>{b.style.boxShadow='none';b.style.opacity='0.55'});this.style.boxShadow='0 0 0 2px #1258fc';this.style.opacity='1';document.getElementById('swal-type').value='late';document.getElementById('swal-fwrap').style.display='none'"
+                data-swal-type style="flex:1;padding:9px;border-radius:10px;border:2px solid #fde68a;background:#fefce8;color:#b45309;font-weight:700;font-size:13px;cursor:pointer;opacity:0.55">⏰ 지각</button>
+              <button onclick="document.querySelectorAll('[data-swal-type]').forEach(b=>{b.style.boxShadow='none';b.style.opacity='0.55'});this.style.boxShadow='0 0 0 2px #1258fc';this.style.opacity='1';document.getElementById('swal-type').value='absent';document.getElementById('swal-fwrap').style.display='block'"
+                data-swal-type style="flex:1;padding:9px;border-radius:10px;border:2px solid #fecaca;background:#fff1f2;color:#dc2626;font-weight:700;font-size:13px;cursor:pointer;opacity:0.55">❌ 결석</button>
+            </div>
+            <input type="hidden" id="swal-type" value="" />
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">사유 내용</label>
+            <textarea id="swal-reason" rows="3" placeholder="사유를 입력해 주세요" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#1e293b;resize:none;outline:none;box-sizing:border-box"></textarea>
+          </div>
+          <div id="swal-fwrap" style="display:none">
+            <label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px">증빙서류 첨부 <span style="color:#94a3b8;font-weight:400">(선택)</span></label>
+            <div style="border:2px dashed #e2e8f0;border-radius:10px;padding:14px;text-align:center;cursor:pointer" onclick="document.getElementById('swal-file').click()">
+              <input type="file" id="swal-file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" style="display:none" onchange="document.getElementById('swal-fname').textContent=this.files[0]?.name||''" />
+              <div style="font-size:22px;margin-bottom:4px">📎</div>
+              <p style="font-size:13px;color:#64748b;margin:0">클릭하여 파일 선택</p>
+              <p id="swal-fname" style="font-size:12px;color:#1258fc;margin:6px 0 0 0"></p>
+            </div>
+          </div>
+        </div>`,
+      confirmButtonText: '제출',
+      confirmButtonColor: '#1258fc',
+      showCancelButton: true,
+      cancelButtonText: '취소',
+      preConfirm: () => {
+        const sess = (document.getElementById('swal-sess') as HTMLSelectElement)?.value || '';
+        const type = (document.getElementById('swal-type') as HTMLInputElement)?.value || '';
+        const reason = ((document.getElementById('swal-reason') as HTMLTextAreaElement)?.value || '').trim();
+        const fileInput = document.getElementById('swal-file') as HTMLInputElement;
+        const fileName = fileInput?.files?.[0]?.name || null;
+        if (!type) { Swal.showValidationMessage('사유 유형을 선택해 주세요.'); return false; }
+        if (!reason) { Swal.showValidationMessage('사유 내용을 입력해 주세요.'); return false; }
+        return { sess, type, reason, fileName };
+      },
+    });
+    if (!result.isConfirmed || !result.value) return;
+    const { sess, type, reason, fileName } = result.value as { sess: string; type: string; reason: string; fileName: string | null };
+    const stored: Record<string, unknown> = JSON.parse(localStorage.getItem('sgm_reasons') || '{}');
+    stored[`g${id}_s${sess}_m1`] = { type, reason, fileName };
+    localStorage.setItem('sgm_reasons', JSON.stringify(stored));
+    const savedAttendance: Record<string, string> = JSON.parse(localStorage.getItem('sgm_attendance') || '{}');
+    savedAttendance[`g${id}_s${sess}_m1`] = type;
+    localStorage.setItem('sgm_attendance', JSON.stringify(savedAttendance));
+    await Swal.fire({ icon: 'success', title: '사유서 제출 완료', text: '사유서가 성공적으로 제출되었습니다.', confirmButtonColor: '#1258fc', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+  };
 
   return (
     <>
@@ -81,6 +189,7 @@ export default function GroupHomePage() {
           <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <Header />
             <div className="flex-1 overflow-y-auto bg-slate-50">
+
               {group ? (
                 <>
                   {/* 그룹 헤더 배너 */}
@@ -110,7 +219,16 @@ export default function GroupHomePage() {
                             그룹 설정
                           </button>
                         )}
-                        <button className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white" style={{background:'#1258fc'}}>
+                        <button
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all"
+                          style={{background:'#1258fc'}}
+                          onClick={handleWriteReason}>
+                          사유서 작성
+                        </button>
+                        <button
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all"
+                          style={{background:'#1258fc'}}
+                          onClick={handleCheckIn}>
                           출석 체크
                         </button>
                       </div>
@@ -132,7 +250,7 @@ export default function GroupHomePage() {
                   </div>
 
                   {/* 탭 */}
-                  <div className="bg-white border-b border-slate-100 px-6 flex gap-1 overflow-x-auto">
+                  <div className="bg-white border-b border-slate-100 px-6 flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {([
                       {key:'overview', label:'개요'},
                       {key:'members', label:'멤버'},
@@ -248,32 +366,93 @@ export default function GroupHomePage() {
 
                     {/* 출석 현황 */}
                     {activeTab === 'attendance' && (
-                      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-                        <div className="px-5 py-4 border-b border-slate-100">
-                          <h3 className="font-bold text-slate-800">출석 현황</h3>
+                      <div className="space-y-5">
+
+                        {/* 세션 목록 */}
+                        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-800">세션 목록</h3>
+                            <a href="/support/calendar" className="text-xs font-semibold hover:underline" style={{color:'#1258fc'}}>
+                              캘린더에서 추가 →
+                            </a>
+                          </div>
+                          {sessions.length === 0 ? (
+                            <div className="px-5 py-10 text-center text-sm text-slate-400">예정된 세션이 없습니다.</div>
+                          ) : (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr style={{background:'#f8fafc'}}>
+                                    {['날짜','주제','상태','액션'].map(h => (
+                                      <th key={h} className="px-4 py-2.5 text-left text-xs text-slate-500 font-bold">{h}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                  {sessions.map(s => (
+                                    <tr key={s.id} className="hover:bg-slate-50">
+                                      <td className="px-4 py-3 text-sm text-slate-500 whitespace-nowrap">{s.date}</td>
+                                      <td className="px-4 py-3 text-sm font-medium text-slate-700">{s.topic}</td>
+                                      <td className="px-4 py-3">
+                                        {s.status === 'completed' ? (
+                                          <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{background:'#dcfce7', color:'#16a34a'}}>✅ 완료</span>
+                                        ) : (
+                                          <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{background:'#fef3c7', color:'#d97706'}}>⚠ 미완료</span>
+                                        )}
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        {s.status === 'unchecked' ? (
+                                          <button
+                                            onClick={() => router.push(`/attendance/check?group_id=${id}&session_id=${s.id}`)}
+                                            className="text-xs font-semibold px-3 py-1.5 rounded-xl text-white"
+                                            style={{background:'#1258fc'}}>
+                                            출석 체크
+                                          </button>
+                                        ) : (
+                                          <button
+                                            onClick={() => router.push(`/attendance/check?group_id=${id}&session_id=${s.id}`)}
+                                            className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50">
+                                            결과 보기
+                                          </button>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
                         </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr style={{background:'#f8fafc'}}>
-                                {['멤버','출석','지각','결석','출석률'].map(h => (
-                                  <th key={h} className="px-4 py-2.5 text-left text-xs text-slate-500 font-bold">{h}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                              {members.map(m => (
-                                <tr key={m.id} className="hover:bg-slate-50">
-                                  <td className="px-4 py-3 text-sm font-medium text-slate-700">{m.nickname}</td>
-                                  <td className="px-4 py-3 text-sm text-emerald-600 font-semibold">—</td>
-                                  <td className="px-4 py-3 text-sm text-amber-500 font-semibold">—</td>
-                                  <td className="px-4 py-3 text-sm text-rose-500 font-semibold">—</td>
-                                  <td className="px-4 py-3 text-sm font-bold" style={{color:group.color||'#1258fc'}}>{m.attendance_rate||0}%</td>
+
+                        {/* 멤버 출석 현황 */}
+                        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                          <div className="px-5 py-4 border-b border-slate-100">
+                            <h3 className="font-bold text-slate-800">멤버 출석 현황</h3>
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr style={{background:'#f8fafc'}}>
+                                  {['멤버','출석','지각','결석','출석률'].map(h => (
+                                    <th key={h} className="px-4 py-2.5 text-left text-xs text-slate-500 font-bold">{h}</th>
+                                  ))}
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="divide-y divide-slate-50">
+                                {members.map(m => (
+                                  <tr key={m.id} className="hover:bg-slate-50">
+                                    <td className="px-4 py-3 text-sm font-medium text-slate-700">{m.nickname}</td>
+                                    <td className="px-4 py-3 text-sm text-emerald-600 font-semibold">—</td>
+                                    <td className="px-4 py-3 text-sm text-amber-500 font-semibold">—</td>
+                                    <td className="px-4 py-3 text-sm text-rose-500 font-semibold">—</td>
+                                    <td className="px-4 py-3 text-sm font-bold" style={{color:group.color||'#1258fc'}}>{m.attendance_rate||0}%</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
+
                       </div>
                     )}
                   </div>

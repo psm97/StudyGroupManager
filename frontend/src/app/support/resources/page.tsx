@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import LeftMenu from '@/components/LeftMenu';
+import Header from '@/components/Header';
 
 interface Resource {
   id: number;
@@ -160,7 +162,16 @@ export default function ResourcesPage() {
         .fade-up { animation:fadeUp .35s ease forwards; }
       `}</style>
 
-      <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-4">
+      <div className="bg-blue-100 min-h-screen">
+      <div id="sidebarOverlay" onClick={() => {
+        document.getElementById('sidebar')?.classList.remove('open');
+        document.getElementById('sidebarOverlay')?.classList.remove('open');
+      }}></div>
+      <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{minHeight:'100vh'}}>
+        <LeftMenu />
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-4">
 
         {/* 배너 */}
         <div className="rounded-2xl p-5 sm:p-6 text-white fade-up" style={{ background: 'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)' }}>
@@ -190,7 +201,7 @@ export default function ResourcesPage() {
 
         {/* 툴바 */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 fade-up" style={{ animationDelay: '40ms' }}>
-          <div className="flex bg-slate-100 rounded-xl p-1 gap-0.5 overflow-x-auto flex-shrink-0">
+          <div className="flex bg-slate-100 rounded-xl p-1 gap-0.5 overflow-x-auto flex-shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {(['all', '강의자료', '기출문제', '요약노트', '기타'] as CategoryType[]).map(cat => (
               <button key={cat} onClick={() => setCategory(cat)}
                 className={`cat-tab text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-600 ${category === cat ? 'active' : ''}`}>
@@ -336,6 +347,9 @@ export default function ResourcesPage() {
           </div>
         )}
 
+      </div>
+          </main>
+        </div>
       </div>
 
       {/* 업로드 모달 */}

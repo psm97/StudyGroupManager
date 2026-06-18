@@ -4,7 +4,7 @@ import { useState } from 'react';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 
-type TabKey = 'info' | 'password' | 'activity' | 'danger';
+type TabKey = 'info' | 'activity' | 'danger';
 
 export default function ProfileSettingsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('info');
@@ -53,14 +53,13 @@ export default function ProfileSettingsPage() {
 
               <div className="mb-5">
                 <h1 className="text-xl font-bold text-slate-800">프로필 설정</h1>
-                <p className="text-sm text-slate-400 mt-0.5">개인 정보 및 계정 보안 설정을 관리합니다.</p>
+                <p className="text-sm text-slate-400 mt-0.5">개인 정보 및 활동 설정을 관리합니다.</p>
               </div>
 
               {/* 탭 바 */}
-              <div className="bg-white rounded-t-2xl border border-b-0 border-slate-100 px-6 flex gap-1 overflow-x-auto">
+              <div className="bg-white rounded-t-2xl border border-b-0 border-slate-100 px-6 flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {([
                   {key:'info', label:'기본 정보'},
-                  {key:'password', label:'비밀번호 변경'},
                   {key:'activity', label:'활동 통계'},
                   {key:'danger', label:'계정 관리'},
                 ] as {key:TabKey, label:string}[]).map(tab => (
@@ -131,17 +130,7 @@ export default function ProfileSettingsPage() {
                 </div>
               )}
 
-              {/* 탭 2: 비밀번호 변경 */}
-              {activeTab === 'password' && (
-                <div className="section-card rounded-t-none border-t-0" style={{borderTopLeftRadius:0, borderTopRightRadius:0}}>
-                  <p className="text-sm font-bold text-slate-700 mb-5">비밀번호 변경</p>
-                  <div className="max-w-md space-y-4">
-                    <p className="text-sm text-slate-500">Google OAuth로 로그인한 계정은 비밀번호를 별도로 관리하지 않습니다.</p>
-                  </div>
-                </div>
-              )}
-
-              {/* 탭 3: 활동 통계 */}
+              {/* 탭 2: 활동 통계 */}
               {activeTab === 'activity' && (
                 <div className="section-card rounded-t-none border-t-0" style={{borderTopLeftRadius:0, borderTopRightRadius:0}}>
                   <p className="text-sm font-bold text-slate-700 mb-5">활동 통계</p>
@@ -156,7 +145,7 @@ export default function ProfileSettingsPage() {
                 </div>
               )}
 
-              {/* 탭 4: 계정 관리 */}
+              {/* 탭 3: 계정 관리 */}
               {activeTab === 'danger' && (
                 <div className="section-card rounded-t-none border-t-0" style={{borderTopLeftRadius:0, borderTopRightRadius:0}}>
                   <p className="text-sm font-bold text-slate-700 mb-5">계정 관리</p>

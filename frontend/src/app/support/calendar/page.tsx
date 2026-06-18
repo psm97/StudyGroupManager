@@ -848,6 +848,11 @@ export default function CalendarPage() {
         @media (max-width:640px) { .cal-stat-grid { grid-template-columns:repeat(2,1fr) !important; } }
       `}</style>
 
+      <div className="bg-blue-100 min-h-screen">
+      <div id="sidebarOverlay" onClick={() => {
+        document.getElementById('sidebar')?.classList.remove('open');
+        document.getElementById('sidebarOverlay')?.classList.remove('open');
+      }}></div>
       <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{ minHeight:'100vh' }}>
         <LeftMenu />
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -1061,6 +1066,7 @@ export default function CalendarPage() {
           </div>
         </main>
       </div>
+      </div>
 
       {/* ══ Modals ══════════════════════════════════════════ */}
 
@@ -1123,7 +1129,7 @@ export default function CalendarPage() {
               <div className="flex justify-end gap-2 mt-5">
                 <button className="modal-btn-cancel" onClick={() => setEventViewModal({ open:false, event:null })}>닫기</button>
                 {e.type === 'session' && e.group_id && (
-                  <button className="modal-btn-primary" onClick={() => { window.location.href=`/attendance/${e.group_id}/`; }}>출석 체크로 이동 →</button>
+                  <button className="modal-btn-primary" onClick={() => { window.location.href=`/attendance/check?group_id=${e.group_id}&session_id=${e.id}`; }}>출석 체크로 이동 →</button>
                 )}
                 {e.type === 'personal' && (
                   <button className="modal-btn-primary" onClick={() => {

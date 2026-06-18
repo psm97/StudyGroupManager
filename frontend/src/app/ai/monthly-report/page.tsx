@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
+import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
 
 /* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js) */
 
@@ -49,14 +50,16 @@ interface PenaltyMember {
 
 export default function AIMonthlyReportPage() {
   const searchParams = useSearchParams();
-  const groupId = searchParams.get('group_id') || '1';
+  const initialGroupId = parseInt(searchParams.get('group_id') || '1') || 1;
+  const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId);
   const [reports, setReports] = useState<Report[]>([]);
   const [currentReport, setCurrentReport] = useState<Report | null>(null);
-  const [isLeader, setIsLeader] = useState(false);
   const [activeRTab, setActiveRTab] = useState<'attendance' | 'penalty' | 'insight' | 'member'>('attendance');
   const [groupName, setGroupName] = useState('');
   const [nextReportDate, setNextReportDate] = useState('—');
   const [loading, setLoading] = useState(true);
+  const groupId = String(selectedGroupId);
+  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
 
   useEffect(() => {
     fetch(`/ai/monthly-report/?group_id=${groupId}`)
@@ -64,8 +67,7 @@ export default function AIMonthlyReportPage() {
       .then(d => {
         setReports(d.reports || []);
         setCurrentReport(d.current_report || (d.reports?.[0] ?? null));
-        setIsLeader(d.is_leader || false);
-        setGroupName(d.group_name || '');
+        setGroupName(d.group_name || selectedGroup.name);
         setNextReportDate(d.next_report_date || '—');
         setLoading(false);
       })
@@ -90,11 +92,10 @@ export default function AIMonthlyReportPage() {
         ];
         setReports(mock);
         setCurrentReport(mock[0]);
-        setIsLeader(true);
-        setGroupName('Web Developer Study');
+        setGroupName(selectedGroup.name);
         setLoading(false);
       });
-  }, [groupId]);
+  }, [groupId, selectedGroup.name]);
 
   const selectReport = async (id: number) => {
     try {
@@ -163,6 +164,16 @@ export default function AIMonthlyReportPage() {
               </div>
             </div>
 
+            {/* 탭 + 컨텐츠 */}
+            <GroupTabsCard
+              activeGroupId={selectedGroupId}
+              onSelect={group => {
+                setSelectedGroupId(group.id);
+                setActiveRTab('attendance');
+              }}
+              className="mb-5"
+            />
+
             {/* Main grid */}
             <div className="flex flex-col lg:flex-row gap-5">
               {/* 리포트 목록 */}
@@ -223,7 +234,7 @@ export default function AIMonthlyReportPage() {
                           <p className="text-xs text-slate-400 mt-0.5">{currentReport.created_at} 생성 · {groupName}</p>
                         </div>
                       </div>
-                      <div className="flex gap-0 mt-4 border-b border-slate-100 overflow-x-auto">
+                      <div className="flex gap-0 mt-4 border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {rTabLabels.map(t => (
                           <button key={t.key} onClick={() => setActiveRTab(t.key)}
                             className="flex-shrink-0 px-4 py-2.5 text-sm text-slate-500 hover:text-blue-600 transition-colors border-b-2"

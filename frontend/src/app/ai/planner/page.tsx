@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
+import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
 
 /* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js, recharts 등) */
 
@@ -38,13 +39,13 @@ interface ResourceItem {
 
 export default function AIPlannerPage() {
   const searchParams = useSearchParams();
-  const groupId = searchParams.get('group_id') || '1';
+  const initialGroupId = parseInt(searchParams.get('group_id') || '1') || 1;
 
+  const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId);
   const [achievementProb, setAchievementProb] = useState(0);
   const [progressRate, setProgressRate] = useState(0);
   const [expectedDate, setExpectedDate] = useState('—');
   const [daysRemaining, setDaysRemaining] = useState(0);
-  const [isLeader, setIsLeader] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [schedule, setSchedule] = useState<WeekSchedule[]>([]);
   const [scheduleMeta, setScheduleMeta] = useState('AI가 생성한 주간 일정입니다.');
@@ -55,6 +56,8 @@ export default function AIPlannerPage() {
   const [chatInput, setChatInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+  const groupId = String(selectedGroupId);
+  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
 
   useEffect(() => {
     fetch(`/ai/planner/init/?group_id=${groupId}`)
@@ -64,7 +67,6 @@ export default function AIPlannerPage() {
         setProgressRate(d.progress_rate || 0);
         setExpectedDate(d.expected_date || '—');
         setDaysRemaining(d.days_remaining || 0);
-        setIsLeader(d.is_leader || false);
         setSuggestions((d.ai_suggestions || []).map((s: string) => ({ text: s })));
       })
       .catch(() => {
@@ -72,7 +74,6 @@ export default function AIPlannerPage() {
         setProgressRate(45);
         setExpectedDate('2025.09.30');
         setDaysRemaining(15);
-        setIsLeader(true);
       });
   }, [groupId]);
 
@@ -122,7 +123,6 @@ export default function AIPlannerPage() {
 
   const typeIcon: Record<string, string> = { '영상': '🎬', '문서': '📄', '사이트': '🌐', '도서': '📚' };
 
-  const probColor = achievementProb >= 70 ? '#22c55e' : achievementProb >= 40 ? '#f59e0b' : '#ef4444';
   const probLabel = achievementProb >= 70 ? '🟢 달성 가능' : achievementProb >= 40 ? '🟡 개선 필요' : '🔴 위험';
   const probBadgeClass = achievementProb >= 70 ? 'bg-emerald-50 text-emerald-700' : achievementProb >= 40 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600';
 
@@ -163,7 +163,7 @@ export default function AIPlannerPage() {
                     </span>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-bold">AI 플래너</h1>
-                  <p className="text-white/60 text-sm mt-1">목표 달성 예측 및 최적 스터디 일정 생성</p>
+                  <p className="text-white/60 text-sm mt-1">{selectedGroup.name} · 목표 달성 예측 및 최적 스터디 일정 생성</p>
                 </div>
                 <div className="flex flex-wrap gap-2 items-center">
                   <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
@@ -181,6 +181,17 @@ export default function AIPlannerPage() {
                 </div>
               </div>
             </div>
+
+            {/* 탭 + 컨텐츠 */}
+            <GroupTabsCard
+              activeGroupId={selectedGroupId}
+              onSelect={group => {
+                setSelectedGroupId(group.id);
+                setActiveTab('schedule');
+                setScheduleVisible(false);
+                setMessages([]);
+              }}
+            />
 
             {/* 달성 확률 + AI 제안 */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

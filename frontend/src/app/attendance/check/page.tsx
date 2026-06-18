@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import LeftMenu from '@/components/LeftMenu';
+import Header from '@/components/Header';
 
 interface MemberRecord {
   status: string;
@@ -37,6 +39,17 @@ interface GroupInfo {
   name: string;
 }
 
+interface Group {
+  id: number;
+  name: string;
+  color?: string;
+}
+
+const MOCK_GROUPS: Group[] = [
+  { id: 1, name: 'Web Developer Study', color: '#1258fc' },
+  { id: 2, name: 'Python 스터디', color: '#10b981' },
+];
+
 const MOCK_MEMBERS: Member[] = [
   { id: '1', nickname: '김철수', role: 'leader', attendanceRate: 92, hasRecord: false, initialStatus: '', initialNote: '' },
   { id: '2', nickname: '이영희', role: 'member', attendanceRate: 78, hasRecord: true, initialStatus: 'present', initialNote: '' },
@@ -62,14 +75,45 @@ export default function AttendanceCheckPage() {
   const [newAbsentFee, setNewAbsentFee] = useState(penaltyRule.absentFee.toString());
   const [newLateFee, setNewLateFee] = useState(penaltyRule.lateFee.toString());
   const hasChangesRef = useRef(false);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState(parseInt(groupId) || 0);
+  const [reasons, setReasons] = useState<Record<string, {type:string;reason:string;fileName:string|null}>>({});
+  const [statusFilter, setStatusFilter] = useState<'all'|'present'|'late'|'absent'|'unset'>('all');
 
   useEffect(() => {
+    fetch('/groups/api/my-groups/')
+      .then(r => r.json())
+      .then((data: Group[]) => {
+        const nextGroups = data.length ? data : MOCK_GROUPS;
+        setGroups(nextGroups);
+        setSelectedGroupId(prev => prev || nextGroups[0]?.id || 0);
+      })
+      .catch(() => {
+        setGroups(MOCK_GROUPS);
+        setSelectedGroupId(prev => prev || MOCK_GROUPS[0]?.id || 0);
+      });
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('sgm_reasons');
+      if (stored) {
+        const parsedReasons = JSON.parse(stored);
+        queueMicrotask(() => setReasons(parsedReasons));
+      }
+    } catch { }
+  }, []);
+
+  useEffect(() => {
+    const savedAttendance: Record<string, string> = JSON.parse(localStorage.getItem('sgm_attendance') || '{}');
     const initial: Record<string, MemberRecord> = {};
     members.forEach(m => {
-      initial[m.id] = { status: m.initialStatus, note: m.initialNote, original: m.initialStatus };
+      const lsStatus = savedAttendance[`g${selectedGroupId}_s${sessionId}_m${m.id}`] || '';
+      const status = lsStatus || m.initialStatus;
+      initial[m.id] = { status, note: m.initialNote, original: m.initialStatus };
     });
-    setState(initial);
-  }, [members]);
+    queueMicrotask(() => setState(initial));
+  }, [members, selectedGroupId, sessionId]);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -97,7 +141,7 @@ export default function AttendanceCheckPage() {
   const selectStatus = (uid: string, status: string) => {
     setState(prev => {
       const cur = prev[uid] || { status: '', note: '', original: '' };
-      return { ...prev, [uid]: { ...cur, status } };
+      return { ...prev, [uid]: { ...cur, status: cur.status === status ? '' : status } };
     });
     hasChangesRef.current = true;
   };
@@ -158,7 +202,18 @@ export default function AttendanceCheckPage() {
   };
 
   const c = counts();
-  const filteredMembers = members.filter(m => !searchQuery || m.nickname.toLowerCase().includes(searchQuery.toLowerCase()));
+  const groupTabs = groups.length ? groups : MOCK_GROUPS;
+  const activeGroupId = selectedGroupId || groupTabs[0]?.id || 0;
+  const selectedGroup = groupTabs.find(g => g.id === activeGroupId) || groupTabs[0] || null;
+  const filteredMembers = members.filter(m => {
+    if (searchQuery && !m.nickname.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (statusFilter !== 'all') {
+      const ms = state[m.id]?.status || '';
+      if (statusFilter === 'unset') return !ms;
+      return ms === statusFilter;
+    }
+    return true;
+  });
 
   const dotColor = (status: string) => {
     if (status === 'present') return '#4ade80';
@@ -182,24 +237,34 @@ export default function AttendanceCheckPage() {
         .status-btn { display:inline-flex;align-items:center;justify-content:center;gap:5px;
           padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;
           cursor:pointer;border:2px solid transparent;transition:all 0.18s ease; }
-        .btn-present { background:#f0fdf4;border-color:#bbf7d0;color:#4ade80; }
+        .btn-present { background:#f0fdf4;border-color:#d1fae5;color:#86efac; }
         .btn-present.active { background:#dcfce7;border-color:#22c55e;color:#15803d; }
-        .btn-late { background:#fefce8;border-color:#fde68a;color:#ca8a04; }
+        .btn-late { background:#fffbeb;border-color:#fef3c7;color:#fcd34d; }
         .btn-late.active { background:#fef9c3;border-color:#facc15;color:#b45309; }
-        .btn-absent { background:#fff1f2;border-color:#fecaca;color:#f87171; }
+        .btn-absent { background:#fff1f2;border-color:#fee2e2;color:#fca5a5; }
         .btn-absent.active { background:#fee2e2;border-color:#f87171;color:#dc2626; }
-        .note-area { overflow:hidden;max-height:0;opacity:0;transition:max-height 0.25s ease,opacity 0.25s ease; }
-        .note-area.open { max-height:130px;opacity:1; }
         .prog-track { height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden; }
         .prog-fill { height:100%;border-radius:99px;transition:width 0.5s ease;background:linear-gradient(90deg,#1258fc,#3a74ef); }
         .member-row { transition:background 0.15s; }
         .member-row:hover { background:#f8fafc; }
         .member-row.changed { box-shadow:inset 3px 0 0 #1258fc;background:#f0f5ff; }
+        .tab-btn { transition: all .2s ease; }
+        .tab-btn.active { color: #1258fc; border-bottom: 2px solid #1258fc; font-weight: 700; }
+        .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
         .fade-up { animation:fadeUp 0.3s ease forwards; }
       `}</style>
 
-      <div className="flex-1 overflow-y-auto bg-slate-50 pb-28">
+      <div className="bg-blue-100 min-h-screen">
+      <div id="sidebarOverlay" onClick={() => {
+        document.getElementById('sidebar')?.classList.remove('open');
+        document.getElementById('sidebarOverlay')?.classList.remove('open');
+      }}></div>
+      <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{minHeight:'100vh'}}>
+        <LeftMenu />
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-y-auto bg-slate-50 pb-28">
 
         {/* 세션 정보 배너 */}
         <div className="px-4 lg:px-8 pt-5">
@@ -210,10 +275,12 @@ export default function AttendanceCheckPage() {
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="text-xs font-bold bg-white/20 rounded-full px-3 py-1 text-white">{session.date}</span>
                   {session.isEdit && <span className="text-xs font-bold bg-amber-400/80 rounded-full px-2.5 py-1 text-white">수정 모드</span>}
-                  <span className="text-xs font-bold bg-white/20 rounded-full px-2.5 py-1 text-white">세션 #{session.id || '—'}</span>
+                  <span className="text-xs font-bold bg-white/20 rounded-full px-2.5 py-1 text-white">
+                    {selectedGroup ? `${selectedGroup.name}` : ''}
+                  </span>
                 </div>
                 <h1 className="text-white text-xl lg:text-2xl font-bold mb-1">{session.topic}</h1>
-                <p className="text-blue-100 text-sm">{group.name} · 리더: {session.createdBy}</p>
+                <p className="text-blue-100 text-sm">{selectedGroup?.name || group.name} · 리더: {session.createdBy}</p>
               </div>
               <div className="flex items-center gap-4 bg-white/15 border border-white/20 rounded-2xl px-5 py-3 backdrop-blur flex-shrink-0">
                 <div className="text-center"><p className="text-xl font-bold text-white">{c.present}</p><p className="text-xs text-blue-200">출석</p></div>
@@ -232,22 +299,63 @@ export default function AttendanceCheckPage() {
 
         <div className="px-4 lg:px-8 py-5 space-y-4">
 
-          {/* 툴바 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-2 flex-wrap flex-1">
-              <span className="text-xs text-slate-500 font-semibold mr-1">일괄 적용</span>
+          {/* 탭 + 컨텐츠 */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="flex border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {groupTabs.map(g => {
+                const isActive = activeGroupId === g.id;
+                return (
+                  <button key={g.id}
+                    onClick={() => { setSelectedGroupId(g.id); setStatusFilter('all'); }}
+                    className={`tab-btn ${isActive ? 'active' : ''} px-5 py-3.5 text-sm text-slate-500 border-b-2 border-transparent -mb-px whitespace-nowrap`}>
+                    {g.name}
+                    <span className="ml-1.5 badge" style={isActive ? { background: '#dce6fd', color: '#1258fc' } : { background: '#f1f5f9', color: '#64748b' }}>
+                      {members.length}명
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="px-4 sm:px-5 py-3 space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-slate-500 flex-shrink-0">상태 필터</span>
+              {([
+                { key: 'all' as const, label: '전체', color: '#1258fc', bg: '#dce6fd' },
+                { key: 'present' as const, label: '출석', color: '#16a34a', bg: '#dcfce7' },
+                { key: 'late' as const, label: '지각', color: '#d97706', bg: '#fef9c3' },
+                { key: 'absent' as const, label: '결석', color: '#dc2626', bg: '#fee2e2' },
+                { key: 'unset' as const, label: '미입력', color: '#64748b', bg: '#f1f5f9' },
+              ]).map(f => {
+                const cnt = f.key === 'all' ? members.length
+                  : f.key === 'unset' ? Object.values(state).filter(s => !s.status).length
+                  : Object.values(state).filter(s => s.status === f.key).length;
+                return (
+                  <button key={f.key}
+                    onClick={() => setStatusFilter(f.key)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all"
+                    style={statusFilter === f.key
+                      ? { background: f.bg, color: f.color, borderColor: f.color + '50' }
+                      : { background: '#f8fafc', color: '#94a3b8', borderColor: '#e2e8f0' }}>
+                    {f.label} <span className="font-bold">{cnt}</span>
+                  </button>
+                );
+              })}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 border-t border-slate-50 pt-3">
+              <span className="text-xs text-slate-500 font-semibold flex-shrink-0">일괄 적용</span>
               <button onClick={() => setAll('present')} className="text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">✅ 전원 출석</button>
               <button onClick={() => setAll('late')} className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">⏰ 전원 지각</button>
               <button onClick={() => setAll('absent')} className="text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">❌ 전원 결석</button>
               <button onClick={resetAll} className="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">🔄 초기화</button>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-slate-500 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100 flex-shrink-0">
-              <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span>벌금 규칙</span>
-              <span className="font-bold text-red-600">결석 {penaltyRule.absentFee.toLocaleString()}원</span>
-              <span className="text-slate-300">·</span>
-              <span className="font-bold text-amber-600">지각 {penaltyRule.lateFee.toLocaleString()}원</span>
-              <button onClick={() => { setNewAbsentFee(penaltyRule.absentFee.toString()); setNewLateFee(penaltyRule.lateFee.toString()); setRuleModal(true); }} className="ml-1 text-blue-600 hover:text-blue-800 font-semibold transition-colors">수정</button>
+              <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100 ml-auto flex-shrink-0">
+                <svg className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>결석 <span className="font-bold text-red-600">{penaltyRule.absentFee.toLocaleString()}원</span></span>
+                <span className="text-slate-200">·</span>
+                <span>지각 <span className="font-bold text-amber-600">{penaltyRule.lateFee.toLocaleString()}원</span></span>
+                <button onClick={() => { setNewAbsentFee(penaltyRule.absentFee.toString()); setNewLateFee(penaltyRule.lateFee.toString()); setRuleModal(true); }} className="ml-1 text-blue-600 hover:text-blue-800 font-semibold transition-colors">수정</button>
+              </div>
+              </div>
             </div>
           </div>
 
@@ -265,8 +373,8 @@ export default function AttendanceCheckPage() {
             <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 flex-shrink-0" style={{ color: '#1258fc' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                <h2 className="font-bold text-slate-800">멤버 출석 입력</h2>
-                <span className="text-xs text-slate-400 font-normal">(총 {members.length}명)</span>
+                <h2 className="font-bold text-slate-800">멤버 출석</h2>
+                <span className="text-xs text-slate-400 font-normal">({filteredMembers.length}/{members.length}명)</span>
               </div>
               <div className="relative">
                 <svg className="absolute left-2.5 top-2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -278,15 +386,15 @@ export default function AttendanceCheckPage() {
             <div>
               {filteredMembers.length === 0 ? (
                 <div className="text-center py-16 text-slate-400">
-                  <p className="text-sm font-semibold">그룹 멤버가 없습니다.</p>
-                  <p className="text-xs mt-1">멤버를 먼저 초대해 주세요.</p>
+                  <p className="text-sm font-semibold">{statusFilter !== 'all' ? '해당 상태의 멤버가 없습니다.' : '그룹 멤버가 없습니다.'}</p>
+                  <p className="text-xs mt-1">{statusFilter !== 'all' ? '다른 필터를 선택해 보세요.' : '멤버를 먼저 초대해 주세요.'}</p>
                 </div>
               ) : filteredMembers.map((m, idx) => {
                 const s = state[m.id] || { status: '', note: '', original: '' };
-                const noteOpen = s.status === 'late' || s.status === 'absent';
                 const showPenalty = s.status === 'absent' && penaltyRule.absentFee > 0 || s.status === 'late' && penaltyRule.lateFee > 0;
-                const penaltyAmt = s.status === 'absent' ? penaltyRule.absentFee : penaltyRule.lateFee;
                 const penaltyLabel = s.status === 'absent' ? `결석 벌금 ${penaltyRule.absentFee.toLocaleString()}원이 자동 부과됩니다.` : `지각 벌금 ${penaltyRule.lateFee.toLocaleString()}원이 자동 부과됩니다.`;
+                const showReason = s.status === 'late' || s.status === 'absent';
+                const memberReason = showReason ? reasons[`g${selectedGroupId}_s${sessionId}_m${m.id}`] : null;
 
                 return (
                   <div key={m.id} className={`member-row border-b border-slate-50 last:border-0 fade-up ${s.status !== s.original && s.status ? 'changed' : ''}`}
@@ -330,17 +438,29 @@ export default function AttendanceCheckPage() {
                         </div>
                       </div>
 
-                      <div className={`note-area mt-3 ${noteOpen ? 'open' : ''}`}>
-                        <div className="flex items-start gap-2 bg-slate-50 rounded-xl p-3 border border-slate-100">
-                          <svg className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                          <div className="flex-1">
-                            <label className="text-xs font-semibold text-slate-500 mb-1 block">사유 입력 <span className="text-slate-400 font-normal">(선택)</span></label>
-                            <textarea rows={2} placeholder="지각/결석 사유를 입력하세요" value={s.note}
-                              onChange={e => setState(prev => ({ ...prev, [m.id]: { ...prev[m.id], note: e.target.value } }))}
-                              className="w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-blue-500 transition-all" />
-                          </div>
+                      {showReason && (
+                        <div className="mt-3">
+                          {memberReason ? (
+                            <div className="flex items-start gap-2 bg-blue-50 rounded-xl p-3 border border-blue-100">
+                              <span className="text-base flex-shrink-0">📋</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="text-xs font-semibold text-blue-700">제출된 사유서</span>
+                                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${memberReason.type === 'late' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                    {memberReason.type === 'late' ? '지각' : '결석'}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-600 leading-relaxed">{memberReason.reason}</p>
+                                {memberReason.fileName && <p className="text-xs text-slate-400 mt-1.5">📎 {memberReason.fileName}</p>}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-center">
+                              제출된 사유서 없음
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      )}
 
                       {showPenalty && (
                         <div className="flex mt-2 items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-1.5">
@@ -355,33 +475,9 @@ export default function AttendanceCheckPage() {
             </div>
           </div>
 
-          {/* 이번 세션 통계 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-            <h3 className="font-bold text-slate-800 mb-4">이번 세션 출석 현황</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
-              <div className="text-center p-3 rounded-xl" style={{ background: '#dcfce7' }}>
-                <p className="text-2xl font-bold text-emerald-600">{c.present}</p>
-                <p className="text-xs text-emerald-500 mt-1">출석</p>
-              </div>
-              <div className="text-center p-3 rounded-xl" style={{ background: '#fef9c3' }}>
-                <p className="text-2xl font-bold text-amber-600">{c.late}</p>
-                <p className="text-xs text-amber-500 mt-1">지각</p>
-              </div>
-              <div className="text-center p-3 rounded-xl" style={{ background: '#fee2e2' }}>
-                <p className="text-2xl font-bold text-red-600">{c.absent}</p>
-                <p className="text-xs text-red-500 mt-1">결석</p>
-              </div>
-              <div className="text-center p-3 rounded-xl" style={{ background: '#fff7ed' }}>
-                <p className="text-2xl font-bold text-orange-600">₩{c.penalty.toLocaleString()}</p>
-                <p className="text-xs text-orange-500 mt-1">예상 벌금</p>
-              </div>
-            </div>
-            {/* TODO: Chart.js → npm 패키지로 교체 필요 (sessionBarChart, sessionDonut) */}
-            <div className="h-40 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 text-sm border border-slate-100">
-              차트 영역 (Chart.js 통합 필요)
-            </div>
-          </div>
-
+        </div>
+      </div>
+          </main>
         </div>
       </div>
 

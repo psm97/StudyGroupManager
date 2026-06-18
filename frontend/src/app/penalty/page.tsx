@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import LeftMenu from '@/components/LeftMenu';
+import Header from '@/components/Header';
+import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
 
 interface MemberSummary {
   userId: string;
@@ -51,9 +54,10 @@ type SortKey = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
 
 export default function PenaltyPage() {
   const searchParams = useSearchParams();
-  const groupId = searchParams.get('group_id') || '0';
+  const initialGroupId = parseInt(searchParams.get('group_id') || '1') || 1;
   const isLeader = true; // mock
 
+  const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId);
   const [records, setRecords] = useState<PenaltyRecord[]>(MOCK_RECORDS);
   const [penaltyRule, setPenaltyRule] = useState<PenaltyRule>({ absentFee: 5000, lateFee: 2000 });
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
@@ -62,6 +66,8 @@ export default function PenaltyPage() {
   const [ruleModal, setRuleModal] = useState(false);
   const [newAbsentFee, setNewAbsentFee] = useState(String(penaltyRule.absentFee));
   const [newLateFee, setNewLateFee] = useState(String(penaltyRule.lateFee));
+  const groupId = String(selectedGroupId);
+  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
 
   const totalUnpaid = records.filter(r => !r.isPaid).reduce((s, r) => s + r.amount, 0);
   const totalPaid = records.filter(r => r.isPaid).reduce((s, r) => s + r.amount, 0);
@@ -145,14 +151,23 @@ export default function PenaltyPage() {
         .toggle-on .toggle-thumb { left:20px; }
       `}</style>
 
-      <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
+      <div className="bg-blue-100 min-h-screen">
+      <div id="sidebarOverlay" onClick={() => {
+        document.getElementById('sidebar')?.classList.remove('open');
+        document.getElementById('sidebarOverlay')?.classList.remove('open');
+      }}></div>
+      <div className="max-w-[1440px] mx-auto my-0 lg:my-8 bg-white lg:rounded-[32px] shadow-2xl flex overflow-hidden" style={{minHeight:'100vh'}}>
+        <LeftMenu />
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <Header />
+          <div className="flex-1 overflow-y-auto bg-slate-50 px-4 lg:px-8 py-5 lg:py-6 space-y-5">
 
         {/* 배너 */}
         <div className="rounded-2xl p-5 sm:p-6 text-white" style={{ background: 'linear-gradient(135deg,#0d52f3 0%,#286af8 55%,#3a74ef 100%)' }}>
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">벌금 관리</h1>
-              <p className="text-white/70 text-sm mt-1">스터디 그룹</p>
+              <p className="text-white/70 text-sm mt-1">{selectedGroup.name}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <div className="border border-white/25 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
@@ -181,6 +196,16 @@ export default function PenaltyPage() {
             </div>
           </div>
         </div>
+
+        {/* 탭 + 컨텐츠 */}
+        <GroupTabsCard
+          activeGroupId={selectedGroupId}
+          onSelect={group => {
+            setSelectedGroupId(group.id);
+            setActiveMemberId(null);
+            setUnpaidOnly(false);
+          }}
+        />
 
         {/* 요약 카드 3개 */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 fade-up">
@@ -378,6 +403,9 @@ export default function PenaltyPage() {
           )}
         </div>
 
+      </div>
+          </main>
+        </div>
       </div>
 
       {/* 벌금 규칙 수정 모달 */}

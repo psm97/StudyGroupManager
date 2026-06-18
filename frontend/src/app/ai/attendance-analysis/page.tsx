@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
+import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
 
 /* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js) */
 
@@ -32,8 +33,9 @@ interface RiskLog {
 
 export default function AIAttendanceAnalysisPage() {
   const searchParams = useSearchParams();
-  const groupId = searchParams.get('group_id') || '1';
+  const initialGroupId = parseInt(searchParams.get('group_id') || '1') || 1;
 
+  const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId);
   const [memberRisks, setMemberRisks] = useState<MemberRisk[]>([]);
   const [churnFactors, setChurnFactors] = useState<ChurnFactor[]>([]);
   const [riskLogs, setRiskLogs] = useState<RiskLog[]>([]);
@@ -49,6 +51,8 @@ export default function AIAttendanceAnalysisPage() {
   const [logMemberFilter, setLogMemberFilter] = useState('all');
   const [logRiskFilter, setLogRiskFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const groupId = String(selectedGroupId);
+  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
 
   useEffect(() => {
     fetch(`/ai/attendance-analysis/?group_id=${groupId}`)
@@ -64,7 +68,7 @@ export default function AIAttendanceAnalysisPage() {
         setModelDataCount(d.model_data_count);
         setDangerCount(d.danger_count || 0);
         setWarningCount(d.warning_count || 0);
-        setGroupName(d.group_name || '');
+        setGroupName(d.group_name || selectedGroup.name);
         setLastAnalyzed(d.last_analyzed || '—');
         setLoading(false);
       })
@@ -91,11 +95,11 @@ export default function AIAttendanceAnalysisPage() {
         setModelDataCount(324);
         setDangerCount(1);
         setWarningCount(1);
-        setGroupName('Web Developer Study');
+        setGroupName(selectedGroup.name);
         setLastAnalyzed('2025.06.17 14:00');
         setLoading(false);
       });
-  }, [groupId]);
+  }, [groupId, selectedGroup.name]);
 
   const riskClass = (score: number) => {
     if (score >= 70) return 'danger';
@@ -161,6 +165,16 @@ export default function AIAttendanceAnalysisPage() {
                 </div>
               </div>
             </div>
+
+            {/* 탭 + 컨텐츠 */}
+            <GroupTabsCard
+              activeGroupId={selectedGroupId}
+              onSelect={group => {
+                setSelectedGroupId(group.id);
+                setLogMemberFilter('all');
+                setLogRiskFilter('all');
+              }}
+            />
 
             {/* 결석 위험도 대시보드 */}
             <section>
