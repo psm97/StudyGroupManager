@@ -1,27 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import DarkMode from './DarkMode';
 
 export default function Header() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const userNickname: string = '';
-
-  useEffect(() => {
-    const saved = localStorage.getItem('sgm-dark-mode');
-    if (saved === 'true') {
-      setDarkMode(true);
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  }, []);
-
-  const toggleDarkMode = (checked: boolean) => {
-    setDarkMode(checked);
-    localStorage.setItem('sgm-dark-mode', String(checked));
-    document.documentElement.setAttribute('data-theme', checked ? 'dark' : '');
-  };
 
   const handleSearch = (value: string) => {
     if (value.trim()) {
@@ -55,12 +41,6 @@ export default function Header() {
 
   return (
     <>
-      <style>{`
-        html[data-theme="dark"] header p.text-sm.font-semibold { color: var(--text-heading) !important; }
-        html[data-theme="dark"] header p.text-xs              { color: var(--text-muted) !important; }
-        html[data-theme="dark"] .toggle-slider { background: #334155; }
-      `}</style>
-
       <header className="flex items-center justify-between py-3 px-4 lg:px-8 border-b border-slate-100 bg-white flex-shrink-0 gap-3">
         {/* 햄버거 (모바일) */}
         <button className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100" onClick={openSidebar}>
@@ -88,16 +68,7 @@ export default function Header() {
         <div className="flex items-center gap-3 lg:gap-5 flex-shrink-0">
           {/* 다크모드 (데스크탑) */}
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-sm text-slate-500">다크 모드</span>
-            <label className="toggle-wrap">
-              <input
-                type="checkbox"
-                id="darkToggle"
-                checked={darkMode}
-                onChange={(e) => toggleDarkMode(e.target.checked)}
-              />
-              <span className="toggle-slider"></span>
-            </label>
+            <DarkMode />
           </div>
 
           {/* 그룹 만들기 버튼 */}

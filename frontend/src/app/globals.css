@@ -29,3 +29,62 @@ body {
 .month-cell { min-height: 90px; }
 .week-time-cell { height: 50px; }
 .week-day-cell { height: 50px; }
+
+/* ── Dark Mode ──────────────────────────────────────────── */
+html[data-theme="dark"] {
+  --text-heading: #f1f5f9;
+  --text-muted: #94a3b8;
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+/* Surfaces */
+html[data-theme="dark"] .bg-white         { background-color: #1e293b !important; }
+html[data-theme="dark"] .bg-slate-50      { background-color: #0f172a !important; }
+html[data-theme="dark"] .bg-slate-100     { background-color: #283548 !important; }
+html[data-theme="dark"] .bg-blue-100      { background-color: #0f172a !important; }
+
+/* Borders */
+html[data-theme="dark"] .border-slate-100 { border-color: #334155 !important; }
+html[data-theme="dark"] .border-slate-200 { border-color: #334155 !important; }
+
+/* Text */
+html[data-theme="dark"] .text-slate-800   { color: #f1f5f9 !important; }
+html[data-theme="dark"] .text-slate-700   { color: #e2e8f0 !important; }
+html[data-theme="dark"] .text-slate-600   { color: #cbd5e1 !important; }
+html[data-theme="dark"] .text-slate-500   { color: #94a3b8 !important; }
+html[data-theme="dark"] .text-slate-400   { color: #64748b !important; }
+
+/* Hover */
+html[data-theme="dark"] .hover\:bg-slate-100:hover { background-color: #334155 !important; }
+html[data-theme="dark"] .hover\:bg-rose-50:hover   { background-color: #3f1d1d !important; }
+
+/* Inputs */
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="search"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+html[data-theme="dark"] input::placeholder { color: #64748b; }
+
+/* Header */
+html[data-theme="dark"] header                      { background-color: #1e293b !important; border-color: #334155 !important; }
+html[data-theme="dark"] header p.text-sm.font-semibold { color: var(--text-heading) !important; }
+html[data-theme="dark"] header p.text-xs            { color: var(--text-muted) !important; }
+
+/* Sidebar / LeftMenu */
+html[data-theme="dark"] aside                       { background-color: #0f172a !important; border-color: #1e293b !important; }
+
+/* Shadow depth */
+html[data-theme="dark"] .shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+}
