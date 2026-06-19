@@ -24,7 +24,7 @@ export default function DarkMode() {
       onClick={toggle}
       title={dark ? '라이트 모드로 전환' : '다크 모드로 전환'}
       aria-label={dark ? '라이트 모드로 전환' : '다크 모드로 전환'}
-      className="relative flex-shrink-0 w-14 h-7 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      className="relative flex-shrink-0 w-14 h-7 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
       style={{
         background: dark ? '#1e40af' : '#e2e8f0',
         transition: 'background 0.3s',

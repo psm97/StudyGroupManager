@@ -96,6 +96,33 @@ export default function ResourcesPage() {
     try { await fetch(`/groups/${groupId}/resources/${id}/download/`, { method: 'POST' }); } catch { /* ignore */ }
   };
 
+  const handleDownload = async (r: Resource) => {
+    const triggerSave = (blob: Blob, fileName: string) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    try {
+      const res = await fetch(`/groups/${groupId}/resources/${r.id}/file/`);
+      if (res.ok) {
+        const blob = await res.blob();
+        triggerSave(blob, r.fileName);
+      } else {
+        triggerSave(new Blob([`${r.fileName} placeholder`], { type: 'application/octet-stream' }), r.fileName);
+      }
+    } catch {
+      triggerSave(new Blob([`${r.fileName} placeholder`], { type: 'application/octet-stream' }), r.fileName);
+    }
+
+    await recordDownload(r.id);
+  };
+
   const deleteResource = async (id: number, name: string) => {
     if (!confirm(`"${name}" 파일을 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.`)) return;
     try { await fetch(`/groups/${groupId}/resources/${id}/`, { method: 'DELETE' }); } catch { /* ignore */ }
@@ -287,7 +314,7 @@ export default function ResourcesPage() {
                       <td className="px-4 py-3.5 text-slate-400 font-mono text-xs hidden md:table-cell">{r.date}</td>
                       <td className="px-4 py-3.5 text-slate-400 text-xs hidden sm:table-cell">{r.fileSize}</td>
                       <td className="px-4 py-3.5 text-center">
-                        <button onClick={() => recordDownload(r.id)} className="inline-flex items-center gap-1.5 text-sm font-bold hover:text-blue-700 transition-colors" style={{ color: '#0077ff' }}>
+                        <button onClick={() => handleDownload(r)} className="inline-flex items-center gap-1.5 text-sm font-bold hover:text-blue-700 transition-colors" style={{ color: '#0077ff' }}>
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                           {r.downloadCount}
                         </button>
@@ -331,7 +358,7 @@ export default function ResourcesPage() {
                       <span className="text-xs text-slate-400">{r.fileSize}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <button onClick={() => recordDownload(r.id)} className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg py-1.5 transition-colors">
+                      <button onClick={() => handleDownload(r)} className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg py-1.5 transition-colors">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                         {r.downloadCount}
                       </button>

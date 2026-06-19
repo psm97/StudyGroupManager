@@ -9,6 +9,18 @@ export default function LeftMenu() {
   const isActive = (path: string) => pathname === path;
 
   const handleLogout = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const result = await Swal.fire({
+      title: '로그아웃',
+      text: '정말 로그아웃 하시겠습니까?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '로그아웃',
+      confirmButtonColor: '#e11d48',
+      cancelButtonText: '취소',
+      reverseButtons: true,
+    });
+    if (!result.isConfirmed) return;
     try {
       await fetch('/api/auth/logout/', { method: 'POST' });
       router.push('/accounts/login');
@@ -202,7 +214,7 @@ export default function LeftMenu() {
               </a>
             </li>
             <li>
-              <button onClick={handleLogout} className="w-full nav-link text-slate-600 flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-left">
+              <button onClick={handleLogout} className="w-full nav-link text-slate-600 flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-left cursor-pointer">
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>

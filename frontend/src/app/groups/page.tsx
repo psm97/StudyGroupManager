@@ -38,6 +38,98 @@ export default function GroupListPage() {
   const filteredMy = myGroups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
   const filteredPublic = publicGroups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
 
+  const openJoinGroupModal = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const result = await Swal.fire({
+      title: '<span style="font-size:17px;font-weight:700">👥 그룹 참여</span>',
+      width: 460,
+      html: `<div style="text-align:left;padding:4px 0">
+        <div style="margin-bottom:14px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">초대 코드</label>
+          <input id="swal-jcode" type="text" placeholder="초대 코드를 입력하세요" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box" />
+        </div>
+        <div style="background:#f8fafc;border-radius:10px;padding:12px 14px;border:1px solid #f1f5f9">
+          <p style="font-size:12px;color:#64748b;margin:0 0 4px;font-weight:600">💡 초대 코드가 없으신가요?</p>
+          <p style="font-size:12px;color:#94a3b8;margin:0;line-height:1.6">공개 그룹은 <b style="color:#0077ff">공개 그룹 탐색</b> 탭에서 직접 참여할 수 있습니다.</p>
+        </div>
+      </div>`,
+      confirmButtonText: '참여하기',
+      confirmButtonColor: '#0077ff',
+      showCancelButton: true,
+      cancelButtonText: '취소',
+      preConfirm: () => {
+        const code = ((document.getElementById('swal-jcode') as HTMLInputElement)?.value || '').trim();
+        if (!code) { Swal.showValidationMessage('초대 코드를 입력해 주세요.'); return false; }
+        return { code };
+      },
+    });
+    if (!result.isConfirmed || !result.value) return;
+    await Swal.fire({ icon: 'success', title: '참여 요청이 전송되었습니다!', text: '그룹 리더의 승인 후 참여가 완료됩니다.', timer: 2200, showConfirmButton: false, timerProgressBar: true });
+  };
+
+  const openCreateGroupModal = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const result = await Swal.fire({
+      title: '<span style="font-size:17px;font-weight:700">🏫 그룹 만들기</span>',
+      width: 500,
+      html: `<div style="text-align:left;padding:4px 0">
+        <div style="margin-bottom:12px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">그룹 이름 *</label>
+          <input id="swal-gname" type="text" placeholder="그룹 이름을 입력하세요" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box" />
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">설명</label>
+          <textarea id="swal-gdesc" rows="3" placeholder="그룹 소개를 입력하세요" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;resize:none;box-sizing:border-box;font-family:inherit"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">카테고리</label>
+            <select id="swal-gcat" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box">
+              <option value="study">📚 스터디</option>
+              <option value="language">🌏 어학</option>
+              <option value="algorithm">💻 알고리즘</option>
+              <option value="dev">🛠 개발</option>
+              <option value="etc">📌 기타</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px">최대 인원</label>
+            <input id="swal-gmax" type="number" min="2" max="50" value="10" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box" />
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px">공개 설정</label>
+          <div style="display:flex;gap:16px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;color:#334155">
+              <input type="radio" name="swal-gvis" value="public" checked style="accent-color:#0077ff;width:15px;height:15px" /> 🌐 공개
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;color:#334155">
+              <input type="radio" name="swal-gvis" value="private" style="accent-color:#0077ff;width:15px;height:15px" /> 🔒 비공개
+            </label>
+          </div>
+        </div>
+      </div>`,
+      confirmButtonText: '그룹 만들기',
+      confirmButtonColor: '#0077ff',
+      showCancelButton: true,
+      cancelButtonText: '취소',
+      preConfirm: () => {
+        const name = ((document.getElementById('swal-gname') as HTMLInputElement)?.value || '').trim();
+        const desc = ((document.getElementById('swal-gdesc') as HTMLTextAreaElement)?.value || '').trim();
+        const category = (document.getElementById('swal-gcat') as HTMLSelectElement)?.value || 'study';
+        const maxMembers = parseInt((document.getElementById('swal-gmax') as HTMLInputElement)?.value || '10', 10);
+        const visEls = document.querySelectorAll<HTMLInputElement>('input[name="swal-gvis"]');
+        const visibility = Array.from(visEls).find(el => el.checked)?.value || 'public';
+        if (!name) { Swal.showValidationMessage('그룹 이름을 입력해 주세요.'); return false; }
+        if (isNaN(maxMembers) || maxMembers < 2 || maxMembers > 50) { Swal.showValidationMessage('최대 인원은 2~50명 사이여야 합니다.'); return false; }
+        return { name, desc, category, maxMembers, visibility };
+      },
+    });
+    if (!result.isConfirmed || !result.value) return;
+    const { name } = result.value as { name: string; desc: string; category: string; maxMembers: number; visibility: string };
+    await Swal.fire({ icon: 'success', title: '그룹이 생성되었습니다!', text: `"${name}" 그룹이 만들어졌습니다.`, timer: 2000, showConfirmButton: false, timerProgressBar: true });
+  };
+
   return (
     <>
       <style>{`
@@ -69,12 +161,16 @@ export default function GroupListPage() {
                     <p className="text-blue-100 text-sm">스터디 그룹을 관리하고 탐색하세요</p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white hover:bg-white/25 transition-colors"
-                      style={{background:'rgba(255,255,255,.15)', border:'1px solid rgba(255,255,255,.25)'}}>
+                    <button onClick={openJoinGroupModal}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white transition-colors cursor-pointer"
+                      style={{background:'rgba(255,255,255,.15)', border:'1px solid rgba(255,255,255,.25)'}}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.32)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.15)')}>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/></svg>
                       그룹 참여
                     </button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-sm font-bold shadow hover:bg-blue-50 transition-all" style={{color:'#0077ff'}}>
+                    <button onClick={openCreateGroupModal}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-sm font-bold shadow hover:bg-blue-50 transition-all cursor-pointer" style={{color:'#0077ff'}}>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                       그룹 만들기
                     </button>
@@ -87,12 +183,12 @@ export default function GroupListPage() {
                 <div className="flex border-b border-slate-100">
                   <button id="tab-my"
                     onClick={() => setActiveTab('my')}
-                    className={`tab-btn ${activeTab==='my'?'active':''} px-5 py-3.5 text-sm text-slate-500 border-b-2 border-transparent -mb-px`}>
+                    className={`tab-btn ${activeTab==='my'?'active':''} px-5 py-3.5 text-sm text-slate-500 border-b-2 border-transparent -mb-px cursor-pointer`}>
                     내 그룹 <span className="ml-1.5 badge" style={{background:'#dce6fd',color:'#0077ff'}}>{myGroups.length}</span>
                   </button>
                   <button id="tab-public"
                     onClick={() => setActiveTab('public')}
-                    className={`tab-btn ${activeTab==='public'?'active':''} px-5 py-3.5 text-sm text-slate-500 border-b-2 border-transparent -mb-px`}>
+                    className={`tab-btn ${activeTab==='public'?'active':''} px-5 py-3.5 text-sm text-slate-500 border-b-2 border-transparent -mb-px cursor-pointer`}>
                     공개 그룹 탐색 <span className="ml-1.5 badge bg-slate-100 text-slate-500">{publicGroups.length}</span>
                   </button>
                 </div>

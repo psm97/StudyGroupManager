@@ -26,6 +26,18 @@ export default function Header() {
   };
 
   const handleLogout = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const result = await Swal.fire({
+      title: '로그아웃',
+      text: '정말 로그아웃 하시겠습니까?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '로그아웃',
+      confirmButtonColor: '#e11d48',
+      cancelButtonText: '취소',
+      reverseButtons: true,
+    });
+    if (!result.isConfirmed) return;
     try {
       await fetch('/api/auth/logout/', { method: 'POST' });
       router.push('/accounts/login');
@@ -150,7 +162,7 @@ export default function Header() {
           {/* 그룹 만들기 버튼 */}
           <button
             onClick={openCreateGroupModal}
-            className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl text-white transition-colors"
+            className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl text-white transition-colors cursor-pointer"
             style={{background:'#0077ff'}}
             onMouseOver={(e) => (e.currentTarget.style.background = '#0d44c4')}
             onMouseOut={(e) => (e.currentTarget.style.background = '#0077ff')}
@@ -248,7 +260,7 @@ export default function Header() {
           {/* 로그아웃 */}
           <button
             onClick={handleLogout}
-            className="hidden sm:block p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+            className="hidden sm:block p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
             title="로그아웃"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
