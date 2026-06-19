@@ -139,9 +139,6 @@ export default function ProfilePage() {
                   배경 사진 변경
                   <input type="file" accept="image/*" className="hidden" onChange={handleBgPhotoChange} />
                 </label>
-
-                <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{color:'rgba(255,255,255,.7)'}}>✦ 프로필 ✦</p>
-
                 {/* 프로필 사진 + 수정 버튼 */}
                 <div className="relative mb-3">
                   <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-white overflow-hidden"

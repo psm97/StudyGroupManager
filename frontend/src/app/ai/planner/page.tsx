@@ -47,11 +47,23 @@ export default function AIPlannerPage() {
   const initialGroupId = parseInt(searchParams.get('group_id') || '1') || 1;
 
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId);
+  const [isLeader, setIsLeader] = useState(false);
+  const [viewMode, setViewMode] = useState<'personal' | 'group'>('personal');
+
+  // 개인 목표 데이터
   const [achievementProb, setAchievementProb] = useState(0);
   const [progressRate, setProgressRate] = useState(0);
   const [expectedDate, setExpectedDate] = useState('—');
   const [daysRemaining, setDaysRemaining] = useState(0);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
+  // 그룹 목표 데이터 (리더 전용)
+  const [groupAchievementProb, setGroupAchievementProb] = useState(0);
+  const [groupProgressRate, setGroupProgressRate] = useState(0);
+  const [groupExpectedDate, setGroupExpectedDate] = useState('—');
+  const [groupDaysRemaining, setGroupDaysRemaining] = useState(0);
+  const [groupSuggestions, setGroupSuggestions] = useState<Suggestion[]>([]);
+
   const [schedule, setSchedule] = useState<WeekSchedule[]>([]);
   const [scheduleMeta, setScheduleMeta] = useState('AI가 생성한 주간 일정입니다.');
   const [resources, setResources] = useState<ResourceItem[]>([]);
@@ -64,21 +76,48 @@ export default function AIPlannerPage() {
   const groupId = String(selectedGroupId);
   const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
 
+  // 현재 viewMode에 따른 표시 데이터
+  const isGroupView = isLeader && viewMode === 'group';
+  const displayProb = isGroupView ? groupAchievementProb : achievementProb;
+  const displayProgressRate = isGroupView ? groupProgressRate : progressRate;
+  const displayExpectedDate = isGroupView ? groupExpectedDate : expectedDate;
+  const displayDaysRemaining = isGroupView ? groupDaysRemaining : daysRemaining;
+  const displaySuggestions = isGroupView ? groupSuggestions : suggestions;
+
   useEffect(() => {
     fetch(`/ai/planner/init/?group_id=${groupId}`)
       .then(r => r.json())
       .then(d => {
+        setIsLeader(d.is_leader ?? false);
         setAchievementProb(d.achievement_prob || 0);
         setProgressRate(d.progress_rate || 0);
         setExpectedDate(d.expected_date || '—');
         setDaysRemaining(d.days_remaining || 0);
         setSuggestions((d.ai_suggestions || []).map((s: string) => ({ text: s })));
+        setGroupAchievementProb(d.group_achievement_prob || 0);
+        setGroupProgressRate(d.group_progress_rate || 0);
+        setGroupExpectedDate(d.group_expected_date || '—');
+        setGroupDaysRemaining(d.group_days_remaining || 0);
+        setGroupSuggestions((d.group_ai_suggestions || []).map((s: string) => ({ text: s })));
       })
       .catch(() => {
+        setIsLeader(true);
         setAchievementProb(72);
         setProgressRate(45);
         setExpectedDate('2025.09.30');
         setDaysRemaining(15);
+        setSuggestions([
+          { text: '현재 진행 속도를 유지하면 목표 달성이 가능합니다.' },
+          { text: '주 2회 추가 학습 세션을 통해 달성 확률을 높일 수 있습니다.' },
+        ]);
+        setGroupAchievementProb(65);
+        setGroupProgressRate(52);
+        setGroupExpectedDate('2025.10.15');
+        setGroupDaysRemaining(-5);
+        setGroupSuggestions([
+          { text: '그룹 전체 출석률 향상을 위한 동기부여 이벤트를 진행해 보세요.' },
+          { text: '주간 목표 공유 세션을 도입하면 그룹 목표 달성에 도움이 됩니다.' },
+        ]);
       });
   }, [groupId]);
 
@@ -128,12 +167,13 @@ export default function AIPlannerPage() {
 
   const typeIcon: Record<string, string> = { '영상': '🎬', '문서': '📄', '사이트': '🌐', '도서': '📚' };
 
-  const probLabel = achievementProb >= 70 ? '🟢 달성 가능' : achievementProb >= 40 ? '🟡 개선 필요' : '🔴 위험';
-  const probBadgeClass = achievementProb >= 70 ? 'bg-emerald-50 text-emerald-700' : achievementProb >= 40 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600';
+  const probLabel = displayProb >= 70 ? '🟢 달성 가능' : displayProb >= 40 ? '🟡 개선 필요' : '🔴 위험';
+  const probBadgeClass = displayProb >= 70 ? 'bg-emerald-50 text-emerald-700' : displayProb >= 40 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600';
 
   const suggestIcons = ['🎯', '📅', '👥', '📈', '💪', '🔥'];
 
   const weeklyChartData = useMemo(() => {
+    const currentProgressRate = isLeader && viewMode === 'group' ? groupProgressRate : progressRate;
     if (schedule.length > 0) {
       return {
         labels: schedule.map(w => w.week_label),
@@ -150,7 +190,7 @@ export default function AIPlannerPage() {
       };
     }
     const mockWeeks = ['1주차','2주차','3주차','4주차','5주차','6주차','7주차','8주차'];
-    const mockData = [0, 25, 40, 55, 45, 62, 72, progressRate];
+    const mockData = [0, 25, 40, 55, 45, 62, 72, currentProgressRate];
     return {
       labels: mockWeeks,
       datasets: [{
@@ -164,7 +204,7 @@ export default function AIPlannerPage() {
         pointBackgroundColor: '#0077ff',
       }],
     };
-  }, [schedule, progressRate]);
+  }, [schedule, progressRate, groupProgressRate, isLeader, viewMode]);
 
   return (
     <div className="bg-blue-100 min-h-screen">
@@ -206,22 +246,22 @@ export default function AIPlannerPage() {
                 </div>
                 <div className="flex flex-wrap gap-2 items-center">
                   <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
-                    <p className="text-lg font-bold text-blue-200">{achievementProb}%</p>
+                    <p className="text-lg font-bold text-blue-200">{displayProb}%</p>
                     <p className="text-xs opacity-60 mt-0.5">달성 확률</p>
                   </div>
                   <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
-                    <p className="text-lg font-bold text-yellow-200">{expectedDate}</p>
+                    <p className="text-lg font-bold text-yellow-200">{displayExpectedDate}</p>
                     <p className="text-xs opacity-60 mt-0.5">예상 완료일</p>
                   </div>
                   <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
-                    <p className="text-lg font-bold text-white">{progressRate}%</p>
+                    <p className="text-lg font-bold text-white">{displayProgressRate}%</p>
                     <p className="text-xs opacity-60 mt-0.5">진행률</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 탭 + 컨텐츠 */}
+            {/* 그룹 탭 */}
             <GroupTabsCard
               activeGroupId={selectedGroupId}
               onSelect={group => {
@@ -229,54 +269,78 @@ export default function AIPlannerPage() {
                 setActiveTab('schedule');
                 setScheduleVisible(false);
                 setMessages([]);
+                setViewMode('personal');
               }}
             />
+
+            {/* 기준 토글 (리더 전용) */}
+            {isLeader && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewMode('personal')}
+                  className="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors"
+                  style={{ background: viewMode === 'personal' ? '#0077ff' : '#e2e8f0', color: viewMode === 'personal' ? '#fff' : '#64748b' }}
+                >
+                  개인 기준
+                </button>
+                <button
+                  onClick={() => setViewMode('group')}
+                  className="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors"
+                  style={{ background: viewMode === 'group' ? '#0077ff' : '#e2e8f0', color: viewMode === 'group' ? '#fff' : '#64748b' }}
+                >
+                  그룹 기준
+                </button>
+              </div>
+            )}
 
             {/* 달성 확률 + AI 제안 */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               {/* Arc 카드 */}
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col items-center justify-center">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">목표 달성 확률</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">목표 달성 확률</p>
+                <p className="text-xs text-slate-400 mb-3">{isGroupView ? '그룹 기준' : '개인 기준'}</p>
                 <div className="relative mb-4">
                   <svg className="w-36 h-36" style={{transform:'rotate(-90deg)'}}>
                     <circle fill="none" stroke="#e2e8f0" strokeWidth="10" cx="72" cy="72" r="58"/>
                     <circle fill="none" strokeWidth="10" strokeLinecap="round" cx="72" cy="72" r="58"
                       stroke="#0077ff"
-                      strokeDasharray={`${achievementProb * 3.64} 364`}
+                      strokeDasharray={`${displayProb * 3.64} 364`}
                       style={{transition:'stroke-dashoffset .9s ease'}}/>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold" style={{color:'#0077ff'}}>{achievementProb}%</span>
+                    <span className="text-3xl font-bold" style={{color:'#0077ff'}}>{displayProb}%</span>
                     <span className="text-xs text-slate-400 mt-0.5">달성 가능성</span>
                   </div>
                 </div>
                 <span className={`text-sm font-bold px-4 py-1.5 rounded-full ${probBadgeClass}`}>{probLabel}</span>
                 <div className="w-full mt-4 space-y-2">
                   <div className="flex justify-between text-xs text-slate-500">
-                    <span>예상 완료일</span><span className="font-bold text-slate-700">{expectedDate}</span>
+                    <span>예상 완료일</span><span className="font-bold text-slate-700">{displayExpectedDate}</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-500">
                     <span>목표 기간 대비</span>
-                    <span className={`font-bold ${daysRemaining > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {daysRemaining > 0 ? `D-${daysRemaining}` : '기간 초과'}
+                    <span className={`font-bold ${displayDaysRemaining > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {displayDaysRemaining > 0 ? `D-${displayDaysRemaining}` : '기간 초과'}
                     </span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-500">
-                    <span>현재 진행률</span><span className="font-bold" style={{color:'#0077ff'}}>{progressRate}%</span>
+                    <span>현재 진행률</span><span className="font-bold" style={{color:'#0077ff'}}>{displayProgressRate}%</span>
                   </div>
                 </div>
               </div>
 
-              {/* AI 제안 + 차트 자리 */}
+              {/* AI 제안 + 차트 */}
               <div className="lg:col-span-2 space-y-4">
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                   <h2 className="font-bold text-slate-800 flex items-center gap-2 mb-3">
                     <span className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-sm">💡</span>
                     AI 개선 제안
-                    <span className="text-xs font-normal text-slate-400 ml-1">GPT-4o 생성</span>
+                    <span className="text-xs font-normal text-slate-400 ml-1">
+                      {isGroupView ? '그룹 기준' : '개인 기준'} · GPT-4o 생성
+                    </span>
                   </h2>
                   <div className="space-y-2">
-                    {suggestions.length > 0 ? suggestions.map((s, i) => (
+                    {displaySuggestions.length > 0 ? displaySuggestions.map((s, i) => (
                       <div key={i} className="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
                         <span className="mt-0.5 flex-shrink-0" style={{color:'#0077ff'}}>{suggestIcons[i] || '💡'}</span>
                         <p className="text-sm text-slate-700 leading-relaxed">{s.text}</p>
@@ -290,7 +354,8 @@ export default function AIPlannerPage() {
                   </div>
                 </div>
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                  <h2 className="font-bold text-slate-800 mb-4">주차별 성과 추이</h2>
+                  <h2 className="font-bold text-slate-800 mb-1">주차별 성과 추이</h2>
+                  <p className="text-xs text-slate-400 mb-4">{isGroupView ? '그룹 기준' : '개인 기준'}</p>
                   <div className="h-44">
                     <Line
                       data={weeklyChartData}
@@ -312,7 +377,7 @@ export default function AIPlannerPage() {
               </div>
             </div>
 
-            {/* 챗봇 */}
+            {/* 챗봇 (멤버 레벨 무관하게 항상 표시) */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <h2 className="font-bold text-slate-800 flex items-center gap-2">
@@ -323,7 +388,6 @@ export default function AIPlannerPage() {
                 <button onClick={() => setMessages([])} className="text-xs text-slate-400 hover:text-slate-600 transition-colors">초기화</button>
               </div>
               <div ref={chatRef} className="flex flex-col gap-3 p-5 overflow-y-auto" style={{maxHeight:'320px', minHeight:'200px'}}>
-                {/* 웰컴 메시지 */}
                 <div className="bubble-ai">
                   안녕하세요! 👋 AI 스터디 플래너입니다.<br/>
                   <strong>학습 목표, 준비 기간, 주간 가용 시간</strong>을 알려주시면 최적의 스터디 일정을 만들어 드립니다.
