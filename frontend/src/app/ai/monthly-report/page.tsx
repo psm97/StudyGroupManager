@@ -300,13 +300,12 @@ export default function AIMonthlyReportPage() {
                       </div>
                     </div>
 
-                    <div className="rounded-2xl p-5" style={{background:'linear-gradient(135deg,#0d44c4,#0077ff)', boxShadow:'0 4px 24px rgba(0,0,0,.06)'}}>
+                    <div className="rounded-2xl p-5" style={{background:'#ffffff', boxShadow:'0 4px 24px rgba(0,0,0,.06)'}}>
                       <div className="flex items-center gap-2 mb-3">
                         <span className="text-xl">🤖</span>
-                        <p className="text-sm font-bold text-white/90">AI 코멘트</p>
-                        <span className="text-xs text-white/40 ml-auto">GPT-4o 생성</span>
+                        <p className="text-sm font-bold text-black/90">AI 코멘트</p>
                       </div>
-                      <p className="text-sm text-white/80 leading-relaxed">{myReport.ai_comment}</p>
+                      <p className="text-sm text-black/50 leading-relaxed">{myReport.ai_comment}</p>
                     </div>
                   </>
                 ) : (
