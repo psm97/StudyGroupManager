@@ -349,16 +349,15 @@ export default function NicknamePage() {
         </div>
 
         {/* 하단 안내 */}
-        <div className="mt-4 p-3.5 rounded-xl border" style={{background:'#FFFBEB', borderColor:'#FEF3C7'}}>
+        <div className="mt-4 mb-4 p-3.5 rounded-xl border" style={{background:'#FFFBEB', borderColor:'#FEF3C7'}}>
           <p className="text-xs leading-relaxed text-center" style={{color:'#92400E'}}>
             닉네임은 <strong>프로필 설정</strong>에서 언제든지 변경할 수 있습니다.
           </p>
         </div>
+        <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap z-10" style={{color:'rgba(148,163,184,.7)'}}>
+          © {currentYear} StudyGroupManager. All rights reserved.
+        </p>
       </div>
-
-      <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap z-10" style={{color:'rgba(148,163,184,.7)'}}>
-        © {currentYear} StudyGroupManager. All rights reserved.
-      </p>
     </div>
   );
 }
