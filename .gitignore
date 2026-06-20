@@ -30,3 +30,5 @@ env/
 
 # ── 로그 파일 ──
 *.log
+
+node_modules
