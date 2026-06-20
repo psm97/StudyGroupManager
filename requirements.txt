@@ -1,0 +1,7 @@
+# backend
+django
+psycopg
+psycopg2-binary
+
+# frontend
+npm
