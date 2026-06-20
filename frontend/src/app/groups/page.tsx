@@ -20,17 +20,15 @@ export default function GroupListPage() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch('/groups/api/my-groups/').then(r=>r.json()).catch(()=>[]),
-      fetch('/groups/api/public/').then(r=>r.json()).catch(()=>[]),
+      fetch('/groups/api/my-groups/', {credentials:'include'})
+        .then(r => { if (r.status === 401) window.location.href = '/accounts/login'; return r.ok ? r.json() : {}; })
+        .catch(() => ({})),
+      fetch('/groups/api/public/', {credentials:'include'})
+        .then(r => r.ok ? r.json() : {})
+        .catch(() => ({})),
     ]).then(([my, pub]) => {
-      setMyGroups(my.length ? my : [
-        {id:1, name:'Web Developer Study', member_count:6, role:'leader', attendance_rate:92, color:'#0077ff'},
-        {id:2, name:'Python 알고리즘', member_count:8, role:'member', attendance_rate:75, color:'#10b981'},
-      ]);
-      setPublicGroups(pub.length ? pub : [
-        {id:3, name:'영어 회화 스터디', member_count:5, role:'', attendance_rate:88, color:'#f59e0b', is_public:true},
-        {id:4, name:'토익 900+ 스터디', member_count:10, role:'', attendance_rate:80, color:'#8b5cf6', is_public:true},
-      ]);
+      setMyGroups((my as {groups?: Group[]})?.groups ?? []);
+      setPublicGroups((pub as {groups?: Group[]})?.groups ?? []);
       setLoading(false);
     });
   }, []);

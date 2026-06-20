@@ -8,10 +8,10 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState({total_users:0, total_groups:0, active_users:0, reports:0});
 
   useEffect(() => {
-    fetch('/admin/api/dashboard/')
-      .then(r=>r.json())
-      .then(data => setStats(data.data || data))
-      .catch(() => setStats({total_users:128, total_groups:24, active_users:89, reports:3}));
+    fetch('/admin/api/dashboard/', {credentials:'include'})
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setStats(data.data || data); })
+      .catch(() => {});
   }, []);
 
   const kpiCards = [

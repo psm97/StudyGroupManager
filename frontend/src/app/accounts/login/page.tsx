@@ -87,7 +87,7 @@ export default function LoginPage() {
           <p className="text-center text-xs font-medium tracking-wide uppercase mb-4" style={{color:'#94A3B8'}}>
             Google 계정으로 시작하기
           </p>
-          <a href="/accounts/google/login/"
+          <a href="/api/auth/google/start"
             className="google-btn w-full flex items-center justify-center gap-3 border rounded-2xl py-4 text-sm font-bold focus:outline-none"
             style={{borderColor:'#E2E8F0', color:'#0F172A', boxShadow:'0 4px 24px rgba(37,99,235,0.10)'}}>
             <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48">

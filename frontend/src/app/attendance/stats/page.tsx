@@ -75,17 +75,16 @@ export default function AttendanceStatsPage() {
 
   /* 가입 그룹 목록 로드 */
   useEffect(() => {
-    fetch('/groups/api/my-groups/')
-      .then(r => r.json())
-      .then((data: { id: number; name: string; color: string; member_count: number }[]) => {
-        const gs = data.map(g => ({ id: g.id, name: g.name, color: g.color || '#0077ff', memberCount: g.member_count }));
+    fetch('/groups/api/my-groups/', {credentials:'include'})
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const arr = data?.groups ?? [];
+        if (!arr.length) return;
+        const gs = arr.map((g: { id: number; name: string; color: string; member_count: number }) => ({ id: g.id, name: g.name, color: g.color || '#0077ff', memberCount: g.member_count }));
         setGroups(gs);
         if (gs.length > 0) setSelectedGroupId(gs[0].id);
       })
-      .catch(() => {
-        setGroups(MOCK_GROUPS);
-        setSelectedGroupId(MOCK_GROUPS[0].id);
-      });
+      .catch(() => {});
   }, []);
 
   /* 그룹 통계 로드 */
@@ -95,7 +94,7 @@ export default function AttendanceStatsPage() {
       const params = new URLSearchParams({ filter: f });
       if (from) params.set('from', from);
       if (to)   params.set('to', to);
-      const res = await fetch(`/groups/${groupId}/attendance/stats/api/?${params}`);
+      const res = await fetch(`/groups/${groupId}/attendance/stats/api/?${params}`, {credentials:'include'});
       if (!res.ok) throw new Error();
       const d = await res.json();
       setSummary({ totalPresent: d.total_present, totalLate: d.total_late, totalAbsent: d.total_absent, groupAvgRate: d.group_avg_rate });

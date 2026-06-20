@@ -270,6 +270,55 @@ def api_recent_users(request):
 
 
 @admin_required
+def api_dashboard(request):
+    """GET /api/admin/dashboard/ — 관리자 대시보드 요약"""
+    from django.utils import timezone
+    import datetime
+    U = get_user_model()
+    today = timezone.now().date()
+    month_start = today.replace(day=1)
+
+    try:
+        from groups.models import StudyGroup
+        active_groups = StudyGroup.objects.filter(is_active=True).count()
+    except Exception:
+        active_groups = 0
+
+    try:
+        from attendance.models import AttendanceSession
+        today_sessions = AttendanceSession.objects.filter(session_date=today).count()
+    except Exception:
+        today_sessions = 0
+
+    return JsonResponse({
+        'total_users': U.objects.count(),
+        'active_groups': active_groups,
+        'today_sessions': today_sessions,
+        'new_users_month': U.objects.filter(date_joined__date__gte=month_start).count(),
+    })
+
+
+@admin_required
+def api_members(request):
+    """GET /api/admin/members/ — 전체 회원 목록"""
+    U = get_user_model()
+    users = U.objects.order_by('-date_joined')
+    result = []
+    for u in users:
+        result.append({
+            'id': u.id,
+            'username': u.username,
+            'nickname': getattr(u, 'nickname', '') or '',
+            'email': u.email,
+            'date_joined': u.date_joined.strftime('%Y-%m-%d') if hasattr(u, 'date_joined') else '',
+            'is_active': u.is_active,
+            'is_staff': u.is_staff,
+            'last_login': u.last_login.strftime('%Y-%m-%d') if u.last_login else None,
+        })
+    return JsonResponse({'users': result})
+
+
+@admin_required
 def api_activity_log(request):
     """최근 관리자 활동 로그 20개"""
     return JsonResponse({'success': True, 'logs': [

@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 export interface GroupTabItem {
   id: number;
@@ -18,18 +18,44 @@ interface GroupTabsCardProps {
   groups?: GroupTabItem[];
   activeGroupId: number;
   onSelect: (group: GroupTabItem) => void;
+  onGroupsLoaded?: (groups: GroupTabItem[]) => void;
   children?: ReactNode;
   className?: string;
 }
 
 export default function GroupTabsCard({
-  groups = DEFAULT_GROUP_TABS,
+  groups,
   activeGroupId,
   onSelect,
+  onGroupsLoaded,
   children,
   className = '',
 }: GroupTabsCardProps) {
-  const visibleGroups = groups.length ? groups : DEFAULT_GROUP_TABS;
+  const [loadedGroups, setLoadedGroups] = useState<GroupTabItem[]>(groups ?? []);
+
+  useEffect(() => {
+    if (groups && groups.length > 0) {
+      setLoadedGroups(groups);
+      return;
+    }
+    fetch('/groups/api/my-groups/', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.groups?.length) return;
+        const fetched: GroupTabItem[] = data.groups.map((g: { id: number; name: string; color: string; member_count: number }) => ({
+          id: g.id,
+          name: g.name,
+          color: g.color,
+          memberCount: g.member_count,
+        }));
+        setLoadedGroups(fetched);
+        onGroupsLoaded?.(fetched);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const visibleGroups = loadedGroups.length ? loadedGroups : DEFAULT_GROUP_TABS;
   const fallbackActiveId = activeGroupId || visibleGroups[0]?.id || 0;
 
   return (

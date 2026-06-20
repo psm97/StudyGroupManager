@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
-import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
+import GroupTabsCard from '@/components/GroupTabsCard';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend,
@@ -37,27 +37,6 @@ interface PenaltyRule {
   lateFee: number;
 }
 
-const MOCK_MEMBER_SUMMARIES: MemberSummary[] = [
-  { userId: '1', nickname: '김철수', isLeader: true, unpaidAmount: 0, paidAmount: 10000, paidRate: 100 },
-  { userId: '2', nickname: '이영희', isLeader: false, unpaidAmount: 5000, paidAmount: 5000, paidRate: 50 },
-  { userId: '3', nickname: '박민준', isLeader: false, unpaidAmount: 15000, paidAmount: 0, paidRate: 0 },
-  { userId: '4', nickname: '최지아', isLeader: false, unpaidAmount: 2000, paidAmount: 8000, paidRate: 80 },
-];
-
-const MOCK_RECORDS: PenaltyRecord[] = [
-  { id: 1, memberId: '2', memberNickname: '이영희', reason: '결석 벌금', date: '2025-06-10', amount: 5000, isPaid: false },
-  { id: 2, memberId: '3', memberNickname: '박민준', reason: '결석 벌금', date: '2025-06-10', amount: 5000, isPaid: false },
-  { id: 3, memberId: '3', memberNickname: '박민준', reason: '지각 벌금', date: '2025-06-03', amount: 2000, isPaid: false },
-  { id: 4, memberId: '3', memberNickname: '박민준', reason: '결석 벌금', date: '2025-05-27', amount: 5000, isPaid: false },
-  { id: 5, memberId: '3', memberNickname: '박민준', reason: '지각 벌금', date: '2025-05-20', amount: 3000, isPaid: false },
-  { id: 6, memberId: '1', memberNickname: '김철수', reason: '결석 벌금', date: '2025-05-13', amount: 5000, isPaid: true },
-  { id: 7, memberId: '1', memberNickname: '김철수', reason: '결석 벌금', date: '2025-05-06', amount: 5000, isPaid: true },
-  { id: 8, memberId: '2', memberNickname: '이영희', reason: '지각 벌금', date: '2025-05-27', amount: 5000, isPaid: true },
-  { id: 9, memberId: '4', memberNickname: '최지아', reason: '지각 벌금', date: '2025-06-03', amount: 2000, isPaid: false },
-  { id: 10, memberId: '4', memberNickname: '최지아', reason: '결석 벌금', date: '2025-04-29', amount: 5000, isPaid: true },
-];
-
-const LEADER_GROUP_IDS = new Set([1]); // 현재 사용자가 리더인 그룹 ID
 
 type SortKey = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
 
@@ -66,7 +45,10 @@ export default function PenaltyPage() {
   const initialGroupId = parseInt(searchParams.get('group_id') || '1') || 1;
 
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId);
-  const [records, setRecords] = useState<PenaltyRecord[]>(MOCK_RECORDS);
+  const [selectedGroupName, setSelectedGroupName] = useState('');
+  const [records, setRecords] = useState<PenaltyRecord[]>([]);
+  const [memberSummaries, setMemberSummaries] = useState<MemberSummary[]>([]);
+  const [isLeader, setIsLeader] = useState(false);
   const [penaltyRule, setPenaltyRule] = useState<PenaltyRule>({ absentFee: 5000, lateFee: 2000 });
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [unpaidOnly, setUnpaidOnly] = useState(false);
@@ -74,9 +56,40 @@ export default function PenaltyPage() {
   const [ruleModal, setRuleModal] = useState(false);
   const [newAbsentFee, setNewAbsentFee] = useState(String(penaltyRule.absentFee));
   const [newLateFee, setNewLateFee] = useState(String(penaltyRule.lateFee));
-  const isLeader = LEADER_GROUP_IDS.has(selectedGroupId);
   const groupId = String(selectedGroupId);
-  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
+
+  useEffect(() => {
+    if (!selectedGroupId) return;
+    fetch(`/groups/${selectedGroupId}/penalty/api/`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        setIsLeader(data.is_leader ?? false);
+        setRecords((data.records ?? []).map((r: { id: number; memberId: string; memberNickname: string; reason: string; date: string; amount: number; isPaid: boolean }) => ({
+          id: r.id,
+          memberId: r.memberId,
+          memberNickname: r.memberNickname,
+          reason: r.reason,
+          date: r.date,
+          amount: r.amount,
+          isPaid: r.isPaid,
+        })));
+        setMemberSummaries((data.member_summaries ?? []).map((m: { userId: string; nickname: string; isLeader: boolean; unpaidAmount: number; paidAmount: number; paidRate: number }) => ({
+          userId: m.userId,
+          nickname: m.nickname,
+          isLeader: m.isLeader,
+          unpaidAmount: m.unpaidAmount,
+          paidAmount: m.paidAmount,
+          paidRate: m.paidRate,
+        })));
+        if (data.penalty_rule) {
+          setPenaltyRule({ absentFee: data.penalty_rule.absentFee, lateFee: data.penalty_rule.lateFee });
+          setNewAbsentFee(String(data.penalty_rule.absentFee));
+          setNewLateFee(String(data.penalty_rule.lateFee));
+        }
+      })
+      .catch(() => {});
+  }, [selectedGroupId]);
 
   const totalUnpaid = records.filter(r => !r.isPaid).reduce((s, r) => s + r.amount, 0);
   const totalPaid = records.filter(r => r.isPaid).reduce((s, r) => s + r.amount, 0);
@@ -157,8 +170,6 @@ export default function PenaltyPage() {
     else setActiveMemberId(uid);
   };
 
-  const memberSummaries = MOCK_MEMBER_SUMMARIES;
-
   const rateBarColor = (r: number) => r >= 80 ? 'bg-green-400' : r >= 50 ? 'bg-amber-400' : 'bg-red-400';
   const paidRateColor = (r: number) => r >= 80 ? 'text-green-600' : r >= 50 ? 'text-amber-600' : 'text-red-500';
 
@@ -199,7 +210,7 @@ export default function PenaltyPage() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">벌금 관리</h1>
               <div className="flex items-center gap-2 mt-1">
-                <p className="text-white/70 text-sm">{selectedGroup.name}</p>
+                <p className="text-white/70 text-sm">{selectedGroupName}</p>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0"
                   style={{ background: isLeader ? 'rgba(253,230,138,0.25)' : 'rgba(255,255,255,0.15)', color: isLeader ? '#fde68a' : 'rgba(255,255,255,0.7)' }}>
                   {isLeader ? '👑 리더' : '멤버'}
@@ -237,8 +248,10 @@ export default function PenaltyPage() {
         {/* 탭 + 컨텐츠 */}
         <GroupTabsCard
           activeGroupId={selectedGroupId}
+          onGroupsLoaded={gs => { if (gs.length) { setSelectedGroupId(gs[0].id); setSelectedGroupName(gs[0].name); } }}
           onSelect={group => {
             setSelectedGroupId(group.id);
+            setSelectedGroupName(group.name);
             setActiveMemberId(null);
             setUnpaidOnly(false);
           }}

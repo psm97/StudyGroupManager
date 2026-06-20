@@ -19,6 +19,8 @@ urlpatterns = [
     path('logout/',      views.admin_logout_view,  name='admin_logout'),
 
     # ── API ────────────────────────────────────────────────
+    path('api/dashboard/',      views.api_dashboard,      name='admin_api_dashboard'),
+    path('api/members/',        views.api_members,        name='admin_api_members'),
     path('api/kpi/',            views.api_kpi,            name='admin_api_kpi'),
     path('api/signup-trend/',   views.api_signup_trend,   name='admin_api_signup_trend'),
     path('api/group-activity/', views.api_group_activity, name='admin_api_group_activity'),

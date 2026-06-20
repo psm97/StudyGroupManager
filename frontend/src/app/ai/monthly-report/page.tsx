@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
-import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
+import GroupTabsCard from '@/components/GroupTabsCard';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, BarElement, Tooltip, Legend,
@@ -80,59 +80,41 @@ export default function AIMonthlyReportPage() {
   const [viewMode, setViewMode] = useState<'personal' | 'group'>('personal');
   const [myReport, setMyReport] = useState<PersonalReport | null>(null);
   const groupId = String(selectedGroupId);
-  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
 
   useEffect(() => {
-    fetch(`/ai/monthly-report/?group_id=${groupId}`)
-      .then(r => r.json())
+    fetch(`/ai/monthly-report/?group_id=${groupId}`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
       .then(d => {
-        setReports(d.reports || []);
-        setCurrentReport(d.current_report || (d.reports?.[0] ?? null));
-        setGroupName(d.group_name || selectedGroup.name);
-        setNextReportDate(d.next_report_date || '—');
+        if (!d) { setLoading(false); return; }
         setIsLeader(d.is_leader ?? false);
-        setMyReport(d.my_report ?? null);
+        setGroupName(d.group_name || '');
+        // personal reports
+        const personal = d.personal_reports ?? [];
+        setMyReport(personal.length ? {
+          report_year: personal[0].report_year,
+          report_month: personal[0].report_month,
+          attendance_rate: d.attendance_stats?.rate ?? 0,
+          late_count: d.attendance_stats?.late ?? 0,
+          absent_count: (d.attendance_stats?.total ?? 0) - (d.attendance_stats?.present ?? 0),
+          session_count: d.attendance_stats?.total ?? 0,
+          penalty_total: 0,
+          penalty_paid: 0,
+          penalty_unpaid: 0,
+          ai_comment: personal[0].content,
+        } : null);
+        // group reports (leader only)
+        const groupReports: Report[] = (d.group_reports ?? []).map((r: { id: number; report_year: number; report_month: number; generated_at: string; content: string }) => ({
+          id: r.id, year: r.report_year, month: r.report_month,
+          status: 'done' as const, avg_attendance: 0, session_count: 0, total_penalty: 0,
+          created_at: r.generated_at, ai_insight: r.content,
+        }));
+        setReports(groupReports);
+        setCurrentReport(groupReports[0] ?? null);
+        setNextReportDate('—');
         setLoading(false);
       })
-      .catch(() => {
-        const now = new Date();
-        const mock: Report[] = [
-          {id:1, year:2025, month:6, status:'done', avg_attendance:88, session_count:8, total_penalty:15000, created_at:'2025.06.30',
-           ai_insight:'전반적으로 출석률이 양호합니다. 특히 이번 달은 목표 대비 높은 참여율을 보여주었습니다.',
-           total_late:3, total_absent:2, paid_penalty:10000, unpaid_penalty:5000, paid_rate:67,
-           key_findings:[
-             {type:'positive', text:'출석률이 전월 대비 5% 향상되었습니다.'},
-             {type:'negative', text:'2명의 멤버가 연속 결석 위험에 있습니다.'},
-           ],
-           member_performance:[
-             {nickname:'홍길동', attendance_rate:95, late_count:0, absent_count:0, penalty:0, contribution:92},
-             {nickname:'김철수', attendance_rate:80, late_count:1, absent_count:1, penalty:5000, contribution:75, improvement_item:'출석 개선 필요'},
-           ],
-           penalty_members:[
-             {nickname:'홍길동', total:0, paid:0, unpaid:0, paid_rate:100},
-             {nickname:'김철수', total:5000, paid:3000, unpaid:2000, paid_rate:60},
-           ],
-          },
-        ];
-        setReports(mock);
-        setCurrentReport(mock[0]);
-        setGroupName(selectedGroup.name);
-        setIsLeader(true);
-        setMyReport({
-          report_year: now.getFullYear(),
-          report_month: now.getMonth() + 1,
-          attendance_rate: 88,
-          late_count: 1,
-          absent_count: 0,
-          session_count: 8,
-          penalty_total: 2000,
-          penalty_paid: 2000,
-          penalty_unpaid: 0,
-          ai_comment: '이번 달 출석률이 우수합니다. 꾸준한 참여로 그룹 목표 달성에 크게 기여하고 있습니다. 다음 달에도 현재의 페이스를 유지하세요.',
-        });
-        setLoading(false);
-      });
-  }, [groupId, selectedGroup.name]);
+      .catch(() => { setLoading(false); });
+  }, [groupId]);
 
   const selectReport = async (id: number) => {
     try {
@@ -223,6 +205,7 @@ export default function AIMonthlyReportPage() {
             {/* 그룹 탭 */}
             <GroupTabsCard
               activeGroupId={selectedGroupId}
+              onGroupsLoaded={gs => { if (gs.length) setSelectedGroupId(gs[0].id); }}
               onSelect={group => {
                 setSelectedGroupId(group.id);
                 setActiveRTab('attendance');

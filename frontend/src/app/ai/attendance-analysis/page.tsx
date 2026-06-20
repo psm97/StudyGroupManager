@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
-import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
+import GroupTabsCard from '@/components/GroupTabsCard';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler,
@@ -69,7 +69,6 @@ export default function AIAttendanceAnalysisPage() {
   const [logRiskFilter, setLogRiskFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const groupId = String(selectedGroupId);
-  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
 
   useEffect(() => {
     fetch(`/api/ai/attendance-analysis/?group_id=${groupId}`)
@@ -86,45 +85,12 @@ export default function AIAttendanceAnalysisPage() {
         setModelDataCount(d.model_data_count);
         setDangerCount(d.danger_count || 0);
         setWarningCount(d.warning_count || 0);
-        setGroupName(d.group_name || selectedGroup.name);
+        setGroupName(d.group_name || '');
         setLastAnalyzed(d.last_analyzed || '—');
         setLoading(false);
       })
-      .catch(() => {
-        setMemberRisks([
-          { user_id: '1', nickname: '홍길동', risk_score: 25, churn_probability: 15 },
-          { user_id: '2', nickname: '김철수', risk_score: 55, churn_probability: 42 },
-          { user_id: '3', nickname: '이영희', risk_score: 78, churn_probability: 71 },
-        ]);
-        setChurnFactors([
-          { label: '연속 결석', weight: 45 },
-          { label: '미납 벌금', weight: 25 },
-          { label: '참여도 저하', weight: 20 },
-          { label: '활동 감소', weight: 10 },
-        ]);
-        setRiskLogs([
-          { id: 1, date: '2025.06.17 14:00', nickname: '이영희', user_id: '3', risk_score: 78, churn_probability: 71, main_factor: '연속 2회 결석' },
-          { id: 2, date: '2025.06.16 10:00', nickname: '김철수', user_id: '2', risk_score: 55, churn_probability: 42, main_factor: '지각 증가' },
-          { id: 3, date: '2025.06.10 10:00', nickname: '홍길동', user_id: '1', risk_score: 25, churn_probability: 15, main_factor: '정상' },
-        ]);
-        setMyData({
-          risk_score: 25, churn_probability: 15,
-          attendance_rate: 92, late_count: 1, absent_count: 0,
-          main_factor: '양호한 출석',
-          trend: [95, 90, 92, 88, 95, 92],
-          history: [
-            { date: '2025.06.10 10:00', risk_score: 20, churn_probability: 12, main_factor: '정상' },
-            { date: '2025.06.17 14:00', risk_score: 25, churn_probability: 15, main_factor: '지각 1회' },
-          ],
-        });
-        setIsLeader(true);
-        setModelAccuracy(87); setModelRecall(82); setModelF1(84); setModelDataCount(324);
-        setDangerCount(1); setWarningCount(1);
-        setGroupName(selectedGroup.name);
-        setLastAnalyzed('2025.06.17 14:00');
-        setLoading(false);
-      });
-  }, [groupId, selectedGroup.name]);
+      .catch(() => { setLoading(false); });
+  }, [groupId]);
 
   const riskColor = (s: number) => s >= 70 ? '#ef4444' : s >= 40 ? '#f59e0b' : '#22c55e';
   const riskBg = (s: number) => s >= 70 ? 'from-red-400 to-red-600' : s >= 40 ? 'from-amber-400 to-amber-600' : 'from-green-400 to-green-600';
@@ -214,6 +180,7 @@ export default function AIAttendanceAnalysisPage() {
             {/* 탭 + 컨텐츠 */}
             <GroupTabsCard
               activeGroupId={selectedGroupId}
+              onGroupsLoaded={gs => { if (gs.length) setSelectedGroupId(gs[0].id); }}
               onSelect={group => { setSelectedGroupId(group.id); setLogMemberFilter('all'); setLogRiskFilter('all'); setViewMode('personal'); }}
             />
 

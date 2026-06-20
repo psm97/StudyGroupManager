@@ -54,36 +54,25 @@ export default function GroupHomePage() {
   const [resourceFilter, setResourceFilter] = useState<'all'|'link'|'file'>('all');
 
   useEffect(() => {
-    fetch(`/groups/api/${id}/`)
-      .then(r=>r.json())
-      .then(data => setGroup(data))
-      .catch(() => setGroup({ id: Number(id), name: 'Web Developer Study', member_count: 6, role: 'leader', attendance_rate: 92, color: '#0077ff', leader_name: '김리더', category: '개발', max_members: 10, is_public: true }));
+    fetch(`/groups/api/${id}/`, {credentials:'include'})
+      .then(r=>r.ok?r.json():null)
+      .then(data => { if (data) setGroup(data); })
+      .catch(() => {});
 
-    fetch(`/groups/api/${id}/members/`)
-      .then(r=>r.json())
-      .then(data => setMembers(data))
-      .catch(() => setMembers([
-        { id: 1, nickname: '김리더', role: 'leader', attendance_rate: 95 },
-        { id: 2, nickname: '이멤버', role: 'member', attendance_rate: 88 },
-        { id: 3, nickname: '박멤버', role: 'member', attendance_rate: 72 },
-      ]));
+    fetch(`/groups/api/${id}/members/`, {credentials:'include'})
+      .then(r=>r.ok?r.json():null)
+      .then(data => { if (data?.members) setMembers(data.members); })
+      .catch(() => {});
 
-    fetch(`/groups/api/${id}/notices/`)
-      .then(r=>r.json())
-      .then(data => setNotices(data))
-      .catch(() => setNotices([
-        { id: 1, title: '6월 스터디 일정 안내', content: '6월 스터디 일정을 안내드립니다.\n\n매주 화요일 오후 2시 ~ 4시에 진행됩니다.\n장소: 강남 스터디카페 3층\n\n참석 여부를 미리 알려주세요.', created_at: '2026.06.01', isPinned: true },
-        { id: 2, title: '자료 공유 링크 업데이트', content: '이번 주 자료가 자료실에 업로드되었습니다.\n강의 자료와 예제 코드를 확인해 주세요.', created_at: '2026.05.28', isPinned: false },
-      ]));
+    fetch(`/groups/api/${id}/notices/`, {credentials:'include'})
+      .then(r=>r.ok?r.json():null)
+      .then(data => { if (data) setNotices(Array.isArray(data) ? data : []); })
+      .catch(() => {});
 
-    fetch(`/groups/api/${id}/sessions/`)
-      .then(r=>r.json())
-      .then(data => setSessions(data))
-      .catch(() => setSessions([
-        { id: 1, topic: '정렬 알고리즘', date: todayStr(), status: 'unchecked', description: '버블 정렬, 퀵 정렬, 병합 정렬의 원리와 시간복잡도를 학습하고 코드로 직접 구현해 봅니다. 각자 구현한 코드를 공유하며 리뷰하는 시간도 갖습니다.' },
-        { id: 2, topic: 'React 컴포넌트 설계', date: '2025.06.11', status: 'completed', description: '재사용 가능한 컴포넌트 구조화 원칙과 Props/State 관리 패턴을 학습합니다. Atomic Design 방법론을 실제 프로젝트에 적용하는 실습을 진행합니다.' },
-        { id: 3, topic: 'JavaScript ES6', date: '2025.06.04', status: 'completed', description: 'Arrow Function, Destructuring, Spread Operator, Promise, async/await 등 ES6+ 핵심 문법을 예제 중심으로 학습하고 실습합니다.' },
-      ]));
+    fetch(`/groups/api/${id}/sessions/`, {credentials:'include'})
+      .then(r=>r.ok?r.json():null)
+      .then(data => { if (data) setSessions(Array.isArray(data) ? data : []); })
+      .catch(() => {});
   }, [id]);
 
   /* ── 그룹 설정 ─────────────────────────────── */

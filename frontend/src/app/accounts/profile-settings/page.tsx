@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
@@ -12,9 +12,25 @@ export default function ProfileSettingsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('info');
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const userNickname: string = '';
-  const userEmail: string = '';
-  const userDateJoined: string = '';
+  const [userNickname, setUserNickname] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userDateJoined, setUserDateJoined] = useState('');
+
+  useEffect(() => {
+    fetch('/accounts/api/profile/', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        if (data.nickname)      setUserNickname(data.nickname);
+        if (data.email)         setUserEmail(data.email);
+        if (data.profile_image) setProfilePhotoUrl(data.profile_image);
+        if (data.date_joined) {
+          const [y, m, d] = data.date_joined.split('-');
+          setUserDateJoined(`${y}년 ${parseInt(m)}월 ${parseInt(d)}일`);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,13 +41,12 @@ export default function ProfileSettingsPage() {
   const handleSave = async () => {
     const Swal = (await import('sweetalert2')).default;
     try {
-      const nickname = (document.getElementById('nickname') as HTMLInputElement)?.value?.trim() || '';
       const bio      = (document.getElementById('bio') as HTMLTextAreaElement)?.value?.trim() || '';
       const category = (document.getElementById('category') as HTMLSelectElement)?.value || '';
       await fetch('/accounts/api/profile/update/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname, bio, category }),
+        body: JSON.stringify({ nickname: userNickname, bio, category }),
       });
     } catch { /* API 미구현 시 무시 */ }
 
@@ -148,7 +163,7 @@ export default function ProfileSettingsPage() {
                   <div className="flex flex-col gap-5">
                     <div className="section-card rounded-t-none border-t-0 flex flex-col items-center text-center" style={{borderTopLeftRadius:0, borderTopRightRadius:0}}>
                       {profilePhotoUrl ? (
-                        <img src={profilePhotoUrl} alt="프로필 사진"
+                        <img src={profilePhotoUrl} alt="프로필 사진" referrerPolicy="no-referrer"
                           className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white mb-4 mt-2" />
                       ) : (
                         <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg border-4 border-white mb-4 mt-2"
@@ -175,16 +190,18 @@ export default function ProfileSettingsPage() {
                     <div className="section-card rounded-tl-none border-t-0" style={{borderTopLeftRadius:0}}>
                       <p className="text-sm font-bold text-slate-700 mb-5">기본 정보 수정</p>
                       <div className="space-y-4">
-                        {[
-                          {label:'닉네임', id:'nickname', type:'text', value: userNickname, placeholder:'닉네임을 입력하세요'},
-                          {label:'이메일', id:'email', type:'email', value: userEmail, placeholder:'이메일', disabled:true},
-                        ].map(f => (
-                          <div key={f.id}>
-                            <label htmlFor={f.id} className="block text-xs font-semibold text-slate-600 mb-1.5">{f.label}</label>
-                            <input id={f.id} type={f.type} defaultValue={f.value} placeholder={f.placeholder}
-                              disabled={f.disabled} className="form-input" />
-                          </div>
-                        ))}
+                        <div>
+                          <label htmlFor="nickname" className="block text-xs font-semibold text-slate-600 mb-1.5">닉네임</label>
+                          <input id="nickname" type="text" value={userNickname}
+                            onChange={(e) => setUserNickname(e.target.value)}
+                            placeholder="닉네임을 입력하세요" className="form-input" />
+                        </div>
+                        <div>
+                          <label htmlFor="email" className="block text-xs font-semibold text-slate-600 mb-1.5">이메일</label>
+                          <input id="email" type="email" value={userEmail}
+                            onChange={() => {}}
+                            placeholder="이메일" disabled className="form-input" />
+                        </div>
                         <div>
                           <label htmlFor="bio" className="block text-xs font-semibold text-slate-600 mb-1.5">자기소개</label>
                           <textarea id="bio" rows={4} placeholder="자기소개를 입력하세요..." className="form-input" style={{resize:'none'}}></textarea>

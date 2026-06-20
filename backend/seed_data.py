@@ -129,23 +129,28 @@ MONTHLY_REPORT_CONTENT_PERSONAL = [
 - 지각 발생 시 세션 종료 후 요약 내용 별도 정리하기""",
 ]
 
+# ai_suggestions는 '\n'으로 구분된 항목으로 저장 — 뷰에서 split('\n')으로 배열 변환 가능
 STUDY_GOAL_DATA = [
     ('알고리즘 문제풀이 100문제 달성',
      'LeetCode 기준 Easy 30문제, Medium 50문제, Hard 20문제를 목표 기간 내 해결한다.',
-     0.74, '알고리즘 분류별 취약점 파악 후 집중 훈련을 권장합니다. '
-           'DP와 그래프 문제 풀이 시간이 평균보다 2.3배 높으므로 해당 유형 추가 학습이 필요합니다.'),
+     0.74,
+     '알고리즘 분류별 취약점 파악 후 집중 훈련을 권장합니다.\n'
+     'DP와 그래프 문제 풀이 시간이 평균보다 2.3배 높으므로 해당 유형 추가 학습이 필요합니다.'),
     ('포트폴리오 프로젝트 완성',
      '실제 배포 가능한 수준의 풀스택 웹 프로젝트를 완성하여 GitHub에 공개한다.',
-     0.61, '현재 백엔드 구현은 70% 완료되었으나 프론트엔드가 35%에 머물고 있습니다. '
-           '프론트엔드 집중 스프린트 2주를 권장합니다.'),
+     0.61,
+     '현재 백엔드 구현은 70% 완료되었으나 프론트엔드가 35%에 머물고 있습니다.\n'
+     '프론트엔드 집중 스프린트 2주를 권장합니다.'),
     ('영어 비즈니스 이메일 작성 능력 향상',
      'OPIC IH 등급 달성 및 비즈니스 영어 이메일을 오류 없이 작성할 수 있는 수준 도달.',
-     0.55, '말하기 능력은 향상되고 있으나 작문 연습이 부족합니다. '
-           '매일 짧은 영어 일기 또는 이메일 초안 작성을 습관화할 것을 권장합니다.'),
+     0.55,
+     '말하기 능력은 향상되고 있으나 작문 연습이 부족합니다.\n'
+     '매일 짧은 영어 일기 또는 이메일 초안 작성을 습관화할 것을 권장합니다.'),
     ('Kaggle 대회 상위 20% 진입',
      '데이터 전처리, Feature Engineering, 앙상블 기법을 활용하여 Kaggle 대회에서 상위 20%에 진입한다.',
-     0.48, 'EDA 단계에서 시간이 과도하게 소요되고 있습니다. '
-           '시각화 라이브러리 숙련도 향상과 함께 Feature 선택 자동화 도구 활용을 권장합니다.'),
+     0.48,
+     'EDA 단계에서 시간이 과도하게 소요되고 있습니다.\n'
+     '시각화 라이브러리 숙련도 향상과 함께 Feature 선택 자동화 도구 활용을 권장합니다.'),
 ]
 
 CHAT_PAIRS = [
@@ -488,7 +493,9 @@ def seed_penalties(users, groups):
         group = groups[g_idx]
         for u_idx in member_idxs:
             user = users[u_idx]
-            # 멤버별 0~3개의 벌금 랜덤 생성
+            # 이미 벌금 데이터가 있으면 건너뜀 (재실행 시 중복 방지)
+            if Penalty.objects.filter(user=user, group=group).exists():
+                continue
             num_penalties = random.randint(0, 3)
             for i in range(num_penalties):
                 is_paid = random.choice([True, True, False])  # 납부 2:미납 1
@@ -508,25 +515,25 @@ def seed_ai_risk(users, groups):
     count = 0
     for g_idx, (leader_idx, member_idxs) in enumerate(GROUP_MEMBERS):
         group = groups[g_idx]
-        # 그룹 전체 분석 (user=NULL) — 이력 3개
+        # 그룹 전체 분석 (user=NULL) — 이력 3개, 누적 기록이므로 항상 create
         for pattern_text, risk, dropout in AI_RISK_PATTERN[:3]:
             AttendanceRiskAnalysis.objects.create(
                 group=group,
                 user=None,  # 그룹 전체 (리더 전용)
-                risk_score=risk + random.uniform(-0.05, 0.05),
-                dropout_probability=dropout + random.uniform(-0.03, 0.03),
+                risk_score=round(min(1.0, max(0.0, risk + random.uniform(-0.05, 0.05))), 3),
+                dropout_probability=round(min(1.0, max(0.0, dropout + random.uniform(-0.03, 0.03))), 3),
                 pattern_summary=pattern_text,
             )
             count += 1
-        # 개인 분석 (멤버별 1개)
-        for u_idx in member_idxs:
+        # 개인 분석 — 리더 포함 전 멤버 (개인 분석 없으면 AI 출석 분석 개인 탭에 데이터 없음)
+        for u_idx in [leader_idx] + member_idxs:
             user = users[u_idx]
             pattern = random.choice(AI_RISK_PATTERN)
             AttendanceRiskAnalysis.objects.create(
                 group=group,
                 user=user,
-                risk_score=pattern[1] + random.uniform(-0.1, 0.1),
-                dropout_probability=pattern[2] + random.uniform(-0.05, 0.05),
+                risk_score=round(min(1.0, max(0.0, pattern[1] + random.uniform(-0.1, 0.1))), 3),
+                dropout_probability=round(min(1.0, max(0.0, pattern[2] + random.uniform(-0.05, 0.05))), 3),
                 pattern_summary=pattern[0],
             )
             count += 1
@@ -558,15 +565,15 @@ def seed_ai_monthly(users, groups):
                 defaults={'content': content},
             )
             count += 1
-            # 개인 보고서 (멤버별)
-            for u_idx in member_idxs:
+            # 개인 보고서 — 리더 포함 전 멤버 (리더도 본인 개인 리포트 조회 가능)
+            for u_idx in [leader_idx] + member_idxs:
                 user = users[u_idx]
                 _, nickname, _ = USER_DATA[u_idx]
-                present = random.randint(5, 11)
-                late = random.randint(0, 2)
+                # present가 sessions를 초과하지 않도록 상한 적용
+                present = min(random.randint(5, 11), sessions)
+                late = min(random.randint(0, 2), sessions - present)
                 absent = sessions - present - late
-                absent = max(0, absent)
-                personal_rate = round(present / sessions * 100)
+                personal_rate = round(present / sessions * 100) if sessions > 0 else 0
                 diff = '평균 이상' if personal_rate >= rate else '평균 이하'
                 personal_content = MONTHLY_REPORT_CONTENT_PERSONAL[0].format(
                     year=year, month=month,
@@ -590,19 +597,22 @@ def seed_ai_goals(users, groups):
     for g_idx, (leader_idx, member_idxs) in enumerate(GROUP_MEMBERS):
         group = groups[g_idx]
         goal_template = STUDY_GOAL_DATA[g_idx]
-        # 그룹 목표 (user=NULL)
-        group_goal = StudyGoal.objects.create(
+        # 그룹 목표 (user=NULL) — get_or_create로 재실행 시 중복 방지
+        group_goal, created = StudyGoal.objects.get_or_create(
             group=group,
             user=None,
             title=f'[그룹] {goal_template[0]}',
-            description=goal_template[1],
-            target_date=TODAY + timedelta(days=60),
-            achievement_probability=goal_template[2],
-            ai_suggestions=goal_template[3],
+            defaults={
+                'description': goal_template[1],
+                'target_date': TODAY + timedelta(days=60),
+                'achievement_probability': goal_template[2],
+                'ai_suggestions': goal_template[3],
+            },
         )
-        goal_count += 1
+        if created:
+            goal_count += 1
         for w in range(1, 9):
-            WeeklyProgress.objects.get_or_create(
+            _, created = WeeklyProgress.objects.get_or_create(
                 goal=group_goal,
                 year=TODAY.year,
                 week_number=max(1, TODAY.isocalendar()[1] - (8 - w)),
@@ -611,23 +621,29 @@ def seed_ai_goals(users, groups):
                     'summary': f'{w}주차 그룹 스터디 진행. 목표 달성률이 꾸준히 상승 중입니다.' if w % 2 == 0 else '',
                 },
             )
-            progress_count += 1
-        # 개인 목표 (리더 + 일부 멤버)
+            if created:
+                progress_count += 1
+        # 개인 목표 (리더 + 일부 멤버) — get_or_create로 재실행 시 중복 방지
         for u_idx in [leader_idx] + member_idxs[:2]:
             user = users[u_idx]
             _, nickname, _ = USER_DATA[u_idx]
-            personal_goal = StudyGoal.objects.create(
+            personal_goal, created = StudyGoal.objects.get_or_create(
                 group=group,
                 user=user,
                 title=f'{nickname}의 개인 목표 — {goal_template[0]}',
-                description=goal_template[1],
-                target_date=TODAY + timedelta(days=random.randint(30, 90)),
-                achievement_probability=round(goal_template[2] + random.uniform(-0.15, 0.15), 2),
-                ai_suggestions=goal_template[3],
+                defaults={
+                    'description': goal_template[1],
+                    'target_date': TODAY + timedelta(days=random.randint(30, 90)),
+                    'achievement_probability': round(
+                        min(1.0, max(0.0, goal_template[2] + random.uniform(-0.15, 0.15))), 2
+                    ),
+                    'ai_suggestions': goal_template[3],
+                },
             )
-            goal_count += 1
+            if created:
+                goal_count += 1
             for w in range(1, 6):
-                WeeklyProgress.objects.get_or_create(
+                _, created = WeeklyProgress.objects.get_or_create(
                     goal=personal_goal,
                     year=TODAY.year,
                     week_number=max(1, TODAY.isocalendar()[1] - (5 - w)),
@@ -636,7 +652,8 @@ def seed_ai_goals(users, groups):
                         'summary': f'{nickname} {w}주차 개인 진행 현황.',
                     },
                 )
-                progress_count += 1
+                if created:
+                    progress_count += 1
     print(f'  스터디 목표 {goal_count}개, 주차별 성과 {progress_count}개 생성 완료')
 
 
@@ -647,6 +664,9 @@ def seed_chat_history(users, groups):
         group = groups[g_idx]
         for u_idx in [leader_idx] + member_idxs:
             user = users[u_idx]
+            # 이미 해당 그룹·사용자 조합의 챗봇 이력이 있으면 건너뜀 (재실행 시 중복 방지)
+            if PlannerChatHistory.objects.filter(group=group, user=user).exists():
+                continue
             for pair in CHAT_PAIRS:
                 user_msg, ai_msg = pair
                 sent_base = timezone.now() - timedelta(days=random.randint(1, 30))
@@ -667,7 +687,6 @@ def seed_chat_history(users, groups):
 def seed_notices(users, groups):
     print('공지사항 생성 중...')
     count = 0
-    # NOTICE_DATA에서 작성자를 그룹 리더 또는 첫 번째 유저로 배정
     for title, content, is_pinned, group_idx in NOTICE_DATA:
         if group_idx is None:
             author = users[0]  # 전체 공지 = 관리자 대리 (첫 번째 유저)
@@ -676,28 +695,33 @@ def seed_notices(users, groups):
             leader_idx = GROUP_MEMBERS[group_idx][0]
             author = users[leader_idx]
             group = groups[group_idx]
-        Notice.objects.create(
+        # title + group 조합으로 중복 방지
+        _, created = Notice.objects.get_or_create(
             title=title,
-            content=content,
-            author=author,
             group=group,
-            is_pinned=is_pinned,
+            defaults={'content': content, 'author': author, 'is_pinned': is_pinned},
         )
-        count += 1
+        if created:
+            count += 1
     # 페이지네이션 테스트용 추가 공지 (그룹 1, 10개)
     for i in range(1, 11):
-        Notice.objects.create(
+        _, created = Notice.objects.get_or_create(
             title=f'[웹스터디] 주간 정리 #{i}',
-            content=f'이번 주 학습 내용 정리입니다.\n\n'
+            group=groups[1],
+            defaults={
+                'content': (
+                    f'이번 주 학습 내용 정리입니다.\n\n'
                     f'- 세션 {i}: 핵심 내용 복습\n'
                     f'- 다음 주 예습 범위 안내\n'
                     f'- 과제 제출 현황 확인\n\n'
-                    f'모두 고생하셨습니다!',
-            author=users[GROUP_MEMBERS[1][0]],
-            group=groups[1],
-            is_pinned=False,
+                    f'모두 고생하셨습니다!'
+                ),
+                'author': users[GROUP_MEMBERS[1][0]],
+                'is_pinned': False,
+            },
         )
-        count += 1
+        if created:
+            count += 1
     print(f'  공지사항 {count}개 생성 완료')
 
 
@@ -708,13 +732,14 @@ def seed_resources(users, groups):
         group = groups[g_idx]
         leader_idx = GROUP_MEMBERS[g_idx][0]
         uploader = users[leader_idx]
-        Resource.objects.create(
+        # group + title 조합으로 중복 방지
+        _, created = Resource.objects.get_or_create(
             group=group,
             title=title,
-            file_url=file_url,
-            uploaded_by=uploader,
+            defaults={'file_url': file_url, 'uploaded_by': uploader},
         )
-        count += 1
+        if created:
+            count += 1
     print(f'  학습 자료 {count}개 생성 완료')
 
 
@@ -725,14 +750,16 @@ def seed_calendar(users, groups):
         group = groups[g_idx]
         leader_idx = GROUP_MEMBERS[g_idx][0]
         creator = users[leader_idx]
-        CalendarEvent.objects.create(
+        event_date = TODAY + timedelta(days=days_offset)
+        # group + title + event_date 조합으로 중복 방지
+        _, created = CalendarEvent.objects.get_or_create(
             group=group,
             title=title,
-            description=desc,
-            event_date=TODAY + timedelta(days=days_offset),
-            created_by=creator,
+            event_date=event_date,
+            defaults={'description': desc, 'created_by': creator},
         )
-        count += 1
+        if created:
+            count += 1
     print(f'  캘린더 일정 {count}개 생성 완료')
 
 

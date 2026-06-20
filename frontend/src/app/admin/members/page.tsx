@@ -13,9 +13,9 @@ export default function AdminMembersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/admin/api/members/')
-      .then(r=>r.json())
-      .then(data => { setMembers(data.data || data); setLoading(false); })
+    fetch('/admin/api/members/', {credentials:'include'})
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setMembers(data.users || data.data || []); setLoading(false); })
       .catch(() => {
         setMembers([
           {id:1, username:'홍길동', email:'hong@example.com', nickname:'길동', date_joined:'2025.01.15', is_active:true, group_count:3},

@@ -5,3 +5,6 @@ psycopg2-binary
 
 # frontend
 npm
+
+# google login
+next-auth

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
-import GroupTabsCard, { DEFAULT_GROUP_TABS } from '@/components/GroupTabsCard';
+import GroupTabsCard from '@/components/GroupTabsCard';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler,
@@ -74,7 +74,7 @@ export default function AIPlannerPage() {
   const [isSending, setIsSending] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const groupId = String(selectedGroupId);
-  const selectedGroup = DEFAULT_GROUP_TABS.find(g => g.id === selectedGroupId) || DEFAULT_GROUP_TABS[0];
+  const [selectedGroupName, setSelectedGroupName] = useState('');
 
   // 현재 viewMode에 따른 표시 데이터
   const isGroupView = isLeader && viewMode === 'group';
@@ -242,7 +242,7 @@ export default function AIPlannerPage() {
                     </span>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-bold">AI 플래너</h1>
-                  <p className="text-white/60 text-sm mt-1">{selectedGroup.name} · 목표 달성 예측 및 최적 스터디 일정 생성</p>
+                  <p className="text-white/60 text-sm mt-1">{selectedGroupName} · 목표 달성 예측 및 최적 스터디 일정 생성</p>
                 </div>
                 <div className="flex flex-wrap gap-2 items-center">
                   <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center min-w-[80px]">
@@ -264,8 +264,10 @@ export default function AIPlannerPage() {
             {/* 그룹 탭 */}
             <GroupTabsCard
               activeGroupId={selectedGroupId}
+              onGroupsLoaded={gs => { if (gs.length) { setSelectedGroupId(gs[0].id); setSelectedGroupName(gs[0].name); } }}
               onSelect={group => {
                 setSelectedGroupId(group.id);
+                setSelectedGroupName(group.name);
                 setActiveTab('schedule');
                 setScheduleVisible(false);
                 setMessages([]);

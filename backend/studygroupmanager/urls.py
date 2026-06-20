@@ -23,4 +23,8 @@ urlpatterns = [
     path("penalty/", include('penalty.urls')),
     path("ai/", include('ai.urls')),
     path("support/", include('support.urls')),
+    # REST API 라우트
+    path("api/dashboard/", include('dashboard.api_urls')),
+    path("api/ai/", include('ai.api_urls')),
+    path("calendar/", include('support.calendar_urls')),
 ]

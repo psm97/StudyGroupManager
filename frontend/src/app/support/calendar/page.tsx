@@ -174,9 +174,10 @@ export default function CalendarPage() {
   // ── API ────────────────────────────────────────────────
   const loadGroups = useCallback(async () => {
     try {
-      const res = await fetch('/groups/api/my-groups/');
+      const res = await fetch('/groups/api/my-groups/', {credentials:'include'});
       if (!res.ok) throw new Error();
-      const data: GroupInfo[] = await res.json();
+      const resp = await res.json();
+      const data: GroupInfo[] = resp?.groups ?? (Array.isArray(resp) ? resp : []);
       const gs = data.map((g, i) => ({ ...g, color: g.color || GROUP_COLORS[i % GROUP_COLORS.length] }));
       setGroups(gs);
       setGroupFilters(new Set(gs.map(g => String(g.id))));
@@ -198,7 +199,7 @@ export default function CalendarPage() {
       } else {
         params = `date=${dStr(d)}`;
       }
-      const res = await fetch(`/calendar/api/events/?${params}`);
+      const res = await fetch(`/calendar/api/events/?${params}`, {credentials:'include'});
       if (!res.ok) throw new Error();
       const data = await res.json();
       const evts: CalEvent[] = data.events || [];

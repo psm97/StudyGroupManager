@@ -9,7 +9,14 @@ export default function Header() {
   const [searchValue, setSearchValue] = useState('');
   const [notifOpen, setNotifOpen] = useState(false);
   const notiRef = useRef<HTMLDivElement>(null);
-  const userNickname: string = '';
+  const [me, setMe] = useState({ nickname: '', profile_image: '' });
+
+  useEffect(() => {
+    fetch('/accounts/api/me/', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setMe({ nickname: data.nickname || '', profile_image: data.profile_image || '' }); })
+      .catch(() => {});
+  }, []);
 
   const MOCK_NOTIFS = [
     { id: 1, icon: '✅', msg: 'Web Developer Study 출석이 확인되었습니다.', time: '방금 전', read: false },
@@ -247,12 +254,14 @@ export default function Header() {
 
           {/* 프로필 */}
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/accounts/profile')}>
-            <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow"
+            <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow overflow-hidden flex-shrink-0"
               style={{background:'linear-gradient(135deg,#0077ff,#0d44c4)'}}>
-              {userNickname ? userNickname[0].toUpperCase() : 'U'}
+              {me.profile_image
+                ? <img src={me.profile_image} alt="프로필" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                : (me.nickname ? me.nickname[0].toUpperCase() : 'U')}
             </div>
             <div className="hidden lg:block">
-              <p className="text-sm font-semibold text-slate-800 leading-tight">{userNickname || '사용자'}</p>
+              <p className="text-sm font-semibold text-slate-800 leading-tight">{me.nickname || '사용자'}</p>
               <p className="text-xs text-slate-400">Welcome back</p>
             </div>
           </div>

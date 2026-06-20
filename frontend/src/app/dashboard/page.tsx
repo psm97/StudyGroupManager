@@ -4,17 +4,25 @@ import { useEffect, useState } from 'react';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 
+interface MyGroup { id: number; name: string; member_count: number; attendance_rate?: number; role: string; color?: string; }
+
 export default function DashboardPage() {
   const [stats, setStats] = useState({groups:0, attendance:'—', penalty:'—', rate:'—%'});
+  const [myGroups, setMyGroups] = useState<MyGroup[]>([]);
   const userNickname = '';
 
   /* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js) */
 
   useEffect(() => {
-    fetch('/api/dashboard/stats/')
-      .then(r => r.json())
-      .then(data => setStats(data))
-      .catch(() => setStats({groups:3, attendance:'87%', penalty:'₩5,000', rate:'92%'}));
+    fetch('/api/dashboard/stats/', {credentials:'include'})
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setStats(data); })
+      .catch(() => {});
+
+    fetch('/groups/api/my-groups/', {credentials:'include'})
+      .then(r => { if (r.status === 401) window.location.href = '/accounts/login'; return r.ok ? r.json() : {}; })
+      .then(data => { const d = data as {groups?: MyGroup[]}; if (d?.groups) setMyGroups(d.groups); })
+      .catch(() => {});
   }, []);
 
   const openCreateGroupModal = async () => {
@@ -187,32 +195,35 @@ export default function DashboardPage() {
                     <a href="/groups" className="text-xs font-semibold hover:underline" style={{color:'#0077ff'}}>전체 보기</a>
                   </div>
                   <div className="space-y-3">
-                    {[
-                      {name:'Web Developer Study', members:6, rate:92, role:'리더', color:'#0077ff'},
-                      {name:'Python 알고리즘', members:8, rate:75, role:'멤버', color:'#10b981'},
-                      {name:'영어 회화 스터디', members:5, rate:88, role:'멤버', color:'#f59e0b'},
-                    ].map(g => (
-                      <div key={g.name} className="group-card flex items-center gap-3 p-3 rounded-xl border border-slate-100 cursor-pointer">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0"
-                          style={{background:g.color}}>{g.name[0]}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="text-sm font-semibold text-slate-800 truncate">{g.name}</p>
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                              style={{background: g.role==='리더'?'#dce6fd':'#f1f5f9', color: g.role==='리더'?'#0077ff':'#64748b'}}>
-                              {g.role}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                              <div className="progress-fill h-full rounded-full" style={{width:`${g.rate}%`, background:g.color}}></div>
+                    {myGroups.length === 0 ? (
+                      <p className="text-sm text-slate-400 py-4 text-center">참여 중인 그룹이 없습니다.</p>
+                    ) : myGroups.slice(0, 3).map(g => {
+                      const roleLabel = g.role === 'leader' ? '리더' : '멤버';
+                      const color = g.color || '#0077ff';
+                      const rate = g.attendance_rate ?? 0;
+                      return (
+                        <a key={g.id} href={`/groups/${g.id}`} className="group-card flex items-center gap-3 p-3 rounded-xl border border-slate-100 cursor-pointer">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0"
+                            style={{background:color}}>{g.name[0]}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-semibold text-slate-800 truncate">{g.name}</p>
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                                style={{background: roleLabel==='리더'?'#dce6fd':'#f1f5f9', color: roleLabel==='리더'?'#0077ff':'#64748b'}}>
+                                {roleLabel}
+                              </span>
                             </div>
-                            <span className="text-xs font-semibold" style={{color:g.color}}>{g.rate}%</span>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="progress-fill h-full rounded-full" style={{width:`${rate}%`, background:color}}></div>
+                              </div>
+                              <span className="text-xs font-semibold" style={{color}}>{rate}%</span>
+                            </div>
+                            <p className="text-xs text-slate-400 mt-0.5">{g.member_count}명</p>
                           </div>
-                          <p className="text-xs text-slate-400 mt-0.5">{g.members}명</p>
-                        </div>
-                      </div>
-                    ))}
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
 

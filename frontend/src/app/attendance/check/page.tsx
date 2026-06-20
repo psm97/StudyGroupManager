@@ -45,18 +45,9 @@ interface Group {
   color?: string;
 }
 
-const LEADER_GROUP_IDS = new Set([1]); // 현재 사용자가 리더인 그룹 ID
-
 const MOCK_GROUPS: Group[] = [
   { id: 1, name: 'Web Developer Study', color: '#0077ff' },
   { id: 2, name: 'Python 스터디', color: '#10b981' },
-];
-
-const MOCK_MEMBERS: Member[] = [
-  { id: '1', nickname: '김철수', role: 'leader', attendanceRate: 92, hasRecord: false, initialStatus: '', initialNote: '' },
-  { id: '2', nickname: '이영희', role: 'member', attendanceRate: 78, hasRecord: true, initialStatus: 'present', initialNote: '' },
-  { id: '3', nickname: '박민준', role: 'member', attendanceRate: 45, hasRecord: false, initialStatus: '', initialNote: '' },
-  { id: '4', nickname: '최지아', role: 'member', attendanceRate: 88, hasRecord: false, initialStatus: '', initialNote: '' },
 ];
 
 export default function AttendanceCheckPage() {
@@ -65,9 +56,10 @@ export default function AttendanceCheckPage() {
   const groupId = searchParams.get('group_id') || '0';
   const sessionId = searchParams.get('session_id') || '0';
 
-  const [session] = useState<SessionInfo>({ id: parseInt(sessionId), topic: '출석 체크', date: new Date().toLocaleDateString('ko-KR'), createdBy: '김철수', isEdit: false });
+  const [session] = useState<SessionInfo>({ id: parseInt(sessionId), topic: '출석 체크', date: new Date().toLocaleDateString('ko-KR'), createdBy: '', isEdit: false });
   const [group] = useState<GroupInfo>({ id: parseInt(groupId), name: '스터디 그룹' });
-  const [members] = useState<Member[]>(MOCK_MEMBERS);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [isLeader, setIsLeader] = useState(false);
   const [penaltyRule, setPenaltyRule] = useState<PenaltyRule>({ absentFee: 5000, lateFee: 2000 });
   const [state, setState] = useState<Record<string, MemberRecord>>({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,13 +73,13 @@ export default function AttendanceCheckPage() {
   const [selectedGroupId, setSelectedGroupId] = useState(parseInt(groupId) || 0);
   const [reasons, setReasons] = useState<Record<string, {type:string;reason:string;fileName:string|null}>>({});
   const [statusFilter, setStatusFilter] = useState<'all'|'present'|'late'|'absent'|'unset'>('all');
-  const isLeader = LEADER_GROUP_IDS.has(selectedGroupId);
 
   useEffect(() => {
-    fetch('/groups/api/my-groups/')
-      .then(r => r.json())
-      .then((data: Group[]) => {
-        const nextGroups = data.length ? data : MOCK_GROUPS;
+    fetch('/groups/api/my-groups/', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then((data) => {
+        const gs = data?.groups ?? [];
+        const nextGroups: Group[] = gs.length ? gs.map((g: { id: number; name: string; color: string }) => ({ id: g.id, name: g.name, color: g.color })) : MOCK_GROUPS;
         setGroups(nextGroups);
         setSelectedGroupId(prev => prev || nextGroups[0]?.id || 0);
       })
@@ -96,6 +88,26 @@ export default function AttendanceCheckPage() {
         setSelectedGroupId(prev => prev || MOCK_GROUPS[0]?.id || 0);
       });
   }, []);
+
+  useEffect(() => {
+    if (!selectedGroupId) return;
+    fetch(`/groups/api/${selectedGroupId}/members/`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        setIsLeader(data.is_leader ?? false);
+        setMembers((data.members ?? []).map((m: { id: number; nickname: string; role: string; attendance_rate: number }) => ({
+          id: String(m.id),
+          nickname: m.nickname,
+          role: m.role,
+          attendanceRate: m.attendance_rate ?? 0,
+          hasRecord: false,
+          initialStatus: '',
+          initialNote: '',
+        })));
+      })
+      .catch(() => {});
+  }, [selectedGroupId]);
 
   useEffect(() => {
     try {
@@ -320,7 +332,7 @@ export default function AttendanceCheckPage() {
             <div className="flex border-b border-slate-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {groupTabs.map(g => {
                 const isActive = activeGroupId === g.id;
-                const isGroupLeader = LEADER_GROUP_IDS.has(g.id);
+                const isGroupLeader = isLeader && g.id === activeGroupId;
                 return (
                   <button key={g.id}
                     onClick={() => { setSelectedGroupId(g.id); setStatusFilter('all'); }}

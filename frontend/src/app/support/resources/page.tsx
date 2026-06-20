@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
@@ -17,14 +17,6 @@ interface Resource {
   canDelete: boolean;
 }
 
-const MOCK_RESOURCES: Resource[] = [
-  { id: 1, fileName: '정렬알고리즘_강의자료.pdf', fileExt: 'pdf', category: '강의자료', uploaderNickname: '김철수', date: '2025-06-10', fileSize: '2.4 MB', downloadCount: 12, canDelete: true },
-  { id: 2, fileName: '6월_기출문제_모음.pdf', fileExt: 'pdf', category: '기출문제', uploaderNickname: '이영희', date: '2025-06-08', fileSize: '1.8 MB', downloadCount: 8, canDelete: false },
-  { id: 3, fileName: '알고리즘_요약노트.docx', fileExt: 'docx', category: '요약노트', uploaderNickname: '박민준', date: '2025-06-01', fileSize: '512 KB', downloadCount: 5, canDelete: false },
-  { id: 4, fileName: '스터디_발표자료.pptx', fileExt: 'pptx', category: '강의자료', uploaderNickname: '최지아', date: '2025-05-27', fileSize: '5.1 MB', downloadCount: 15, canDelete: true },
-  { id: 5, fileName: '과제_제출양식.xlsx', fileExt: 'xlsx', category: '기타', uploaderNickname: '김철수', date: '2025-05-20', fileSize: '256 KB', downloadCount: 20, canDelete: true },
-  { id: 6, fileName: '참고이미지.png', fileExt: 'png', category: '기타', uploaderNickname: '이영희', date: '2025-05-15', fileSize: '800 KB', downloadCount: 3, canDelete: false },
-];
 
 type ViewType = 'list' | 'grid';
 type CategoryType = 'all' | '강의자료' | '기출문제' | '요약노트' | '기타';
@@ -60,10 +52,32 @@ const catBadgeClass = (cat: string) => {
 
 export default function ResourcesPage() {
   const searchParams = useSearchParams();
-  const groupId = searchParams.get('group_id') || '0';
-  const isLeader = true;
+  const [groupId, setGroupId] = useState(searchParams.get('group_id') || '');
+  const [isLeader, setIsLeader] = useState(false);
 
-  const [resources, setResources] = useState<Resource[]>(MOCK_RESOURCES);
+  const [resources, setResources] = useState<Resource[]>([]);
+
+  useEffect(() => {
+    if (!groupId) return;
+    fetch(`/groups/${groupId}/resources/`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        setIsLeader(data.is_leader ?? false);
+        setResources((data.items ?? []).map((r: { id: number; fileName: string; fileExt: string; category: string; uploaderNickname: string; date: string; fileSize: string; downloadCount: number; canDelete: boolean }) => ({
+          id: r.id,
+          fileName: r.fileName,
+          fileExt: r.fileExt,
+          category: r.category || '기타',
+          uploaderNickname: r.uploaderNickname,
+          date: r.date,
+          fileSize: r.fileSize || '—',
+          downloadCount: r.downloadCount ?? 0,
+          canDelete: r.canDelete ?? false,
+        })));
+      })
+      .catch(() => {});
+  }, [groupId]);
   const [view, setView] = useState<ViewType>('list');
   const [category, setCategory] = useState<CategoryType>('all');
   const [searchQuery, setSearchQuery] = useState('');

@@ -40,11 +40,11 @@ export default function ProfilePage() {
     e.target.value = '';
   };
 
-  const userNickname: string = '';
-  const userEmail: string = '';
+  const [userNickname, setUserNickname] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userDateJoined, setUserDateJoined] = useState('');
   const userBio = '자기소개가 작성되지 않았습니다.';
   const userCategory = '';
-  const userDateJoined = '';
 
   const categoryLabel: Record<string, string> = {
     dev:'개발 / 프로그래밍', lang:'어학 / 외국어', job:'취업 / 자격증', selfdev:'자기계발', etc:'기타'
@@ -55,14 +55,22 @@ export default function ProfilePage() {
     setAttendanceMonth(`${now.getFullYear()}년 ${now.getMonth()+1}월 기준`);
 
     // Load profile data
-    fetch('/accounts/api/profile/')
-      .then(r => r.json())
+    fetch('/accounts/api/profile/', {credentials:'include'})
+      .then(r => r.ok ? r.json() : null)
       .then(data => {
+        if (!data) return;
         setAtRate((data.monthly_rate || 0) + '%');
         setAtPresent((data.monthly_present || 0) + '회');
         setAtLate((data.monthly_late || 0) + '회');
         setAtAbsent((data.monthly_absent || 0) + '회');
         setHeatmap(data.heatmap_data || []);
+        if (data.nickname) setUserNickname(data.nickname);
+        if (data.email)    setUserEmail(data.email);
+        if (data.date_joined) {
+          const [y, m, d] = data.date_joined.split('-');
+          setUserDateJoined(`${y}년 ${parseInt(m)}월 ${parseInt(d)}일`);
+        }
+        if (data.profile_image) setProfilePhotoUrl(data.profile_image);
       })
       .catch(() => {
         setAtRate('87%'); setAtPresent('13회'); setAtLate('1회'); setAtAbsent('1회');
@@ -70,29 +78,25 @@ export default function ProfilePage() {
       });
 
     // Load groups
-    fetch('/groups/api/my-groups/')
-      .then(r => r.json())
-      .then(data => setGroups(data))
-      .catch(() => setGroups([{id:1, name:'Web Developer', color:'#0077ff', role:'leader', member_count:6}]));
+    fetch('/groups/api/my-groups/', {credentials:'include'})
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.groups) setGroups(data.groups); })
+      .catch(() => {});
 
     // Load penalty
-    fetch('/penalty/api/my-history/')
-      .then(r => r.json())
-      .then((data: PenaltyItem[]) => {
-        const total = data.reduce((s,i) => s+i.amount, 0);
-        const paid = data.filter(i=>i.is_paid).reduce((s,i)=>s+i.amount, 0);
+    fetch('/penalty/api/my-history/', {credentials:'include'})
+      .then(r => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data) return;
+        const items: PenaltyItem[] = data.items ?? [];
+        const total = data.total ?? items.reduce((s: number, i: PenaltyItem) => s+i.amount, 0);
+        const paid = data.paid ?? items.filter((i: PenaltyItem)=>i.is_paid).reduce((s: number, i: PenaltyItem)=>s+i.amount, 0);
         setPenaltyTotal(`₩${total.toLocaleString()}`);
         setPenaltyPaid(`₩${paid.toLocaleString()}`);
-        setPenaltyUnpaid(`₩${(total-paid).toLocaleString()}`);
-        setPenalties(data);
+        setPenaltyUnpaid(`₩${(data.unpaid ?? total-paid).toLocaleString()}`);
+        setPenalties(items.slice(0, 10));
       })
-      .catch(() => {
-        setPenaltyTotal('₩7,000'); setPenaltyPaid('₩2,000'); setPenaltyUnpaid('₩5,000');
-        setPenalties([
-          {date:'2025.06.10', group_name:'Web Developer', reason:'결석', amount:5000, is_paid:false},
-          {date:'2025.05.28', group_name:'Python 스터디', reason:'지각', amount:2000, is_paid:true},
-        ]);
-      });
+      .catch(() => {});
   }, []);
 
   const colors = ['#f1f5f9','#c7d7fb','#6d98e8','#0077ff'];
@@ -144,7 +148,7 @@ export default function ProfilePage() {
                   <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-white overflow-hidden"
                     style={{background: profilePhotoUrl ? 'transparent' : 'linear-gradient(135deg,#0077ff,#0d44c4)'}}>
                     {profilePhotoUrl
-                      ? <img src={profilePhotoUrl} alt="프로필" className="w-full h-full object-cover" />
+                      ? <img src={profilePhotoUrl} alt="프로필" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       : (userNickname ? userNickname[0].toUpperCase() : 'U')}
                   </div>
                   <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors"

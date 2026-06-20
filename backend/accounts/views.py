@@ -1,11 +1,14 @@
 import json
 import re
+from datetime import timedelta
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import logout as auth_logout
+from django.contrib.auth import logout as auth_logout, login as auth_login, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
+from django.utils import timezone
 from datetime import datetime
 
 NICKNAME_RE  = re.compile(r'^[가-힣a-zA-Z0-9_]+$')
@@ -77,3 +80,118 @@ def _validate_nickname(nickname):
     if not NICKNAME_RE.match(nickname):
         return '한글, 영문, 숫자, 언더스코어(_)만 사용 가능합니다.'
     return None
+
+
+# ── REST API ──────────────────────────────────────────────────────────────────
+@csrf_exempt
+def api_google_login(request):
+    """POST /accounts/api/google-login/ — Google OAuth 사용자 생성/조회 후 Django 세션 발급"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        google_id = str(data.get('google_id', '')).strip()
+        email     = str(data.get('email', '')).strip().lower()
+        name      = str(data.get('name', '')).strip()
+        picture   = str(data.get('picture', '')).strip()
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    if not email:
+        return JsonResponse({'error': 'Email required'}, status=400)
+
+    User = get_user_model()
+
+    # 이메일로 기존 유저 조회 → 없으면 신규 생성
+    try:
+        user = User.objects.get(email=email)
+        # 프로필 이미지 갱신 (비어 있을 때만)
+        if picture and not user.profile_image:
+            user.profile_image = picture
+            user.save(update_fields=['profile_image', 'updated_at'])
+    except User.DoesNotExist:
+        # 고유 username 생성: google_<id> 또는 email prefix
+        base = f'google_{google_id}' if google_id else email.split('@')[0]
+        username, counter = base, 1
+        while User.objects.filter(username=username).exists():
+            username = f'{base}_{counter}'
+            counter += 1
+
+        user = User(username=username, email=email, nickname=name,
+                    profile_image=picture, role='member', is_active=True)
+        user.set_unusable_password()
+        user.save()
+
+    # Django 세션 생성 (Set-Cookie 응답 헤더로 브라우저에 전달됨)
+    auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+    # 닉네임이 이미 있으면 세션에도 저장해 닉네임 설정 페이지 건너뜀
+    if user.nickname and not request.session.get(SESSION_KEY):
+        request.session[SESSION_KEY] = user.nickname
+
+    needs_nickname = not bool(request.session.get(SESSION_KEY))
+
+    return JsonResponse({'success': True, 'needs_nickname': needs_nickname})
+
+
+def api_profile(request):
+    """GET /accounts/api/profile/ - 현재 사용자 출석·벌금 요약"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    from attendance.models import AttendanceRecord
+
+    today = timezone.now().date()
+    month_start = today.replace(day=1)
+
+    records = AttendanceRecord.objects.filter(
+        user=request.user,
+        session__session_date__gte=month_start,
+    )
+    monthly_present = records.filter(status='present').count()
+    monthly_late = records.filter(status='late').count()
+    monthly_absent = records.filter(status='absent').count()
+    total = monthly_present + monthly_late + monthly_absent
+    monthly_rate = round(monthly_present / total * 100) if total else 0
+
+    # 최근 35일 히트맵 (0=없음, 1=결석, 2=지각, 3=출석)
+    heatmap = []
+    for i in range(34, -1, -1):
+        d = today - timedelta(days=i)
+        day_records = AttendanceRecord.objects.filter(user=request.user, session__session_date=d)
+        if not day_records.exists():
+            heatmap.append(0)
+        elif day_records.filter(status='present').exists():
+            heatmap.append(3)
+        elif day_records.filter(status='late').exists():
+            heatmap.append(2)
+        else:
+            heatmap.append(1)
+
+    return JsonResponse({
+        'monthly_rate': monthly_rate,
+        'monthly_present': monthly_present,
+        'monthly_late': monthly_late,
+        'monthly_absent': monthly_absent,
+        'heatmap_data': heatmap,
+        'nickname': request.user.nickname or request.user.username,
+        'email': request.user.email,
+        'profile_image': getattr(request.user, 'profile_image', ''),
+        'date_joined': request.user.date_joined.strftime('%Y-%m-%d') if hasattr(request.user, 'date_joined') else '',
+    })
+
+
+def api_me(request):
+    """GET /accounts/api/me/ - 현재 사용자 기본 정보"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    return JsonResponse({
+        'id': request.user.id,
+        'username': request.user.username,
+        'nickname': request.user.nickname or request.user.username,
+        'email': request.user.email,
+        'profile_image': getattr(request.user, 'profile_image', ''),
+        'role': getattr(request.user, 'role', 'member'),
+    })

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 
@@ -14,49 +14,29 @@ interface Notice {
   isRead: boolean;
 }
 
-const MOCK_NOTICES: Notice[] = [
-  {
-    id: 1,
-    title: '[중요] 서비스 이용약관 개정 안내',
-    content: 'StudyGroupManager 서비스 이용약관이 2026년 7월 1일부로 개정됩니다.\n\n주요 변경 사항:\n1. 개인정보 처리 방침 명확화\n2. 서비스 중단 시 사전 고지 의무 추가\n3. 환불 정책 세부 조항 변경\n\n변경된 약관은 홈페이지 하단 이용약관 페이지에서 확인하실 수 있습니다.\n시행일 이후 서비스 이용 시 개정 약관에 동의한 것으로 간주됩니다.',
-    authorNickname: '운영팀',
-    createdAt: '2026.06.15',
-    isPinned: true,
-    isRead: false,
-  },
-  {
-    id: 2,
-    title: 'StudyGroupManager v2.1 업데이트 안내',
-    content: '안녕하세요, StudyGroupManager 운영팀입니다.\n\nv2.1 업데이트 내용을 안내드립니다.\n\n✅ 신규 기능\n- 스터디 자료 공유 기능 추가\n- 댓글 Thread 기능 추가\n- AI 월간 리포트 개선\n\n🔧 개선 사항\n- 출석 체크 UI 개선\n- 다크 모드 안정성 향상\n- 모바일 반응형 최적화\n\n이용해 주셔서 감사합니다.',
-    authorNickname: '운영팀',
-    createdAt: '2026.06.10',
-    isPinned: false,
-    isRead: false,
-  },
-  {
-    id: 3,
-    title: '6월 정기 서버 점검 완료 안내',
-    content: '안녕하세요.\n\n아래와 같이 정기 서버 점검이 완료되었습니다.\n\n■ 점검 일시: 2026년 6월 5일(화) 02:00 ~ 04:00\n■ 점검 내용: 데이터베이스 최적화, 보안 패치 적용\n\n점검 중 불편을 드려 죄송합니다.\n이용해 주셔서 감사합니다.',
-    authorNickname: '운영팀',
-    createdAt: '2026.06.05',
-    isPinned: false,
-    isRead: true,
-  },
-  {
-    id: 4,
-    title: '개인정보 처리방침 변경 안내',
-    content: '2026년 5월 1일부로 개인정보 처리방침이 아래와 같이 변경됩니다.\n\n주요 변경 내용:\n- 수집 항목: 이메일 추가 수집\n- 보유 기간: 회원 탈퇴 후 30일 → 7일로 단축\n\n자세한 내용은 서비스 내 개인정보 처리방침 페이지를 확인해 주세요.',
-    authorNickname: '운영팀',
-    createdAt: '2026.04.28',
-    isPinned: false,
-    isRead: true,
-  },
-];
 
 type FilterType = 'all' | 'pinned' | 'unread';
 
 export default function NoticePage() {
-  const [notices, setNotices] = useState<Notice[]>(MOCK_NOTICES);
+  const [notices, setNotices] = useState<Notice[]>([]);
+
+  useEffect(() => {
+    fetch('/support/api/notices/', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.items) return;
+        setNotices(data.items.map((n: { id: number; title: string; content: string; author: string; created_at: string; is_pinned: boolean }) => ({
+          id: n.id,
+          title: n.title,
+          content: n.content,
+          authorNickname: n.author,
+          createdAt: n.created_at,
+          isPinned: n.is_pinned,
+          isRead: false,
+        })));
+      })
+      .catch(() => {});
+  }, []);
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewModal, setViewModal] = useState<Notice | null>(null);
