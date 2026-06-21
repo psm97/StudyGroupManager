@@ -354,21 +354,7 @@ _STUDY_PLANNER_SYSTEM_PROMPT = """당신은 스터디 그룹 관리 플랫폼 "S
 
 def _get_google_api_key():
     import os
-    key = os.environ.get('GOOGLE_API_KEY', '')
-    if not key:
-        from django.conf import settings as djset
-        from pathlib import Path as _Path
-        env_path = _Path(djset.BASE_DIR).parent / '.env'
-        try:
-            with open(env_path) as f:
-                for line in f:
-                    line = line.strip()
-                    if line.startswith('GOOGLE_API_KEY='):
-                        key = line.split('=', 1)[1].strip()
-                        break
-        except Exception:
-            pass
-    return key
+    return os.environ.get('GOOGLE_API_KEY', '')
 
 
 @csrf_exempt

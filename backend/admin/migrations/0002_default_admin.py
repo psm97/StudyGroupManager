@@ -1,18 +1,9 @@
-import hashlib
 from django.db import migrations
 
 
-def insert_default_admin(apps, schema_editor):
+def remove_default_admin(apps, schema_editor):
     Admin = apps.get_model('sgadmin', 'Admin')
-    hashed = hashlib.sha256('1234'.encode()).hexdigest()
-    Admin.objects.update_or_create(
-        username='admin',
-        defaults={
-            'email':    'admin@studygroupmanager.com',
-            'password': hashed,
-            'is_active': True,
-        },
-    )
+    Admin.objects.filter(username='admin', email='admin@studygroupmanager.com').delete()
 
 
 class Migration(migrations.Migration):
@@ -22,5 +13,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(insert_default_admin, migrations.RunPython.noop),
+        migrations.RunPython(remove_default_admin, migrations.RunPython.noop),
     ]

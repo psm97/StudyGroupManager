@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from datetime import timedelta
 
@@ -95,6 +96,10 @@ def _validate_nickname(nickname):
 @csrf_exempt
 def api_google_login(request):
     """POST /accounts/api/google-login/ — Google OAuth 사용자 생성/조회 후 Django 세션 발급"""
+    expected_key = os.environ.get('INTERNAL_API_KEY', '')
+    if not expected_key or request.headers.get('X-Internal-Key') != expected_key:
+        return JsonResponse({'error': 'Forbidden'}, status=403)
+
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
