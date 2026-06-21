@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function LeftMenu() {
@@ -22,9 +23,15 @@ export default function LeftMenu() {
     });
     if (!result.isConfirmed) return;
     try {
-      await fetch('/api/auth/logout/', { method: 'POST' });
-      router.push('/accounts/login');
-    } catch {
+      await Promise.all([
+        fetch('/accounts/api/logout/', { method: 'POST', credentials: 'include' }),
+        fetch('/admin/api/logout/',    { method: 'POST', credentials: 'include' }),
+      ]);
+    } finally {
+      try {
+        localStorage.removeItem('sgm_user_me');
+        localStorage.removeItem('sgm_profile');
+      } catch {}
       router.push('/accounts/login');
     }
   };
@@ -78,7 +85,7 @@ export default function LeftMenu() {
 
         {/* 로고 */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-          <a href="/dashboard" className="flex items-center gap-3 group" title="대시보드로 이동">
+          <Link href="/dashboard" className="flex items-center gap-3 group" title="대시보드로 이동">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow transition-transform group-hover:scale-105" style={{background:'#0077ff'}}>
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -89,7 +96,7 @@ export default function LeftMenu() {
               <p className="font-bold text-slate-800 leading-tight group-hover:text-blue-700 transition-colors" style={{fontSize:'14px'}}>StudyGroup</p>
               <p className="font-semibold transition-colors" style={{fontSize:'12px', color:'#0077ff'}}>Manager</p>
             </div>
-          </a>
+          </Link>
           <button className="lg:hidden text-slate-400 hover:text-slate-600 p-1" onClick={closeSidebar}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
@@ -104,20 +111,20 @@ export default function LeftMenu() {
           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest px-2 mb-3">메인</p>
           <ul className="space-y-1 mb-6">
             <li>
-              <a href="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/dashboard" onClick={closeSidebar} className={`nav-link ${isActive('/dashboard') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>대시보드
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/support/calendar" className={`nav-link ${isActive('/support/calendar') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/support/calendar" onClick={closeSidebar} className={`nav-link ${isActive('/support/calendar') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>캘린더
-              </a>
+              </Link>
             </li>
           </ul>
 
@@ -125,44 +132,44 @@ export default function LeftMenu() {
           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest px-2 mb-3">스터디</p>
           <ul className="space-y-1 mb-6">
             <li>
-              <a href="/groups" className={`nav-link ${isActive('/groups') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/groups" onClick={closeSidebar} className={`nav-link ${isActive('/groups') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>내 그룹
                 <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full" style={{background:'#dce6fd',color:'#0077ff'}}>0</span>
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/attendance/check" className={`nav-link ${isActive('/attendance/check') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/attendance/check" onClick={closeSidebar} className={`nav-link ${isActive('/attendance/check') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                 </svg>출석 관리
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/penalty" className={`nav-link ${isActive('/penalty') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/penalty" onClick={closeSidebar} className={`nav-link ${isActive('/penalty') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>벌금 관리
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/support/notice" className={`nav-link ${isActive('/support/notice') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/support/notice" onClick={closeSidebar} className={`nav-link ${isActive('/support/notice') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
                 </svg>공지사항
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/support/resources" className={`nav-link ${isActive('/support/resources') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/support/resources" onClick={closeSidebar} className={`nav-link ${isActive('/support/resources') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44z" />
                 </svg>자료실
-              </a>
+              </Link>
             </li>
           </ul>
 
@@ -170,26 +177,26 @@ export default function LeftMenu() {
           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest px-2 mb-3">AI</p>
           <ul className="space-y-1 mb-6">
             <li>
-              <a href="/ai/attendance-analysis" className={`nav-link ${isActive('/ai/attendance-analysis') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/ai/attendance-analysis" onClick={closeSidebar} className={`nav-link ${isActive('/ai/attendance-analysis') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v11.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V7.5z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18.5 1.5l.4 1.2c.1.3.3.5.6.6l1.2.4-1.2.4c-.3.1-.5.3-.6.6l-.4 1.2-.4-1.2c-.1-.3-.3-.5-.6-.6l-1.2-.4 1.2-.4c.3-.1.5-.3.6-.6l.4-1.2z" />
                 </svg>AI 출석 분석
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/ai/monthly-report" className={`nav-link ${isActive('/ai/monthly-report') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/ai/monthly-report" onClick={closeSidebar} className={`nav-link ${isActive('/ai/monthly-report') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>AI 월간 보고서
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/ai/planner" className={`nav-link ${isActive('/ai/planner') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/ai/planner" onClick={closeSidebar} className={`nav-link ${isActive('/ai/planner') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>AI 플래너
-              </a>
+              </Link>
             </li>
           </ul>
 
@@ -197,21 +204,21 @@ export default function LeftMenu() {
           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest px-2 mb-3">계정</p>
           <ul className="space-y-1">
             <li>
-              <a href="/accounts/profile" className={`nav-link ${isActive('/accounts/profile') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/accounts/profile" onClick={closeSidebar} className={`nav-link ${isActive('/accounts/profile') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>프로필
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/accounts/profile-settings" className={`nav-link ${isActive('/accounts/profile-settings') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
+              <Link href="/accounts/profile-settings" onClick={closeSidebar} className={`nav-link ${isActive('/accounts/profile-settings') ? 'active' : ''} flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm`}>
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>설정
-              </a>
+              </Link>
             </li>
             <li>
               <button onClick={handleLogout} className="w-full nav-link text-slate-600 flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-left cursor-pointer">
@@ -236,13 +243,13 @@ export default function LeftMenu() {
             <p className="font-bold text-sm" style={{color:'#0077ff'}}>AI 월간 리포트</p>
           </div>
           <p className="text-xs mb-3 leading-relaxed" style={{color:'#0077ff'}}>출석·벌금 데이터를 AI가 분석하여 리포트를 자동 생성합니다.</p>
-          <a href="/ai/monthly-report"
+          <Link href="/ai/monthly-report"
             className="block w-full text-center text-white text-xs font-bold py-2 rounded-lg transition-colors"
             style={{background:'#0077ff'}}
             onMouseOver={(e) => (e.currentTarget.style.background = '#0d44c4')}
             onMouseOut={(e) => (e.currentTarget.style.background = '#0077ff')}>
             시작하기 →
-          </a>
+          </Link>
         </div>
       </aside>
     </>

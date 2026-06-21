@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 /* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js, SweetAlert2) */
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState({total_users:0, total_groups:0, active_users:0, reports:0});
+  const [stats, setStats] = useState({total_users:0, active_groups:0, today_sessions:0, new_users_month:0});
 
   useEffect(() => {
     fetch('/admin/api/dashboard/', {credentials:'include'})
@@ -15,10 +15,10 @@ export default function AdminDashboardPage() {
   }, []);
 
   const kpiCards = [
-    {label:'총 회원수', value: stats.total_users, unit:'명', color:'#1d4ed8', bg:'#dbeafe', icon:'👥'},
-    {label:'총 그룹수', value: stats.total_groups, unit:'개', color:'#16a34a', bg:'#dcfce7', icon:'📚'},
-    {label:'활성 사용자', value: stats.active_users, unit:'명', color:'#d97706', bg:'#fef3c7', icon:'⚡'},
-    {label:'신고 건수', value: stats.reports, unit:'건', color:'#dc2626', bg:'#fee2e2', icon:'🚨'},
+    {label:'총 회원수',     value: stats.total_users,     unit:'명', color:'#1d4ed8', bg:'#dbeafe', icon:'👥'},
+    {label:'활성 그룹수',   value: stats.active_groups,   unit:'개', color:'#16a34a', bg:'#dcfce7', icon:'📚'},
+    {label:'오늘 세션',     value: stats.today_sessions,  unit:'개', color:'#d97706', bg:'#fef3c7', icon:'⚡'},
+    {label:'이번달 신규가입', value: stats.new_users_month, unit:'명', color:'#dc2626', bg:'#fee2e2', icon:'🚨'},
   ];
 
   return (

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import DarkMode from './DarkMode';
+
+const ME_CACHE_KEY = 'sgm_user_me';
 
 export default function Header() {
   const router = useRouter();
@@ -11,10 +13,27 @@ export default function Header() {
   const notiRef = useRef<HTMLDivElement>(null);
   const [me, setMe] = useState({ nickname: '', profile_image: '' });
 
+  // 페인트 전에 캐시를 복원 → 페이지 이동 시 깜박임 제거
+  useLayoutEffect(() => {
+    try {
+      const cached = localStorage.getItem(ME_CACHE_KEY);
+      if (cached) setMe(JSON.parse(cached));
+    } catch {}
+  }, []);
+
   useEffect(() => {
-    fetch('/accounts/api/me/', { credentials: 'include' })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setMe({ nickname: data.nickname || '', profile_image: data.profile_image || '' }); })
+    fetch('/admin/api/me/', { credentials: 'include' })
+      .then(r => {
+        if (r.ok) return r.json();
+        return fetch('/accounts/api/me/', { credentials: 'include' }).then(ur => ur.ok ? ur.json() : null);
+      })
+      .then(data => {
+        if (data) {
+          const next = { nickname: data.nickname || '', profile_image: data.profile_image || '' };
+          setMe(next);
+          try { localStorage.setItem(ME_CACHE_KEY, JSON.stringify(next)); } catch {}
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -46,9 +65,15 @@ export default function Header() {
     });
     if (!result.isConfirmed) return;
     try {
-      await fetch('/api/auth/logout/', { method: 'POST' });
-      router.push('/accounts/login');
-    } catch {
+      await Promise.all([
+        fetch('/accounts/api/logout/', { method: 'POST', credentials: 'include' }),
+        fetch('/admin/api/logout/',    { method: 'POST', credentials: 'include' }),
+      ]);
+    } finally {
+      try {
+        localStorage.removeItem(ME_CACHE_KEY);
+        localStorage.removeItem('sgm_profile');
+      } catch {}
       router.push('/accounts/login');
     }
   };

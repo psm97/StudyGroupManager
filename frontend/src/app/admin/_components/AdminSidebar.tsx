@@ -8,6 +8,26 @@ export default function AdminSidebar() {
 
   const isActive = (path: string) => pathname === path;
 
+  const handleLogout = async () => {
+    const Swal = (await import('sweetalert2')).default;
+    const result = await Swal.fire({
+      title: '로그아웃',
+      text: '관리자 계정에서 로그아웃 하시겠습니까?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '로그아웃',
+      confirmButtonColor: '#e11d48',
+      cancelButtonText: '취소',
+      reverseButtons: true,
+    });
+    if (!result.isConfirmed) return;
+    try {
+      await fetch('/admin/api/logout/', { method: 'POST', credentials: 'include' });
+    } finally {
+      router.push('/accounts/login');
+    }
+  };
+
   const toggleSidebar = () => {
     const sb = document.getElementById('adminSidebar');
     const ov = document.getElementById('sidebarOverlay');
@@ -159,8 +179,9 @@ export default function AdminSidebar() {
             </svg>
             <span>서비스로 이동</span>
           </a>
-          <a href="/admin/logout"
-             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+          <button
+             onClick={handleLogout}
+             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-left"
              style={{color:'rgba(255,255,255,.45)'}}
              onMouseOver={(e) => { e.currentTarget.style.background='rgba(239,68,68,.12)'; e.currentTarget.style.color='#fca5a5'; }}
              onMouseOut={(e) => { e.currentTarget.style.background=''; e.currentTarget.style.color='rgba(255,255,255,.45)'; }}>
@@ -169,7 +190,7 @@ export default function AdminSidebar() {
                     d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
             </svg>
             <span>로그아웃</span>
-          </a>
+          </button>
         </div>
       </aside>
 

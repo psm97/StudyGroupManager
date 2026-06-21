@@ -11,7 +11,10 @@ class Notice(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='notices',
+        null=True,
+        blank=True,
     )
+    author_name = models.CharField(max_length=100, blank=True, default='')
     group = models.ForeignKey(
         StudyGroup,
         on_delete=models.CASCADE,

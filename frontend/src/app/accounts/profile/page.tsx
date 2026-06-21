@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 
@@ -50,32 +50,73 @@ export default function ProfilePage() {
     dev:'개발 / 프로그래밍', lang:'어학 / 외국어', job:'취업 / 자격증', selfdev:'자기계발', etc:'기타'
   };
 
+  // 페인트 전에 캐시된 프로필 정보 복원 → 깜박임 제거
+  useLayoutEffect(() => {
+    try {
+      const cached = localStorage.getItem('sgm_profile');
+      if (cached) {
+        const { nickname, email, profile_image, date_joined } = JSON.parse(cached);
+        if (nickname)      setUserNickname(nickname);
+        if (email)         setUserEmail(email);
+        if (profile_image) setProfilePhotoUrl(profile_image);
+        if (date_joined)   setUserDateJoined(date_joined);
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     const now = new Date();
     setAttendanceMonth(`${now.getFullYear()}년 ${now.getMonth()+1}월 기준`);
 
-    // Load profile data
-    fetch('/accounts/api/profile/', {credentials:'include'})
+    const saveProfile = (obj: { nickname: string; email: string; profile_image: string; date_joined: string }) => {
+      try { localStorage.setItem('sgm_profile', JSON.stringify(obj)); } catch {}
+    };
+
+    const formatDate = (iso: string) => {
+      const [y, m, d] = iso.split('-');
+      return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
+    };
+
+    // 관리자 여부 먼저 확인
+    fetch('/admin/api/me/', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return;
-        setAtRate((data.monthly_rate || 0) + '%');
-        setAtPresent((data.monthly_present || 0) + '회');
-        setAtLate((data.monthly_late || 0) + '회');
-        setAtAbsent((data.monthly_absent || 0) + '회');
-        setHeatmap(data.heatmap_data || []);
-        if (data.nickname) setUserNickname(data.nickname);
-        if (data.email)    setUserEmail(data.email);
-        if (data.date_joined) {
-          const [y, m, d] = data.date_joined.split('-');
-          setUserDateJoined(`${y}년 ${parseInt(m)}월 ${parseInt(d)}일`);
+      .then(adminData => {
+        if (adminData) {
+          // 관리자: admin/api/me/ 데이터 사용 (가입일 없음)
+          const nickname      = adminData.nickname || adminData.username || '관리자';
+          const email         = adminData.email || '';
+          const profile_image = '';
+          setUserNickname(nickname);
+          setUserEmail(email);
+          saveProfile({ nickname, email, profile_image, date_joined: '' });
+          return;
         }
-        if (data.profile_image) setProfilePhotoUrl(data.profile_image);
+        // 일반 사용자: accounts/api/profile/ 사용
+        fetch('/accounts/api/profile/', { credentials: 'include' })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (!data) return;
+            setAtRate((data.monthly_rate || 0) + '%');
+            setAtPresent((data.monthly_present || 0) + '회');
+            setAtLate((data.monthly_late || 0) + '회');
+            setAtAbsent((data.monthly_absent || 0) + '회');
+            setHeatmap(data.heatmap_data || []);
+            const nickname      = data.nickname      || '';
+            const email         = data.email         || '';
+            const profile_image = data.profile_image || '';
+            const date_joined   = data.date_joined ? formatDate(data.date_joined) : '';
+            if (nickname)       setUserNickname(nickname);
+            if (email)          setUserEmail(email);
+            if (date_joined)    setUserDateJoined(date_joined);
+            if (profile_image)  setProfilePhotoUrl(profile_image);
+            saveProfile({ nickname, email, profile_image, date_joined });
+          })
+          .catch(() => {
+            setAtRate('87%'); setAtPresent('13회'); setAtLate('1회'); setAtAbsent('1회');
+            setHeatmap(Array.from({length:35}, () => Math.floor(Math.random()*4)));
+          });
       })
-      .catch(() => {
-        setAtRate('87%'); setAtPresent('13회'); setAtLate('1회'); setAtAbsent('1회');
-        setHeatmap(Array.from({length:35}, () => Math.floor(Math.random()*4)));
-      });
+      .catch(() => {});
 
     // Load groups
     fetch('/groups/api/my-groups/', {credentials:'include'})
@@ -175,7 +216,7 @@ export default function ProfilePage() {
                       {[
                         {label:'닉네임', value: userNickname || '-', bg:'#dce6fd', color:'#0077ff'},
                         {label:'이메일', value: userEmail || '-', bg:'#dcfce7', color:'#10b981'},
-                        {label:'가입일', value: userDateJoined || '-', bg:'#fef3c7', color:'#d97706'},
+                        ...(userDateJoined ? [{label:'가입일', value: userDateJoined, bg:'#fef3c7', color:'#d97706'}] : []),
                       ].map(item => (
                         <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-slate-50">
                           <div className="flex items-center gap-2">

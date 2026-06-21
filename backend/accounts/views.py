@@ -36,6 +36,15 @@ def logout_view(request):
     return redirect('login')
 
 
+@csrf_exempt
+def api_logout(request):
+    """POST /accounts/api/logout/ - 세션 종료"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    auth_logout(request)
+    return JsonResponse({'success': True})
+
+
 @login_required
 def nickname_view(request):
     # 이미 닉네임이 설정된 유저는 대시보드로 (1회 표시 보장)

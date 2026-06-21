@@ -19,6 +19,8 @@ urlpatterns = [
     path('logout/',      views.admin_logout_view,  name='admin_logout'),
 
     # ── API ────────────────────────────────────────────────
+    path('api/me/',             views.api_me,             name='admin_api_me'),
+    path('api/logout/',         views.api_logout,         name='admin_api_logout'),
     path('api/dashboard/',      views.api_dashboard,      name='admin_api_dashboard'),
     path('api/members/',        views.api_members,        name='admin_api_members'),
     path('api/kpi/',            views.api_kpi,            name='admin_api_kpi'),
@@ -26,5 +28,7 @@ urlpatterns = [
     path('api/group-activity/', views.api_group_activity, name='admin_api_group_activity'),
     path('api/system-status/',  views.api_system_status,  name='admin_api_system_status'),
     path('api/recent-users/',   views.api_recent_users,   name='admin_api_recent_users'),
-    path('api/activity-log/',   views.api_activity_log,   name='admin_api_activity_log'),
+    path('api/activity-log/',          views.api_activity_log,   name='admin_api_activity_log'),
+    path('api/notices/create/',        views.api_notice_create,  name='admin_api_notice_create'),
+    path('api/notices/<int:notice_id>/delete/', views.api_notice_delete, name='admin_api_notice_delete'),
 ]

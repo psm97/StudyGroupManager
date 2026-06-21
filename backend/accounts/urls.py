@@ -11,6 +11,7 @@ urlpatterns = [
     path('nickname/check/',   views.nickname_check_view,   name='nickname_check'),
     # REST API
     path('api/google-login/', views.api_google_login,      name='api_google_login'),
+    path('api/logout/',       views.api_logout,            name='api_logout'),
     path('api/profile/',      views.api_profile,           name='api_profile'),
     path('api/me/',           views.api_me,                name='api_me'),
 ]

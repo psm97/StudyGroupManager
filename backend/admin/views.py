@@ -6,21 +6,28 @@ from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
+from admin.models import Admin
+
 User = get_user_model()
 
-_ADMIN_ID   = 'admin'
-_ADMIN_PW   = '1234'
-_COOKIE_KEY = 'admin_auth'
+_COOKIE_KEY  = 'admin_auth'
 _COOKIE_SALT = 'sgm-admin'
+
+
+def _get_admin_from_request(request):
+    """쿠키에서 관리자 ID를 꺼내 DB 조회 후 Admin 객체 반환. 실패 시 None."""
+    try:
+        admin_id = int(request.get_signed_cookie(_COOKIE_KEY, salt=_COOKIE_SALT))
+        return Admin.objects.get(id=admin_id, is_active=True)
+    except Exception:
+        return None
 
 
 # ── 관리자 접근 데코레이터 ──────────────────────────────────
 def admin_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        try:
-            request.get_signed_cookie(_COOKIE_KEY, salt=_COOKIE_SALT)
-        except Exception:
+        if _get_admin_from_request(request) is None:
             return redirect('login')
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -41,17 +48,52 @@ def admin_login_view(request):
     if not credential or not password:
         return JsonResponse({'success': False, 'message': '아이디와 비밀번호를 입력해주세요.'}, status=400)
 
-    if credential == _ADMIN_ID and password == _ADMIN_PW:
-        res = JsonResponse({'success': True, 'redirect_url': '/admin/'})
-        res.set_signed_cookie(_COOKIE_KEY, '1', salt=_COOKIE_SALT, max_age=28800, httponly=True)
-        return res
+    try:
+        admin_user = Admin.objects.get(username=credential, is_active=True)
+    except Admin.DoesNotExist:
+        return JsonResponse({'success': False, 'message': '아이디 또는 비밀번호를 확인해주세요.'}, status=401)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'DB 오류: {e} — manage.py migrate sgadmin 을 실행해주세요.'}, status=500)
 
-    return JsonResponse({'success': False, 'message': '아이디 또는 비밀번호를 확인해주세요.'}, status=401)
+    if not admin_user.check_password(password):
+        return JsonResponse({'success': False, 'message': '아이디 또는 비밀번호를 확인해주세요.'}, status=401)
+
+    res = JsonResponse({'success': True, 'redirect_url': '/admin/'})
+    res.set_signed_cookie(_COOKIE_KEY, str(admin_user.id), salt=_COOKIE_SALT, max_age=28800, httponly=True)
+    res.delete_cookie('sessionid')  # 일반 사용자 세션 제거 → 프로필 깜박임 방지
+    return res
 
 
 # ── 관리자 로그아웃 ───────────────────────────────────────
 def admin_logout_view(request):
     res = redirect('login')
+    res.delete_cookie(_COOKIE_KEY)
+    return res
+
+
+@csrf_exempt
+def api_me(request):
+    """GET /admin/api/me/ - 관리자 기본 정보"""
+    admin_user = _get_admin_from_request(request)
+    if admin_user is None:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    return JsonResponse({
+        'id':            admin_user.id,
+        'username':      admin_user.username,
+        'nickname':      '관리자',
+        'email':         admin_user.email,
+        'profile_image': '',
+        'role':          'admin',
+        'is_admin':      True,
+    })
+
+
+@csrf_exempt
+def api_logout(request):
+    """POST /admin/api/logout/ - 관리자 세션 종료"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    res = JsonResponse({'success': True})
     res.delete_cookie(_COOKIE_KEY)
     return res
 
@@ -110,8 +152,9 @@ def admin_profile(request):
     import sys, django
     from django.conf import settings as djset
 
+    admin_user = _get_admin_from_request(request)
     ctx = {
-        'admin_id':       _ADMIN_ID,
+        'admin_id':       admin_user.username if admin_user else '관리자',
         'python_version': sys.version.split()[0],
         'django_version': django.get_version(),
         'debug_mode':     getattr(djset, 'DEBUG', False),
@@ -316,6 +359,64 @@ def api_members(request):
             'last_login': u.last_login.strftime('%Y-%m-%d') if u.last_login else None,
         })
     return JsonResponse({'users': result})
+
+
+@csrf_exempt
+def api_notice_create(request):
+    """POST /admin/api/notices/create/ — 관리자 전용 전체 공지 작성"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    admin_user = _get_admin_from_request(request)
+    if admin_user is None:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    title    = (body.get('title') or '').strip()
+    content  = (body.get('content') or '').strip()
+    is_pinned = bool(body.get('is_pinned', False))
+
+    if not title or not content:
+        return JsonResponse({'error': '제목과 내용을 입력해주세요.'}, status=400)
+
+    from support.models import Notice
+    notice = Notice.objects.create(
+        title=title,
+        content=content,
+        is_pinned=is_pinned,
+        author=None,
+        author_name='관리자',
+        group=None,
+    )
+    return JsonResponse({
+        'success': True,
+        'id': notice.id,
+        'title': notice.title,
+        'content': notice.content,
+        'author': '관리자',
+        'is_pinned': notice.is_pinned,
+        'created_at': notice.created_at.strftime('%Y-%m-%d'),
+    })
+
+
+@csrf_exempt
+def api_notice_delete(request, notice_id):
+    """DELETE /admin/api/notices/<id>/delete/ — 관리자 전용 공지 삭제"""
+    admin_user = _get_admin_from_request(request)
+    if admin_user is None:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    from support.models import Notice
+    try:
+        notice = Notice.objects.get(id=notice_id)
+    except Notice.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)
+
+    notice.delete()
+    return JsonResponse({'success': True})
 
 
 @admin_required

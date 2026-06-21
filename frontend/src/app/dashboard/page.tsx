@@ -20,7 +20,7 @@ export default function DashboardPage() {
       .catch(() => {});
 
     fetch('/groups/api/my-groups/', {credentials:'include'})
-      .then(r => { if (r.status === 401) window.location.href = '/accounts/login'; return r.ok ? r.json() : {}; })
+      .then(r => r.ok ? r.json() : {})
       .then(data => { const d = data as {groups?: MyGroup[]}; if (d?.groups) setMyGroups(d.groups); })
       .catch(() => {});
   }, []);

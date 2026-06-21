@@ -48,7 +48,7 @@ def api_notices(request):
             'id': n.id,
             'title': n.title,
             'content': n.content,
-            'author': n.author.nickname or n.author.username,
+            'author': (n.author.nickname or n.author.username) if n.author else (n.author_name or '관리자'),
             'group_id': n.group_id,
             'is_pinned': n.is_pinned,
             'created_at': n.created_at.strftime('%Y-%m-%d'),
@@ -56,6 +56,25 @@ def api_notices(request):
         for n in qs[:50]
     ]
     return JsonResponse({'items': items})
+
+
+@csrf_exempt
+def api_notice_delete(request, notice_id):
+    """DELETE /support/api/notices/<id>/delete/ — 작성자 본인만 삭제 가능"""
+    err = _auth(request)
+    if err:
+        return err
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .models import Notice
+    try:
+        notice = Notice.objects.get(id=notice_id, author=request.user)
+    except Notice.DoesNotExist:
+        return JsonResponse({'error': 'Not found or forbidden'}, status=404)
+
+    notice.delete()
+    return JsonResponse({'success': True})
 
 
 def api_calendar_events(request):

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
@@ -16,18 +16,59 @@ export default function ProfileSettingsPage() {
   const [userEmail, setUserEmail] = useState('');
   const [userDateJoined, setUserDateJoined] = useState('');
 
+  useLayoutEffect(() => {
+    try {
+      const cached = localStorage.getItem('sgm_profile');
+      if (cached) {
+        const { nickname, email, profile_image, date_joined } = JSON.parse(cached);
+        if (nickname)      setUserNickname(nickname);
+        if (email)         setUserEmail(email);
+        if (profile_image) setProfilePhotoUrl(profile_image);
+        if (date_joined)   setUserDateJoined(date_joined);
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
-    fetch('/accounts/api/profile/', { credentials: 'include' })
+    const saveProfile = (obj: { nickname: string; email: string; profile_image: string; date_joined: string }) => {
+      try { localStorage.setItem('sgm_profile', JSON.stringify(obj)); } catch {}
+    };
+
+    const formatDate = (iso: string) => {
+      const [y, m, d] = iso.split('-');
+      return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
+    };
+
+    // 관리자 여부 먼저 확인
+    fetch('/admin/api/me/', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return;
-        if (data.nickname)      setUserNickname(data.nickname);
-        if (data.email)         setUserEmail(data.email);
-        if (data.profile_image) setProfilePhotoUrl(data.profile_image);
-        if (data.date_joined) {
-          const [y, m, d] = data.date_joined.split('-');
-          setUserDateJoined(`${y}년 ${parseInt(m)}월 ${parseInt(d)}일`);
+      .then(adminData => {
+        if (adminData) {
+          // 관리자: 가입일 없음
+          const nickname      = adminData.nickname || adminData.username || '관리자';
+          const email         = adminData.email || '';
+          const profile_image = '';
+          setUserNickname(nickname);
+          setUserEmail(email);
+          saveProfile({ nickname, email, profile_image, date_joined: '' });
+          return;
         }
+        // 일반 사용자
+        fetch('/accounts/api/profile/', { credentials: 'include' })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (!data) return;
+            const nickname      = data.nickname      || '';
+            const email         = data.email         || '';
+            const profile_image = data.profile_image || '';
+            const date_joined   = data.date_joined ? formatDate(data.date_joined) : '';
+            if (nickname)       setUserNickname(nickname);
+            if (email)          setUserEmail(email);
+            if (profile_image)  setProfilePhotoUrl(profile_image);
+            if (date_joined)    setUserDateJoined(date_joined);
+            saveProfile({ nickname, email, profile_image, date_joined });
+          })
+          .catch(() => {});
       })
       .catch(() => {});
   }, []);
@@ -174,7 +215,7 @@ export default function ProfileSettingsPage() {
                       <p className="font-bold text-slate-800 text-lg">{userNickname || '사용자'}</p>
                       <p className="text-sm text-slate-400 mb-1">{userEmail}</p>
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold mb-3" style={{background:'#dce6fd', color:'#0077ff'}}>스터디 멤버</span>
-                      <p className="text-xs text-slate-400">{userDateJoined}부터 활동</p>
+                      {userDateJoined && <p className="text-xs text-slate-400">{userDateJoined}부터 활동</p>}
                       <div className="w-full mt-4 pt-4 border-t border-slate-100 space-y-2">
                         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
                         <button className="w-full text-xs font-semibold py-2 rounded-lg border transition-colors cursor-pointer"

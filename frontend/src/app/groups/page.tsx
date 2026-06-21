@@ -21,7 +21,7 @@ export default function GroupListPage() {
     setLoading(true);
     Promise.all([
       fetch('/groups/api/my-groups/', {credentials:'include'})
-        .then(r => { if (r.status === 401) window.location.href = '/accounts/login'; return r.ok ? r.json() : {}; })
+        .then(r => r.ok ? r.json() : {})
         .catch(() => ({})),
       fetch('/groups/api/public/', {credentials:'include'})
         .then(r => r.ok ? r.json() : {})
