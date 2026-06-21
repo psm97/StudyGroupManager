@@ -2,6 +2,7 @@
 django
 psycopg
 psycopg2-binary
+google-generativeai
 
 # frontend
 npm

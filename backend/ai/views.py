@@ -322,6 +322,55 @@ def api_planner_init(request):
     return JsonResponse(result)
 
 
+_STUDY_PLANNER_SYSTEM_PROMPT = """당신은 스터디 그룹 관리 플랫폼 "StudyGroupManager"의 전문 AI 스터디 플래너 어시스턴트입니다.
+사용자가 효율적으로 학습 목표를 달성하고, 스터디 그룹을 성공적으로 운영할 수 있도록 돕는 전문 학습 코치입니다.
+
+[역할 및 전문 분야]
+- 개인 및 그룹 스터디 목표 설정과 달성 전략 수립
+- 출석률 분석 및 지속적인 참여 유지 방안 제안
+- 주차별·월별 학습 계획 수립 및 일정 관리
+- 스터디 그룹 리더를 위한 팀 운영 전략 (멤버 동기 부여, 참여율 향상)
+- 학습 슬럼프 극복과 집중력 향상 방법
+- 벌금 및 패널티 제도 운영 조언
+- 스터디 자료 관리 및 공유 방법 제안
+
+[상담 원칙]
+1. 사용자의 현재 출석률, 학습 목표, 남은 기간을 파악하고 맞춤형 조언을 제공하세요.
+2. 구체적이고 실행 가능한 학습 계획을 단계별로 제시하세요.
+3. 출석이 낮거나 목표 달성이 어려울 때 비판하지 말고, 원인을 공감하며 개선 방향을 안내하세요.
+4. 스터디 그룹의 특성(인원, 목표 과목, 일정, 분야)을 고려한 현실적인 조언을 하세요.
+5. 사용자가 지치거나 불안해할 때는 먼저 공감하고 긍정적인 동기 부여 메시지를 전달하세요.
+6. 리더와 멤버에게 각자의 역할에 맞는 맞춤형 조언을 제공하세요.
+7. 수치(출석률, 달성 확률 등)를 언급할 때 구체적인 개선 목표와 함께 제시하세요.
+
+[응답 형식]
+- 답변은 간결하고 명확하게 제공하세요. (불필요한 서론 생략)
+- 학습 계획이나 전략 제시 시 번호나 글머리 기호를 사용해 구조화하세요.
+- 중요한 포인트는 강조하여 한눈에 파악할 수 있도록 하세요.
+- 항상 한국어로 답변하세요.
+- 친근하고 격려하는 어투를 사용하세요.
+- 답변 마지막에는 다음 행동 제안이나 후속 질문을 1가지 덧붙여 대화를 이어가세요."""
+
+
+def _get_google_api_key():
+    import os
+    key = os.environ.get('GOOGLE_API_KEY', '')
+    if not key:
+        from django.conf import settings as djset
+        from pathlib import Path as _Path
+        env_path = _Path(djset.BASE_DIR).parent / '.env'
+        try:
+            with open(env_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith('GOOGLE_API_KEY='):
+                        key = line.split('=', 1)[1].strip()
+                        break
+        except Exception:
+            pass
+    return key
+
+
 @csrf_exempt
 def api_planner_chat(request):
     """POST /api/ai/planner/chat/"""
@@ -342,9 +391,25 @@ def api_planner_chat(request):
     if not group_id or not message:
         return JsonResponse({'error': 'group_id and message required'}, status=400)
 
-    from .models import PlannerChatHistory, StudyGoal
+    from .models import PlannerChatHistory
 
-    # save user message
+    # Fetch previous history before saving new message
+    history_qs = list(
+        PlannerChatHistory.objects.filter(
+            group_id=group_id, user=request.user
+        ).order_by('sent_at')
+    )
+
+    # Build Gemini-format history (last 20 messages, must start with 'user')
+    gemini_history = [
+        {'role': 'user' if h.role == 'user' else 'model', 'parts': [h.message]}
+        for h in history_qs[-20:]
+    ]
+    # Gemini requires history to start with a user turn
+    while gemini_history and gemini_history[0]['role'] == 'model':
+        gemini_history.pop(0)
+
+    # Save user message to DB
     PlannerChatHistory.objects.create(
         group_id=group_id,
         user=request.user,
@@ -352,26 +417,25 @@ def api_planner_chat(request):
         message=message,
     )
 
-    # simple AI response (rule-based, no external API)
-    goal = StudyGoal.objects.filter(
-        group_id=group_id, user=request.user
-    ).order_by('-created_at').first()
-
-    rate = _calc_rate(request.user.id, group_id)
-
-    if goal:
-        ai_reply = (
-            f"현재 출석률은 {rate}%입니다. "
-            f"목표 '{goal.title}'의 달성 확률은 {round(goal.achievement_probability * 100)}%로 예측됩니다. "
-            f"{goal.ai_suggestions}"
-        )
+    # Call Gemini API
+    api_key = _get_google_api_key()
+    if not api_key:
+        ai_reply = "AI 서비스 키가 설정되지 않았습니다. 관리자에게 문의해 주세요."
     else:
-        ai_reply = (
-            f"현재 출석률은 {rate}%입니다. "
-            "아직 설정된 학습 목표가 없습니다. 목표를 설정하면 AI가 달성 전략을 제안해드립니다."
-        )
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(
+                model_name='gemini-2.5-flash',
+                system_instruction=_STUDY_PLANNER_SYSTEM_PROMPT,
+            )
+            chat_session = model.start_chat(history=gemini_history)
+            response = chat_session.send_message(message)
+            ai_reply = response.text
+        except Exception as e:
+            ai_reply = f"AI 응답 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. ({str(e)})"
 
-    # save AI response
+    # Save AI response to DB
     ai_record = PlannerChatHistory.objects.create(
         group_id=group_id,
         user=request.user,
