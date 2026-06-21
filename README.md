@@ -9,5 +9,5 @@ cd backend
 python manage.py makemigrations
 python manage.py migrate
 
-# 구글 로그인
+# 구글 로그인 보안
 npm install next-auth

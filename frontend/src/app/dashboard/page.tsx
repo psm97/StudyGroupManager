@@ -5,10 +5,12 @@ import LeftMenu from '@/components/LeftMenu';
 import Header from '@/components/Header';
 
 interface MyGroup { id: number; name: string; member_count: number; attendance_rate?: number; role: string; color?: string; }
+interface Activity { desc: string; time: string; color: string; }
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({groups:0, attendance:'—', penalty:'—', rate:'—%'});
   const [myGroups, setMyGroups] = useState<MyGroup[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const userNickname = '';
 
   /* TODO: CDN 스크립트 → npm 패키지로 교체 필요 (Chart.js) */
@@ -22,6 +24,11 @@ export default function DashboardPage() {
     fetch('/groups/api/my-groups/', {credentials:'include'})
       .then(r => r.ok ? r.json() : {})
       .then(data => { const d = data as {groups?: MyGroup[]}; if (d?.groups) setMyGroups(d.groups); })
+      .catch(() => {});
+
+    fetch('/api/dashboard/recent-activities/', {credentials:'include'})
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.activities) setActivities(data.activities); })
       .catch(() => {});
   }, []);
 
@@ -269,11 +276,9 @@ export default function DashboardPage() {
                 <div className="bg-white rounded-2xl border border-slate-100 p-5">
                   <h2 className="font-bold text-slate-800 mb-4">최근 활동</h2>
                   <div className="space-y-3">
-                    {[
-                      {time:'오늘 10:00', desc:'Web Developer Study 출석 완료', color:'#10b981'},
-                      {time:'어제 14:00', desc:'Python 알고리즘 지각', color:'#f59e0b'},
-                      {time:'3일 전', desc:'영어 회화 스터디 결석 (벌금 부과)', color:'#ef4444'},
-                    ].map((a, i) => (
+                    {activities.length === 0 ? (
+                      <p className="text-sm text-slate-400 py-4 text-center">최근 활동 내역이 없습니다.</p>
+                    ) : activities.map((a, i) => (
                       <div key={i} className="flex gap-3 items-start">
                         <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{background:a.color}}></div>
                         <div>

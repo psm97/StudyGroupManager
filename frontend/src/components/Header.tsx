@@ -12,6 +12,7 @@ export default function Header() {
   const [notifOpen, setNotifOpen] = useState(false);
   const notiRef = useRef<HTMLDivElement>(null);
   const [me, setMe] = useState({ nickname: '', profile_image: '' });
+  const [notifs, setNotifs] = useState<{id:string; icon:string; msg:string; time:string; read:boolean}[]>([]);
 
   // 페인트 전에 캐시를 복원 → 페이지 이동 시 깜박임 제거
   useLayoutEffect(() => {
@@ -35,15 +36,14 @@ export default function Header() {
         }
       })
       .catch(() => {});
+
+    fetch('/api/dashboard/notifications/', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.notifications) setNotifs(data.notifications); })
+      .catch(() => {});
   }, []);
 
-  const MOCK_NOTIFS = [
-    { id: 1, icon: '✅', msg: 'Web Developer Study 출석이 확인되었습니다.', time: '방금 전', read: false },
-    { id: 2, icon: '💰', msg: 'Python 알고리즘 벌금 납부 요청이 도착했습니다.', time: '1시간 전', read: false },
-    { id: 3, icon: '📢', msg: '영어 회화 스터디에 새 공지가 등록되었습니다.', time: '3시간 전', read: true },
-    { id: 4, icon: '👥', msg: '새로운 그룹 초대가 도착했습니다.', time: '어제', read: true },
-  ];
-  const unreadCount = MOCK_NOTIFS.filter(n => !n.read).length;
+  const unreadCount = notifs.filter(n => !n.read).length;
 
   const handleSearch = (value: string) => {
     if (value.trim()) {
@@ -243,7 +243,10 @@ export default function Header() {
 
                 {/* 알림 목록 */}
                 <div style={{maxHeight:'280px', overflowY:'auto'}}>
-                  {MOCK_NOTIFS.map(n => (
+                  {notifs.length === 0 && (
+                    <p style={{fontSize:'13px', color:'#94a3b8', textAlign:'center', padding:'24px 16px'}}>알림이 없습니다.</p>
+                  )}
+                  {notifs.map(n => (
                     <div
                       key={n.id}
                       style={{
